@@ -2,6 +2,7 @@ target
 .classpath
 .project
 .settings
+.vscode
 testdata/
 raven/output.tif
 raven/outPutRaster.tif
