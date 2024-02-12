@@ -1,10 +1,22 @@
 package dk.itu.raven.io;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.fs.Path;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.geotools.api.data.FileDataStore;
+import org.geotools.api.data.FileDataStoreFinder;
+import org.geotools.api.data.Query;
+import org.geotools.api.data.SimpleFeatureSource;
+import org.geotools.api.feature.Property;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.FeatureIterator;
+import org.geotools.feature.GeometryAttributeImpl;
 import org.locationtech.jts.geom.Coordinate;
 
 import com.github.davidmoten.rtree2.geometry.Point;
@@ -12,9 +24,6 @@ import com.github.davidmoten.rtree2.geometry.Geometries;
 
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.util.Pair;
-import edu.ucr.cs.bdlab.beast.common.BeastOptions;
-import edu.ucr.cs.bdlab.beast.geolite.IFeature;
-import edu.ucr.cs.bdlab.beast.io.shapefile.ShapefileFeatureReader;
 
 public class ShapfileReader {
 
@@ -48,21 +57,19 @@ public class ShapfileReader {
 		}
 	}
 
-	public Pair<Iterable<Polygon>, ShapeFileBounds> readShapefile(String path) {
+	public Pair<Iterable<Polygon>, ShapeFileBounds> readShapefile(String path) throws IOException {
+		File file = new File(path);
+		FileDataStore myData = FileDataStoreFinder.getDataStore(file);
+		SimpleFeatureSource source = myData.getFeatureSource();
 		bounds.reset();
 		List<Polygon> features = new ArrayList<>();
-		try (ShapefileFeatureReader featureReader = new ShapefileFeatureReader()) {
-			featureReader.initialize(new Path(
-					path),
-					new BeastOptions());
-			for (IFeature feature : featureReader) {
-				extractGeometries(feature.getGeometry(), features);
+		FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures();
+		try (FeatureIterator<SimpleFeature> featuresItr = collection.features()) {
+			while (featuresItr.hasNext()) {
+				SimpleFeature feature = featuresItr.next();
+				extractGeometries(((GeometryAttributeImpl) feature.getProperty("the_geom")).getValue(), features);
 			}
 			return new Pair<>(features, bounds);
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(-1);
-			return null;
 		}
 	}
 
