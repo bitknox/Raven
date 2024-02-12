@@ -2,6 +2,9 @@ package dk.itu.raven.util.matrix;
 
 import mil.nga.tiff.Rasters;
 
+/**
+ * Matrix implementation using a Rasters from the mil.nga.tiff.Rasters library.
+ */
 public class RastersMatrix extends Matrix {
     private Rasters rasters;
 
@@ -12,7 +15,6 @@ public class RastersMatrix extends Matrix {
 
     @Override
     public int getWithinRange(int r, int c) {
-        // Logger.log(rasters.getPixel(r, c)[0]);
         return rasters.getPixelSample(0, c, r).intValue();
     }
 

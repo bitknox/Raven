@@ -2,6 +2,10 @@ package dk.itu.raven.util.matrix;
 
 import java.util.Random;
 
+/*
+Used for debugging
+*/
+
 public class RandomMatrix extends Matrix {
 	public int[][] M;
 

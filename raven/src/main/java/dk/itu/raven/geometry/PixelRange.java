@@ -1,5 +1,8 @@
 package dk.itu.raven.geometry;
 
+/**
+ * Stores a range of continuous pixels in a compressed format
+ */
 public class PixelRange {
     public int row;
     public int x1, x2;
@@ -17,7 +20,8 @@ public class PixelRange {
 
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof PixelRange)) return false;
+        if (!(other instanceof PixelRange))
+            return false;
         PixelRange pixelRange = (PixelRange) other;
         return this.row == pixelRange.row && this.x1 == pixelRange.x1 && this.x2 == pixelRange.x2;
     }

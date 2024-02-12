@@ -13,6 +13,10 @@ import com.github.davidmoten.rtree2.geometry.Rectangle;
 
 import dk.itu.raven.io.TFWFormat;
 
+/**
+ * A polygon is a sequence of points that are connected by straight lines.
+ * The last point is connected to the first point.
+ */
 public class Polygon implements Geometry, Iterator<Point>, Iterable<Point> {
     private Rectangle mbr;
     private List<Point> points;
@@ -20,45 +24,45 @@ public class Polygon implements Geometry, Iterator<Point>, Iterable<Point> {
 
     public Polygon(List<Point> points) {
         this.points = points;
-        double minx = Double.MAX_VALUE, miny = Double.MAX_VALUE;
-        double maxx = Double.MIN_VALUE, maxy = Double.MIN_VALUE;
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+        double maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
         for (Point p : points) {
-            minx = Math.min(minx, p.x());
-            maxx = Math.max(maxx, p.x());
-            miny = Math.min(miny, p.y());
-            maxy = Math.max(maxy, p.y());
+            minX = Math.min(minX, p.x());
+            maxX = Math.max(maxX, p.x());
+            minY = Math.min(minY, p.y());
+            maxY = Math.max(maxY, p.y());
         }
-        this.mbr = Geometries.rectangle(minx, miny, maxx, maxy);
+        this.mbr = Geometries.rectangle(minX, minY, maxX, maxY);
     }
 
     public Polygon(Coordinate[] coordinates) {
         this.points = new ArrayList<>();
-        double minx = Double.MAX_VALUE, miny = Double.MAX_VALUE;
-        double maxx = Double.MIN_VALUE, maxy = Double.MIN_VALUE;
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+        double maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
         for (Coordinate coord : coordinates) {
             Point p = Geometries.point(coord.x, coord.y);
-            minx = Math.min(minx, p.x());
-            maxx = Math.max(maxx, p.x());
-            miny = Math.min(miny, p.y());
-            maxy = Math.max(maxy, p.y());
+            minX = Math.min(minX, p.x());
+            maxX = Math.max(maxX, p.x());
+            minY = Math.min(minY, p.y());
+            maxY = Math.max(maxY, p.y());
             this.points.add(p);
         }
-        this.mbr = Geometries.rectangle(minx, miny, maxx, maxy);
+        this.mbr = Geometries.rectangle(minX, minY, maxX, maxY);
     }
 
     public Polygon(Coordinate[] coordinates, TFWFormat tfw) {
         this.points = new ArrayList<>();
-        double minx = Double.MAX_VALUE, miny = Double.MAX_VALUE;
-        double maxx = Double.MIN_VALUE, maxy = Double.MIN_VALUE;
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+        double maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
         for (Coordinate coord : coordinates) {
             Point p = tfw.transFromCoordinateToPixel(coord.x, coord.y);
-            minx = Math.min(minx, p.x());
-            maxx = Math.max(maxx, p.x());
-            miny = Math.min(miny, p.y());
-            maxy = Math.max(maxy, p.y());
+            minX = Math.min(minX, p.x());
+            maxX = Math.max(maxX, p.x());
+            minY = Math.min(minY, p.y());
+            maxY = Math.max(maxY, p.y());
             this.points.add(p);
         }
-        this.mbr = Geometries.rectangle(minx, miny, maxx, maxy);
+        this.mbr = Geometries.rectangle(minX, minY, maxX, maxY);
     }
 
     public Polygon(List<Point> points, Rectangle mbr) {

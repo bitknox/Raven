@@ -3,8 +3,9 @@ package dk.itu.raven.io;
 import java.io.File;
 import java.io.IOException;
 
+// TODO: Support inline tfw.
 public abstract class FileRasterReader implements RasterReader {
-  	File tiff;
+	File tiff;
 	File tfw;
 
 	TFWFormat transform;

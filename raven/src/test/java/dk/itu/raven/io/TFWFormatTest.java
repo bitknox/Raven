@@ -12,8 +12,6 @@ import org.junit.jupiter.api.Test;
 import com.github.davidmoten.rtree2.geometry.Geometries;
 import com.github.davidmoten.rtree2.geometry.Point;
 
-import dk.itu.raven.geometry.PixelCoordinate;
-
 public class TFWFormatTest {
 	TFWFormat tfw;
 	Random random = new Random();

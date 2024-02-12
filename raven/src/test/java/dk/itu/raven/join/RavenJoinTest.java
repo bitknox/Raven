@@ -41,7 +41,7 @@ public class RavenJoinTest {
 
         Square square = new Square(0, 0, 30);
         RavenJoin join = new RavenJoin(null, null);
-        Collection<PixelRange> ranges = join.ExtractCellsPolygon(poly, 0, square,30);
+        Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, square, 30);
         assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 0 && (pr.x2 == 2 || pr.x2 == 3)));
         assertFalse(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 2));
         assertTrue(ranges.stream().anyMatch(pr -> pr.row == 3 && pr.x1 == 0 && (pr.x2 == 3 || pr.x2 == 4)));
@@ -56,14 +56,14 @@ public class RavenJoinTest {
         Polygon poly = new Polygon(points);
         Square square = new Square(0, 0, 11);
         RavenJoin join = new RavenJoin(null, null);
-        Collection<PixelRange> ranges = join.ExtractCellsPolygon(poly, 0, square,10);
+        Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, square, 10);
 
         assertEquals(ranges.size(), 10);
         assertTrue(ranges.stream().anyMatch(pr -> pr.row == 1));
-        
+
         int i = 0;
         for (PixelRange range : ranges) {
-            assertEquals(new PixelRange(i,i,i),range);
+            assertEquals(new PixelRange(i, i, i), range);
             i++;
         }
 
@@ -144,31 +144,34 @@ public class RavenJoinTest {
             for (int j = 0; j < 16; j++)
                 matrix[i][j] = fillValue;
         matrix[6][6] = 0;
-        
-        K2Raster k2 = new K2Raster(new ArrayMatrix(matrix, 16, 16));
-        
-        RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
-        Polygon p = new Polygon(new Coordinate[] {new Coordinate(1,1),new Coordinate(3,1),new Coordinate(3,3),new Coordinate(1,3)});
-        Polygon p2 = new Polygon(new Coordinate[] {new Coordinate(5,5),new Coordinate(10,5),new Coordinate(10,10),new Coordinate(5,10)});
-        PixelRange[] expected = new PixelRange[] {new PixelRange(1, 1, 3),new PixelRange(2, 1, 3)};
-        PixelRange[] expected2 = new PixelRange[] {new PixelRange(5, 5, 10),new PixelRange(6, 5, 5),new PixelRange(6, 7, 10),new PixelRange(7, 5, 10),new PixelRange(8, 5, 10),new PixelRange(9, 5, 10)};
-        rtree = rtree.add(null,p);
-        rtree = rtree.add(null,p2);
 
+        K2Raster k2 = new K2Raster(new ArrayMatrix(matrix, 16, 16));
+
+        RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
+        Polygon p = new Polygon(new Coordinate[] { new Coordinate(1, 1), new Coordinate(3, 1), new Coordinate(3, 3),
+                new Coordinate(1, 3) });
+        Polygon p2 = new Polygon(new Coordinate[] { new Coordinate(5, 5), new Coordinate(10, 5), new Coordinate(10, 10),
+                new Coordinate(5, 10) });
+        PixelRange[] expected = new PixelRange[] { new PixelRange(1, 1, 3), new PixelRange(2, 1, 3) };
+        PixelRange[] expected2 = new PixelRange[] { new PixelRange(5, 5, 10), new PixelRange(6, 5, 5),
+                new PixelRange(6, 7, 10), new PixelRange(7, 5, 10), new PixelRange(8, 5, 10),
+                new PixelRange(9, 5, 10) };
+        rtree = rtree.add(null, p);
+        rtree = rtree.add(null, p2);
 
         RavenJoin join = new RavenJoin(k2, rtree);
-        List<Pair<Geometry,Collection<PixelRange>>> res = join.join(42,42);
+        List<Pair<Geometry, Collection<PixelRange>>> res = join.join(42, 42);
 
         assertEquals(res.get(0).first, p);
         int idx = 0;
         assertEquals(res.get(0).second.size(), expected.length);
         assertEquals(res.get(1).second.size(), expected2.length);
         for (PixelRange range : res.get(0).second) {
-            assertEquals(expected[idx++],range);
+            assertEquals(expected[idx++], range);
         }
         idx = 0;
         for (PixelRange range : res.get(1).second) {
-            assertEquals(expected2[idx++],range);
+            assertEquals(expected2[idx++], range);
         }
     }
 
@@ -205,5 +208,5 @@ public class RavenJoinTest {
             assertTrue(def.stream().anyMatch(pr -> pr.second.contains(range)));
         }
     }
-    
+
 }

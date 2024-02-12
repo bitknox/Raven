@@ -3,6 +3,7 @@ package dk.itu.raven.ksquared;
 import static dk.itu.raven.ksquared.Basics.*;
 
 /*
+ * Adapted from:
  * https://github.com/sladra/DACs/blob/master/src/bitrankw32int.c
  */
 
@@ -27,10 +28,10 @@ public class BitRank {
         this.b = 32;
         this.s = this.b * this.factor;
         this.integers = this.n / W;
-        BuildRank(this);
+        buildRank(this);
     }
 
-    private static int BuildRankSub(BitRank br, int ini, int fin) {
+    private static int buildRankSub(BitRank br, int ini, int fin) {
         int i;
         int rank = 0, aux;
         for (i = ini; i < ini + fin; i++) {
@@ -42,7 +43,7 @@ public class BitRank {
         return rank; // retorna el numero de 1's del intervalo
     }
 
-    private static void BuildRank(BitRank br) {
+    private static void buildRank(BitRank br) {
         int i;
         int num_sblock = br.n / br.s;
         br.Rs = new int[num_sblock + 1];
@@ -52,11 +53,11 @@ public class BitRank {
         br.Rs[0] = 0;
         for (j = 1; j <= num_sblock; j++) {
             br.Rs[j] = br.Rs[j - 1];
-            br.Rs[j] += BuildRankSub(br, (j - 1) * (br.factor), br.factor);
+            br.Rs[j] += buildRankSub(br, (j - 1) * (br.factor), br.factor);
         }
     }
 
-    public int Rank(int i) {
+    public int rank(int i) {
         int a;
         if (i + 1 == 0)
             return 0;

@@ -6,12 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.MultiPolygon;
 import org.geotools.api.data.FileDataStore;
 import org.geotools.api.data.FileDataStoreFinder;
-import org.geotools.api.data.Query;
 import org.geotools.api.data.SimpleFeatureSource;
-import org.geotools.api.feature.Property;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.feature.FeatureCollection;
@@ -36,24 +33,24 @@ public class ShapfileReader {
 	}
 
 	public class ShapeFileBounds {
-		public double minx, miny, maxx, maxy;
+		public double minX, minY, maxX, maxY;
 
 		public ShapeFileBounds() {
 			this.reset();
 		}
 
 		public void updateBounds(double x1, double y1, double x2, double y2) {
-			minx = Math.min(minx, x1);
-			miny = Math.min(miny, y1);
-			maxx = Math.max(maxx, x2);
-			maxy = Math.max(maxy, y2);
+			minX = Math.min(minX, x1);
+			minY = Math.min(minY, y1);
+			maxX = Math.max(maxX, x2);
+			maxY = Math.max(maxY, y2);
 		}
 
 		public void reset() {
-			minx = Double.MAX_VALUE;
-			miny = Double.MAX_VALUE;
-			maxx = Double.MIN_VALUE;
-			maxy = Double.MIN_VALUE;
+			minX = Double.MAX_VALUE;
+			minY = Double.MAX_VALUE;
+			maxX = Double.MIN_VALUE;
+			maxY = Double.MIN_VALUE;
 		}
 	}
 
@@ -86,29 +83,29 @@ public class ShapfileReader {
 
 	private void createPolygons(Coordinate[] coordinates, List<Polygon> features) {
 		List<Point> points = new ArrayList<>();
-		double minx = Double.MAX_VALUE, miny = Double.MAX_VALUE;
-		double maxx = Double.MIN_VALUE, maxy = Double.MIN_VALUE;
+		double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+		double maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
 		Coordinate start = coordinates[0];
 		Point p;
 		for (int i = 0; i < coordinates.length; i++) {
 			Coordinate coord = coordinates[i];
 			if (start.x == coord.x && start.y == coord.y && points.size() > 0) {
-				this.bounds.updateBounds(minx, miny, maxx, maxy);
-				features.add(new Polygon(points, Geometries.rectangle(minx, miny, maxx, maxy)));
+				this.bounds.updateBounds(minX, minY, maxX, maxY);
+				features.add(new Polygon(points, Geometries.rectangle(minX, minY, maxX, maxY)));
 				points = new ArrayList<>();
-				minx = Double.MAX_VALUE;
-				miny = Double.MAX_VALUE;
-				maxx = Double.MIN_VALUE;
-				maxy = Double.MIN_VALUE;
+				minX = Double.MAX_VALUE;
+				minY = Double.MAX_VALUE;
+				maxX = Double.MIN_VALUE;
+				maxY = Double.MIN_VALUE;
 				if (i + 1 < coordinates.length) {
 					start = coordinates[i + 1];
 				}
 			} else {
 				p = transform.transFromCoordinateToPixel(coord.x, coord.y);
-				minx = Math.min(minx, p.x());
-				maxx = Math.max(maxx, p.x());
-				miny = Math.min(miny, p.y());
-				maxy = Math.max(maxy, p.y());
+				minX = Math.min(minX, p.x());
+				maxX = Math.max(maxX, p.x());
+				minY = Math.min(minY, p.y());
+				maxY = Math.max(maxY, p.y());
 				points.add(p);
 			}
 		}

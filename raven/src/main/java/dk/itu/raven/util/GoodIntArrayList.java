@@ -2,6 +2,10 @@ package dk.itu.raven.util;
 
 import java.util.Arrays;
 
+/**
+ * A simple implementation of an ArrayList for integers. (Avoids copying the
+ * entire array when resizing)
+ */
 public class GoodIntArrayList {
     int capacity;
     int size;

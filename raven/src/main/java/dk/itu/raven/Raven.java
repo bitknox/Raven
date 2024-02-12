@@ -23,54 +23,55 @@ import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.Matrix;
 
+/**
+ * Main class for the raven application
+ * 
+ */
 public class Raven {
 
     public static void main(String[] args) throws IOException {
         Logger.setDebug(true);
 
-        // testThings();
-
+        // Read geo raster file
         FileRasterReader rasterReader = new MilRasterReader(new File(args[0]));
-        // RasterReader rasterReader = new GeneratorRasterReader(4000, 4000, 129384129,
-        // 12,
-        // new TFWFormat(0.09, 0, 0, -0.09 , -180, 90));
+
+        // get getTiff transform (used to transform from (lat, lon) to pixel coordinates
+        // in shapefileReader)
         TFWFormat format = rasterReader.getTransform();
 
+        // create a R* tree with
         RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
+
         ShapfileReader featureReader = new ShapfileReader(format);
-        // Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds> geometries =
-        // featureReader.readShapefile(
-        // "c:\\Users\\alexa\\Downloads\\cb_2018_us_state_500k.zip");
+
+        // load geometries from shapefile
         Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds> geometries = featureReader.readShapefile(args[1]);
 
-        Rectangle rect = Geometries.rectangle(geometries.second.minx, geometries.second.miny,
-                geometries.second.maxx,
-                geometries.second.maxy);
-        // Visualizer visualizer = new Visualizer((int) (rect.x2() - rect.x1()), (int)
-        // (rect.y2() - rect.y1()));
+        // rectangle representing the bounds of the shapefile data
+        Rectangle rect = Geometries.rectangle(geometries.second.minX, geometries.second.minY,
+                geometries.second.maxX,
+                geometries.second.maxY);
 
+        // FIXME: Broken when no overlap exists.
         Matrix rasterData = rasterReader.readRasters(rect);
+        // offset geometries such that they are aligned to the corner
         for (Polygon geom : geometries.first) {
-            geom.offset(-geometries.second.minx, -geometries.second.miny);
+            geom.offset(-geometries.second.minX, -geometries.second.minY);
             rtree = rtree.add(null, geom);
         }
-        // Logger.log(rasterData.get(8000, 5000));
-        // for (Geometry geom : geometries.first) {
-        // rtree = rtree.add(null, geom);
-        // }
+
+        // Build k2-raster structure
         long startBuildNano = System.nanoTime();
         K2Raster k2Raster = new K2Raster(rasterData);
         long endBuildNano = System.nanoTime();
         Logger.log("Build time: " + (endBuildNano - startBuildNano) / 1000000 + "ms");
-        // visualizer.drawVectorRasterOverlap(geometries.first, rasterData, rtree,
-        // k2Raster);
-        Logger.log("Done Building Raster");
-        Logger.log(k2Raster.Tree.size());
 
-        // visualizer.drawShapefile(geometries.first, format);
+        Logger.log("Done Building Raster");
+        Logger.log(k2Raster.tree.size());
 
         Logger.log("Done Building rtree");
 
+        // construct and compute the join
         RavenJoin join = new RavenJoin(k2Raster, rtree);
         long startJoinNano = System.nanoTime();
         List<Pair<Geometry, Collection<PixelRange>>> result = join.join();

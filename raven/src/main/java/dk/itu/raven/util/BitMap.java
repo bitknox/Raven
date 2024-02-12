@@ -75,8 +75,6 @@ public class BitMap implements Iterator<Integer>, Iterable<Integer> {
     }
 
     public int rank(int from, int to) {
-        // Logger.log("from: " + from + ", to: " + to + ", limitPos: " +
-        // limitPos);
         if (to == -1)
             return 0;
         int res = 0;
@@ -96,8 +94,6 @@ public class BitMap implements Iterator<Integer>, Iterable<Integer> {
 
     @Override
     public boolean hasNext() {
-        // er det real?
-
         return currentIteratorIndex < limitPos;
     }
 

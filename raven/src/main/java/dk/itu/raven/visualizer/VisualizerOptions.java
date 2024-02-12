@@ -2,6 +2,9 @@ package dk.itu.raven.visualizer;
 
 import java.awt.Color;
 
+/**
+ * Class used to pass options to the visualizer.
+ */
 public class VisualizerOptions {
 	public String outputPath, outputFormat;
 	public boolean useRandomColor, useOutput;

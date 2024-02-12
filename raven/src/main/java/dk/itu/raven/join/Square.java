@@ -4,6 +4,9 @@ import com.github.davidmoten.rtree2.geometry.Rectangle;
 
 import dk.itu.raven.geometry.PixelCoordinate;
 
+/**
+ * Represents a square in the raster matrix
+ */
 public class Square {
 	private int size;
 	private PixelCoordinate topLeft;
@@ -28,10 +31,14 @@ public class Square {
 	}
 
 	public boolean intersects(Rectangle rect) {
-		if (topLeft.x > rect.x2()) return false;
-		if (topLeft.y > rect.y2()) return false;
-		if (topLeft.x + size < rect.x1()) return false;
-		if (topLeft.y + size < rect.y1()) return false;
+		if (topLeft.x > rect.x2())
+			return false;
+		if (topLeft.y > rect.y2())
+			return false;
+		if (topLeft.x + size < rect.x1())
+			return false;
+		if (topLeft.y + size < rect.y1())
+			return false;
 		return true;
 	}
 

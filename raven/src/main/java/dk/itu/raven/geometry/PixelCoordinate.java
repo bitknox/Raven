@@ -1,5 +1,8 @@
 package dk.itu.raven.geometry;
 
+/**
+ * Representing a coordinate with respect to the raster matrix
+ */
 public class PixelCoordinate {
 	public int x;
 	public int y;

@@ -2,6 +2,12 @@ package dk.itu.raven.util.matrix;
 
 import java.io.IOException;
 
+/*
+This class helps by wrapping different forms of matrix data
+and provides the added utility that values outside the range of the matrix will have value 0.
+This helps reduce the complexity of the K2Raster implementation.
+*/
+
 public abstract class Matrix {
     protected int width, height;
 
@@ -30,7 +36,6 @@ public abstract class Matrix {
         return this.height;
     }
 
-    
     public void print() {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {

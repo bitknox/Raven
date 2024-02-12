@@ -8,8 +8,10 @@ import java.io.IOException;
 import com.github.davidmoten.rtree2.geometry.Geometries;
 import com.github.davidmoten.rtree2.geometry.Point;
 
-import dk.itu.raven.geometry.PixelCoordinate;
-
+/**
+ * The TFWFormat is used to represent the transformation from pixel to
+ * coordinate (included in the geotiff format).
+ */
 public class TFWFormat {
 
 	double pixelLengthX, rotationY, rotationX, pixelLengthYNegative, pixelLengthY, topLeftX, topLeftY,

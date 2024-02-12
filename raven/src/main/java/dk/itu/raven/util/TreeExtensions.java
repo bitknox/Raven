@@ -8,12 +8,16 @@ import com.github.davidmoten.rtree2.Node;
 import com.github.davidmoten.rtree2.NonLeaf;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
+/**
+ * A class that provides extensions for the RTree library.
+ * 
+ */
 public class TreeExtensions {
     public static Iterable<Node<String, Geometry>> getChildren(Node<String, Geometry> node) {
         if (node instanceof NonLeaf) {
-			return ((NonLeaf<String,Geometry>)node).children();
+            return ((NonLeaf<String, Geometry>) node).children();
         } else {
-            List<Node<String,Geometry>> res = new ArrayList<>();
+            List<Node<String, Geometry>> res = new ArrayList<>();
             res.add(node);
             return res;
         }

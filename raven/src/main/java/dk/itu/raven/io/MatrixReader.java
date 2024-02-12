@@ -14,7 +14,6 @@ public class MatrixReader implements RasterReader {
 	public MatrixReader(Matrix matrix, TFWFormat transform) {
 		this.matrix = matrix;
 		this.transform = transform;
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -30,7 +29,6 @@ public class MatrixReader implements RasterReader {
 		}
 		Matrix arrayMatrix = new ArrayMatrix(values, width, height);
 
-		// TODO Auto-generated method stub
 		return arrayMatrix;
 	}
 
