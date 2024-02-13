@@ -4,29 +4,25 @@ import (
 	"fmt"
 
 	"github.com/bitknox/Raven/benchmarking/environments"
+	"github.com/bitknox/Raven/benchmarking/parsing"
 )
 
 func main() {
-	enviroment := environments.NewEnvironment(environments.EnvironmentOptions{
-		EnvironmentType: environments.Docker,
-		DockerFilePath:  "./test/Dockerfile",
-	})
-
-	err := enviroment.Runner.Setup()
-	if err != nil {
-		panic(err)
-	}
-
-	res, err := enviroment.Runner.RunCommand(environments.Command{
-		Path: "cmd",
-		Args: []string{"/C", "dir"},
-	})
-
-	fmt.Println(res)
+	model, err := parsing.ParseInput("./test/test_input.json")
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return
 	}
-	enviroment.Runner.Teardown()
 
+	for _, benchmark := range model {
+		env := environments.NewEnvironment(benchmark.EnvironmentOptions)
+		env.Runner.Setup()
+		r, err := env.Runner.RunCommand(benchmark.Command)
+		fmt.Println(r)
+		if err != nil {
+			fmt.Println(err)
+		}
+		env.Runner.Teardown()
+	}
 }

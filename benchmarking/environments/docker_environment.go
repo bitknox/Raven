@@ -9,6 +9,7 @@ import (
 type DockerEnvironment struct {
 	DockerFilePath string
 	ImageTag       string
+	ContainerTag   string
 }
 
 // ======================================
@@ -16,7 +17,14 @@ type DockerEnvironment struct {
 // ======================================
 
 func (d *DockerEnvironment) RunCommand(cmd Command) (string, error) {
-	return "", nil
+	//run the command in the container
+	args := append([]string{"exec", d.ContainerTag, cmd.Path}, cmd.Args...)
+	out, err := exec.Command("docker", args...).Output()
+
+	if err != nil {
+		return "", err
+	}
+	return string(out), nil
 }
 
 func (d *DockerEnvironment) Setup() error {
@@ -28,7 +36,7 @@ func (d *DockerEnvironment) Setup() error {
 
 	//run the docker container as a daemon
 	err = exec.Command("docker", "run", "--name", tag, "-d", imageTag).Run()
-
+	d.ContainerTag = tag
 	if err != nil {
 		return err
 	}
@@ -36,16 +44,22 @@ func (d *DockerEnvironment) Setup() error {
 }
 
 func (d *DockerEnvironment) Teardown() error {
+	//stop the container
+
+	err := exec.Command("docker", "stop", d.ContainerTag).Run()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 // ======================================
-// ============ Privat Functions ========
+// ============ Private Functions ========
 // ======================================
 
 func (d *DockerEnvironment) buildImage() (string, error) {
 	//create a unique tag for the docker image
-	tag := "benchmar_image_" + time.Now().Format("20060102150405")
+	tag := "benchmark_image_" + time.Now().Format("20060102150405")
 	fmt.Println(d.DockerFilePath)
 	//build the docker image from the dockerfile, giving it a unique tag that can be used to run the container
 	err := exec.Command("docker", "build", ".", "-t", tag, "-f", d.DockerFilePath).Run()
