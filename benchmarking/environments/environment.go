@@ -1,15 +1,15 @@
 package environments
 
-type EnvironmentType int64
+type EnvironmentType string
 
 const (
-	Local EnvironmentType = iota
-	Docker
+	Local  EnvironmentType = "local"
+	Docker EnvironmentType = "docker"
 )
 
 type Command struct {
-	Path string
-	Args []string
+	Path string   `json:"path"`
+	Args []string `json:"args"`
 }
 
 type CommandEnvironment interface {
@@ -19,8 +19,9 @@ type CommandEnvironment interface {
 }
 
 type EnvironmentOptions struct {
-	EnvironmentType EnvironmentType
-	DockerFilePath  string
+	EnvironmentType EnvironmentType `json:"environment_type"`
+	DockerFilePath  string          `json:"docker_file_path"`
+	DockerMountPath string          `json:"docker_mount_path"`
 }
 
 type Environment struct {
