@@ -1,5 +1,6 @@
 package dk.itu.raven.io;
 
+import java.awt.geom.AffineTransform;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -30,6 +31,18 @@ public class TFWFormat {
 		this.inveresePixelLengthY = 1.0 / pixelLengthY;
 	}
 
+	public TFWFormat(AffineTransform transformation) {
+		pixelLengthX = transformation.getScaleX();
+		rotationY = transformation.getShearY();
+		rotationX = transformation.getShearX();
+		pixelLengthYNegative = transformation.getScaleY();
+		pixelLengthY = -pixelLengthYNegative;
+		topLeftX = transformation.getTranslateX();
+		topLeftY = transformation.getTranslateY();
+		inveresePixelLengthX = 1.0 / pixelLengthX;
+		inveresePixelLengthY = 1.0 / pixelLengthY;
+	}
+
 	static TFWFormat read(File file) throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		double pixelLengthX = Double.parseDouble(br.readLine());
@@ -52,5 +65,13 @@ public class TFWFormat {
 		double xPixel = (lat - topLeftX) * inveresePixelLengthX;
 		double yPixel = (lon - topLeftY) * inveresePixelLengthY;
 		return Geometries.point(xPixel, yPixel);
+	}
+
+	@Override
+	public String toString() {
+		return "TFWFormat [pixelLengthX=" + pixelLengthX + ", rotationY=" + rotationY + ", rotationX=" + rotationX
+				+ ", pixelLengthYNegative=" + pixelLengthYNegative + ", pixelLengthY=" + pixelLengthY + ", topLeftX="
+				+ topLeftX + ", topLeftY=" + topLeftY + ", inveresePixelLengthX=" + inveresePixelLengthX
+				+ ", inveresePixelLengthY=" + inveresePixelLengthY + "]";
 	}
 }

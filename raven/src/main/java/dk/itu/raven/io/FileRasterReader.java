@@ -6,7 +6,7 @@ import java.io.IOException;
 // TODO: Support inline tfw.
 public abstract class FileRasterReader implements RasterReader {
 	File tiff;
-	File tfw;
+	File tfw = null;
 
 	TFWFormat transform;
 
@@ -21,15 +21,16 @@ public abstract class FileRasterReader implements RasterReader {
 				tfw = file;
 			}
 		}
-		if (tiff == null || tfw == null) {
-			throw new IOException("Missing tiff or tfw file");
+		if (tiff == null) {
+			throw new IOException("Missing tiff file");
+		}
+
+		if (tfw != null) {
+			transform = TFWFormat.read(tfw);
 		}
 	}
 
 	public TFWFormat getTransform() throws IOException {
-		if (transform == null) {
-			transform = TFWFormat.read(tfw);
-		}
 		return transform;
 	}
 }

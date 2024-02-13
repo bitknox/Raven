@@ -5,18 +5,19 @@ import java.io.IOException;
 
 import com.github.davidmoten.rtree2.geometry.Rectangle;
 
-import dk.itu.raven.util.matrix.RastersMatrix;
 import dk.itu.raven.util.matrix.Matrix;
+import dk.itu.raven.util.matrix.RastersMatrix;
 import mil.nga.tiff.FileDirectory;
+import mil.nga.tiff.ImageWindow;
 import mil.nga.tiff.Rasters;
 import mil.nga.tiff.TIFFImage;
 import mil.nga.tiff.TiffReader;
-import mil.nga.tiff.ImageWindow;
 
 public class MilRasterReader extends FileRasterReader {
 
 	public MilRasterReader(File directory) throws IOException {
 		super(directory);
+		if (tfw == null) throw new IOException("no TFW file found");
 	}
 
 	@Override

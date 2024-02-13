@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Scanner;
 
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometries;
@@ -14,7 +13,7 @@ import com.github.davidmoten.rtree2.geometry.Rectangle;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.io.FileRasterReader;
-import dk.itu.raven.io.MilRasterReader;
+import dk.itu.raven.io.GeoToolsRasterReader;
 import dk.itu.raven.io.ShapfileReader;
 import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.join.RavenJoin;
@@ -35,11 +34,13 @@ public class Raven {
         Logger.setDebug(true);
 
         // Read geo raster file
-        FileRasterReader rasterReader = new MilRasterReader(new File(args[0]));
+        FileRasterReader rasterReader = new GeoToolsRasterReader(new File(args[0]));
 
         // get getTiff transform (used to transform from (lat, lon) to pixel coordinates
         // in shapefileReader)
         TFWFormat format = rasterReader.getTransform();
+
+        System.out.println(format.toString());
 
         // create a R* tree with
         RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
@@ -56,6 +57,7 @@ public class Raven {
 
         // FIXME: Broken when no overlap exists.
         Matrix rasterData = rasterReader.readRasters(rect);
+
         // offset geometries such that they are aligned to the corner
         double offsetX = geometries.second.minX > 0? -geometries.second.minX : 0;
         double offsetY = geometries.second.minY > 0? -geometries.second.minY : 0;
@@ -79,9 +81,15 @@ public class Raven {
         // construct and compute the join
         RavenJoin join = new RavenJoin(k2Raster, rtree);
         long startJoinNano = System.nanoTime();
-        List<Pair<Geometry, Collection<PixelRange>>> result = join.join(17,17);
+        List<Pair<Geometry, Collection<PixelRange>>> result = join.join(2,8);
         long endJoinNano = System.nanoTime();
         System.out.println("Build time: " + (endJoinNano - startJoinNano) / 1000000 + "ms");
+
+        // Visualize the result
+        if (args.length == 3 && args[2].equals("y")) {
+            Visualizer visual = new Visualizer(rasterData.getWidth(), rasterData.getHeight());
+            visual.drawResult(result, geometries.first, new VisualizerOptions());
+        }
 
         Logger.log("Done joining");
     }
