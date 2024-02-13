@@ -4,3 +4,8 @@ target
 .settings
 .vscode
 dependency-reduced-pom.xml
+*.tif
+*.tiff
+*.png
+*.jpg
+*.jpeg

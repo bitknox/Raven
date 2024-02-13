@@ -67,7 +67,7 @@ public class RavenJoin {
 		// a line is of the form a*x + b*y = c
 		Point old = polygon.getFirst();
 		for (Point next : polygon) {
-			// compute the standard form of teh line segment between the points old and next
+			// compute the standard form of the line segment between the points old and next
 			double a = (next.y() - old.y());
 			double b = (old.x() - next.x());
 			double c = a * old.x() + b * old.y();
@@ -325,6 +325,7 @@ public class RavenJoin {
 
 		while (!S.empty()) {
 			Tuple5<Node<String, Geometry>, Integer, Square, Integer, Integer> p = S.pop();
+			if (!new Square(0, 0, k2Raster.getSize()).intersects(p.a.geometry().mbr())) continue;
 			Tuple5<QuadOverlapType, Integer, Square, Integer, Integer> checked = checkQuadrant(p.b, p.c, p.a.geometry().mbr(),
 					lo, hi, p.d,
 					p.e);

@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import com.github.davidmoten.rtree2.geometry.Rectangle;
 
-import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.RastersMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 import mil.nga.tiff.FileDirectory;
@@ -28,15 +27,13 @@ public class MilRasterReader extends FileRasterReader {
 		int imageHeight = directory.getImageHeight().intValue();
 		Rasters rasters;
 
-		ImageWindow window = new ImageWindow((int) rect.x1(), (int) rect.y1(), (int) Math.ceil(rect.x2()),
-				(int) Math.ceil(rect.y2()));
-		if (window.getMaxX() - window.getMinX() > imageWidth || window.getMaxY() - window.getMinY() > imageHeight) {
-			window = new ImageWindow((int) rect.x1(), (int) rect.y1(), imageWidth - (int) rect.x1(),
-					imageHeight - (int) rect.y1());
-			rasters = directory.readRasters(window);
-		} else {
-			rasters = directory.readRasters(window);
-		}
+		int minX = (int) Math.max(rect.x1(), 0.0);
+		int minY = (int) Math.max(rect.y1(), 0.0);
+		int maxX = (int) Math.ceil(Math.min(rect.x2(), imageWidth));
+		int maxY = (int) Math.ceil(Math.min(rect.y2(), imageHeight));
+
+		ImageWindow window = new ImageWindow(minX, minY, maxX, maxY);
+		rasters = directory.readRasters(window);
 
 		Matrix matrix = new RastersMatrix(rasters);
 

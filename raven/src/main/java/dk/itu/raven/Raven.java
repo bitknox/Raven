@@ -22,6 +22,8 @@ import dk.itu.raven.ksquared.K2Raster;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.Matrix;
+import dk.itu.raven.visualizer.Visualizer;
+import dk.itu.raven.visualizer.VisualizerOptions;
 
 /**
  * Main class for the raven application
@@ -55,8 +57,11 @@ public class Raven {
         // FIXME: Broken when no overlap exists.
         Matrix rasterData = rasterReader.readRasters(rect);
         // offset geometries such that they are aligned to the corner
+        double offsetX = geometries.second.minX > 0? -geometries.second.minX : 0;
+        double offsetY = geometries.second.minY > 0? -geometries.second.minY : 0;
         for (Polygon geom : geometries.first) {
-            geom.offset(-geometries.second.minX, -geometries.second.minY);
+            geom.offset(offsetX,offsetY);
+            
             rtree = rtree.add(null, geom);
         }
 
@@ -74,7 +79,7 @@ public class Raven {
         // construct and compute the join
         RavenJoin join = new RavenJoin(k2Raster, rtree);
         long startJoinNano = System.nanoTime();
-        List<Pair<Geometry, Collection<PixelRange>>> result = join.join();
+        List<Pair<Geometry, Collection<PixelRange>>> result = join.join(17,17);
         long endJoinNano = System.nanoTime();
         System.out.println("Build time: " + (endJoinNano - startJoinNano) / 1000000 + "ms");
 
