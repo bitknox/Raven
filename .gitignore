@@ -4,3 +4,4 @@ target
 .settings
 .vscode
 dependency-reduced-pom.xml
+*.exe
