@@ -6,7 +6,7 @@ import java.io.IOException;
 // TODO: Support inline tfw.
 public abstract class FileRasterReader implements RasterReader {
 	File tiff;
-	File tfw = null;
+	File tfw;
 
 	TFWFormat transform;
 
