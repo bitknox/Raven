@@ -83,9 +83,6 @@ public class Raven {
         long endJoinNano = System.nanoTime();
         System.out.println("Build time: " + (endJoinNano - startJoinNano) / 1000000 + "ms");
 
-        Visualizer vis = new Visualizer(rasterData.getWidth(), rasterData.getHeight());
-        vis.drawResult(result, geometries.first, new VisualizerOptions());
-
         Logger.log("Done joining");
     }
 }
