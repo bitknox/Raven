@@ -40,8 +40,6 @@ public class Raven {
         // in shapefileReader)
         TFWFormat format = rasterReader.getTransform();
 
-        System.out.println(format.toString());
-
         // create a R* tree with
         RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
 
