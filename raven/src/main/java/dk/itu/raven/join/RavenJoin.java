@@ -206,10 +206,10 @@ public class RavenJoin {
 		while (!k2Nodes.empty()) {
 			Tuple4<Integer, Square, Integer, Integer> node = k2Nodes.pop();
 			int[] children = k2Raster.getChildren(node.a);
-			int childSize = node.b.getSize() / K2Raster.k;
+			int childSize = node.b.getSize() / k2Raster.k;
 			for (int i = 0; i < children.length; i++) {
 				int child = children[i];
-				Square childRasterBounding = node.b.getChildSquare(childSize, i, K2Raster.k);
+				Square childRasterBounding = node.b.getChildSquare(childSize, i, k2Raster.k);
 				if (childRasterBounding.contains(bounding)) {
 					vMinMBR = k2Raster.computeVMin(node.d, node.c, child);
 					vMaxMBR = k2Raster.computeVMax(node.d, child);
@@ -258,7 +258,7 @@ public class RavenJoin {
 		while (!k2Nodes.empty()) {
 			Tuple4<Integer, Square, Integer, Integer> node = k2Nodes.pop();
 			int[] children = k2Raster.getChildren(node.a);
-			int childSize = node.b.getSize() / K2Raster.k;
+			int childSize = node.b.getSize() / k2Raster.k;
 
 			if (children.length == 0 && rasterBounding.intersects(bounding)) {
 				vMinMBR = Math.min(k2Raster.computeVMax(node.d, node.a), vMinMBR);
@@ -267,7 +267,7 @@ public class RavenJoin {
 
 			for (int i = 0; i < children.length; i++) {
 				int child = children[i];
-				Square childRasterBounding = node.b.getChildSquare(childSize, i, K2Raster.k);
+				Square childRasterBounding = node.b.getChildSquare(childSize, i, k2Raster.k);
 
 				if (childRasterBounding.intersects(bounding)) {
 					int vminVal = k2Raster.computeVMin(node.d, node.c, child);

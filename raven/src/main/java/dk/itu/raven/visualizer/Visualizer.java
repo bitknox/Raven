@@ -154,10 +154,10 @@ public class Visualizer {
 			return;
 		graphics.setColor(new Color(0, 255, 0));
 		int[] children = k2Raster.getChildren(k2Index);
-		int childSize = rasterBounding.getSize() / K2Raster.k;
+		int childSize = rasterBounding.getSize() / k2Raster.k;
 		for (int i = 0; i < children.length; i++) {
 			int child = children[i];
-			Square childRasterBounding = rasterBounding.getChildSquare(childSize, i, K2Raster.k);
+			Square childRasterBounding = rasterBounding.getChildSquare(childSize, i, k2Raster.k);
 			graphics.drawRect(childRasterBounding.getTopX(), childRasterBounding.getTopY(), childRasterBounding.getSize(),
 					childRasterBounding.getSize());
 			drawK2Squares(k2Raster, child, childRasterBounding, level - 1, graphics);
