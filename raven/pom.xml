@@ -76,6 +76,12 @@
 			<artifactId>gt-epsg-hsql</artifactId>
 			<version>${geotools.version}</version>
 		</dependency>
+		<!--Parse commandline arguments-->
+		<dependency>
+  <groupId>org.jcommander</groupId>
+  <artifactId>jcommander</artifactId>
+  <version>1.83</version>
+</dependency>
 	</dependencies>
 
 	 <build>
