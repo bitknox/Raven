@@ -1,7 +1,5 @@
 package dk.itu.raven.util.matrix;
 
-import java.io.IOException;
-
 import mil.nga.tiff.Rasters;
 
 /**
@@ -18,12 +16,6 @@ public class RastersMatrix extends Matrix {
     @Override
     public int getWithinRange(int r, int c) {
         return rasters.getPixelSample(0, c, r).intValue();
-    }
-
-    @Override
-    protected long getWithinRangeLong(int r, int c) throws IOException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getWithinRangeLong'");
     }
 
 }

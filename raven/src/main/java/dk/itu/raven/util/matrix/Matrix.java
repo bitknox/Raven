@@ -28,6 +28,18 @@ public abstract class Matrix {
         }
     }
 
+    public long getLong(int r, int c) {
+        if (c < 0 || c >= width || r < 0 || r >= height)
+            return 0;
+        try {
+            return getWithinRangeLong(r, c);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(-1);
+            return 0;
+        }
+    }
+
     public int getWidth() {
         return this.width;
     }
@@ -46,5 +58,7 @@ public abstract class Matrix {
     }
 
     protected abstract int getWithinRange(int r, int c) throws IOException;
-    protected abstract long getWithinRangeLong(int r, int c) throws IOException;
+    protected long getWithinRangeLong(int r, int c) throws IOException {
+        return getWithinRange(r, c);
+    }
 }
