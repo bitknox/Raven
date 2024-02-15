@@ -18,6 +18,7 @@ import dk.itu.raven.io.ShapfileReader;
 import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.join.RavenJoin;
 import dk.itu.raven.ksquared.K2Raster;
+import dk.itu.raven.ksquared.K2RasterBuilder;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.Matrix;
@@ -65,7 +66,7 @@ public class Raven {
 
         // Build k2-raster structure
         long startBuildNano = System.nanoTime();
-        K2Raster k2Raster = new K2Raster(rasterData);
+        K2Raster k2Raster = new K2RasterBuilder().build(rasterData,2);
         long endBuildNano = System.nanoTime();
         Logger.log("Build time: " + (endBuildNano - startBuildNano) / 1000000 + "ms");
 
