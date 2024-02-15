@@ -14,6 +14,7 @@ import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import dk.itu.raven.join.Square;
+import dk.itu.raven.util.PrimitiveArrayWrapper;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RandomMatrix;
@@ -37,9 +38,9 @@ public class KSquaredTest {
 		int row = r.nextInt(100);
 		int col1 = r.nextInt(25);
 		int col2 = 75 + r.nextInt(25);
-		long[] res = k2Raster.getWindow(row, row, col1, col2);
-		for (int i = 0; i < res.length; i++) {
-			assertEquals(res[i], matrix.get(row, col1 + i));
+		PrimitiveArrayWrapper res = k2Raster.getWindow(row, row, col1, col2);
+		for (int i = 0; i < res.length(); i++) {
+			assertEquals(res.get(i), matrix.get(row, col1 + i));
 		}
 	}
 
@@ -55,9 +56,9 @@ public class KSquaredTest {
 		Matrix matrix = new RandomMatrix(2000, 500, 1000000);
 		K2Raster k2Raster = new K2RasterBuilder().build(matrix,2);
 		for (int i = 0; i < matrix.getHeight(); i++) {
-			long[] row = k2Raster.getWindow(i, i, 0, matrix.getWidth() - 1);
+			PrimitiveArrayWrapper row = k2Raster.getWindow(i, i, 0, matrix.getWidth() - 1);
 			for (int j = 0; j < matrix.getWidth(); j++) {
-				assertEquals(matrix.get(i, j), row[j]);
+				assertEquals(matrix.get(i, j), row.get(j));
 			}
 		}
 	}
@@ -200,11 +201,11 @@ public class KSquaredTest {
 		assertEquals(k2.k,k2_after.k);
 		assertEquals(k2.getSize(),k2_after.getSize());
 
-		long[] expected = k2.getWindow(0, k2.getSize()-1, 0, k2.getSize()-1);
-		long[] actual = k2_after.getWindow(0, k2.getSize()-1, 0, k2.getSize()-1);
+		PrimitiveArrayWrapper expected = k2.getWindow(0, k2.getSize()-1, 0, k2.getSize()-1);
+		PrimitiveArrayWrapper actual = k2_after.getWindow(0, k2.getSize()-1, 0, k2.getSize()-1);
 
-		for (int i = 0; i < expected.length; i++) {
-			assertEquals(expected[i], actual[i]);
+		for (int i = 0; i < expected.length(); i++) {
+			assertEquals(expected.get(i), actual.get(i));
 		}
 	}
 }

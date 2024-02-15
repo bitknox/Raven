@@ -19,9 +19,10 @@ import dk.itu.raven.util.Tuple4;
 import dk.itu.raven.util.Tuple5;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
-import dk.itu.raven.ksquared.K2Raster;
+import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.util.BST;
 import dk.itu.raven.util.Pair;
+import dk.itu.raven.util.PrimitiveArrayWrapper;
 import dk.itu.raven.util.Logger;
 
 public class RavenJoin {
@@ -37,11 +38,11 @@ public class RavenJoin {
 		NoOverlap;
 	}
 
-	private K2Raster k2Raster;
+	private AbstractK2Raster AbstractK2Raster;
 	private RTree<String, Geometry> tree;
 
-	public RavenJoin(K2Raster k2Raster, RTree<String, Geometry> tree) {
-		this.k2Raster = k2Raster;
+	public RavenJoin(AbstractK2Raster AbstractK2Raster, RTree<String, Geometry> tree) {
+		this.AbstractK2Raster = AbstractK2Raster;
 		this.tree = tree;
 	}
 
@@ -205,14 +206,14 @@ public class RavenJoin {
 		k2Nodes.push(new Tuple4<>(k2Index, rasterBounding, min, max));
 		while (!k2Nodes.empty()) {
 			Tuple4<Integer, Square, Long, Long> node = k2Nodes.pop();
-			int[] children = k2Raster.getChildren(node.a);
-			int childSize = node.b.getSize() / k2Raster.k;
+			int[] children = AbstractK2Raster.getChildren(node.a);
+			int childSize = node.b.getSize() / AbstractK2Raster.k;
 			for (int i = 0; i < children.length; i++) {
 				int child = children[i];
-				Square childRasterBounding = node.b.getChildSquare(childSize, i, k2Raster.k);
+				Square childRasterBounding = node.b.getChildSquare(childSize, i, AbstractK2Raster.k);
 				if (childRasterBounding.contains(bounding)) {
-					vMinMBR = k2Raster.computeVMin(node.d, node.c, child);
-					vMaxMBR = k2Raster.computeVMax(node.d, child);
+					vMinMBR = AbstractK2Raster.computeVMin(node.d, node.c, child);
+					vMaxMBR = AbstractK2Raster.computeVMax(node.d, child);
 
 					k2Nodes.push(new Tuple4<>(child, childRasterBounding, vMinMBR, vMaxMBR));
 					returnedK2Index = child;
@@ -257,21 +258,21 @@ public class RavenJoin {
 
 		while (!k2Nodes.empty()) {
 			Tuple4<Integer, Square, Long, Long> node = k2Nodes.pop();
-			int[] children = k2Raster.getChildren(node.a);
-			int childSize = node.b.getSize() / k2Raster.k;
+			int[] children = AbstractK2Raster.getChildren(node.a);
+			int childSize = node.b.getSize() / AbstractK2Raster.k;
 
 			if (children.length == 0 && rasterBounding.intersects(bounding)) {
-				vMinMBR = Math.min(k2Raster.computeVMax(node.d, node.a), vMinMBR);
-				vMaxMBR = Math.max(k2Raster.computeVMax(node.d, node.a), vMaxMBR);
+				vMinMBR = Math.min(AbstractK2Raster.computeVMax(node.d, node.a), vMinMBR);
+				vMaxMBR = Math.max(AbstractK2Raster.computeVMax(node.d, node.a), vMaxMBR);
 			}
 
 			for (int i = 0; i < children.length; i++) {
 				int child = children[i];
-				Square childRasterBounding = node.b.getChildSquare(childSize, i, k2Raster.k);
+				Square childRasterBounding = node.b.getChildSquare(childSize, i, AbstractK2Raster.k);
 
 				if (childRasterBounding.intersects(bounding)) {
-					long vminVal = k2Raster.computeVMin(node.d, node.c, child);
-					long vmaxVal = k2Raster.computeVMax(node.d, child);
+					long vminVal = AbstractK2Raster.computeVMin(node.d, node.c, child);
+					long vmaxVal = AbstractK2Raster.computeVMax(node.d, child);
 					if (childRasterBounding.isContained(bounding)) {
 						vMinMBR = Math.min(vminVal, vMinMBR);
 						vMaxMBR = Math.max(vmaxVal, vMaxMBR);
@@ -317,24 +318,24 @@ public class RavenJoin {
 		List<Pair<Geometry, Collection<PixelRange>>> def = new ArrayList<>(), prob = new ArrayList<>();
 		Stack<Tuple5<Node<String, Geometry>, Integer, Square, Long, Long>> S = new Stack<>();
 
-		long[] minMax = k2Raster.getValueRange();
+		Pair<Long,Long> minMax = AbstractK2Raster.getValueRange();
 
 		for (Node<String, Geometry> node : TreeExtensions.getChildren(tree.root().get())) {
-			S.push(new Tuple5<>(node, 0, new Square(0, 0, k2Raster.getSize()), minMax[0], minMax[1]));
+			S.push(new Tuple5<>(node, 0, new Square(0, 0, AbstractK2Raster.getSize()), minMax.first, minMax.second));
 		}
 
 		while (!S.empty()) {
 			Tuple5<Node<String, Geometry>, Integer, Square, Long, Long> p = S.pop();
-			if (!new Square(0, 0, k2Raster.getSize()).intersects(p.a.geometry().mbr())) continue;
+			if (!new Square(0, 0, AbstractK2Raster.getSize()).intersects(p.a.geometry().mbr())) continue;
 			Tuple5<QuadOverlapType, Integer, Square, Long, Long> checked = checkQuadrant(p.b, p.c, p.a.geometry().mbr(),
 					lo, hi, p.d,
 					p.e);
 			switch (checked.a) {
 				case TotalOverlap:
 					if (TreeExtensions.isLeaf(p.a)) {
-						extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, def, k2Raster.getSize() - 1);
+						extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, def, AbstractK2Raster.getSize() - 1);
 					} else {
-						addDescendantsLeaves((NonLeaf<String, Geometry>) p.a, checked.b, checked.c, def, k2Raster.getSize() - 1);
+						addDescendantsLeaves((NonLeaf<String, Geometry>) p.a, checked.b, checked.c, def, AbstractK2Raster.getSize() - 1);
 					}
 					break;
 				case PossibleOverlap:
@@ -347,10 +348,10 @@ public class RavenJoin {
 						MBROverlapType overlap = checkMBR(checked.b, checked.c, p.a.geometry().mbr(), lo, hi, checked.d, checked.e);
 						switch (overlap) {
 							case TotalOverlap:
-								extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, def, k2Raster.getSize() - 1);
+								extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, def, AbstractK2Raster.getSize() - 1);
 								break;
 							case PartialOverlap:
-								extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, prob, k2Raster.getSize() - 1);
+								extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, prob, AbstractK2Raster.getSize() - 1);
 								Logger.log(p.a.geometry().mbr());
 								break;
 							case NoOverlap:
@@ -384,10 +385,10 @@ public class RavenJoin {
 		for (Pair<Geometry, Collection<PixelRange>> pair : prob) {
 			Pair<Geometry, Collection<PixelRange>> result = new Pair<>(pair.first, new ArrayList<>());
 			for (PixelRange range : pair.second) {
-				long[] values = k2Raster.getWindow(range.row, range.row, range.x1, range.x2);
-				for (int i = 0; i < values.length; i++) {
+				PrimitiveArrayWrapper values = AbstractK2Raster.getWindow(range.row, range.row, range.x1, range.x2);
+				for (int i = 0; i < values.length(); i++) {
 					int start = i;
-					while (i < values.length && values[i] >= lo && values[i] <= hi) {
+					while (i < values.length() && values.get(i) >= lo && values.get(i) <= hi) {
 						i++;
 					}
 					if (start != i) {

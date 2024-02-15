@@ -17,6 +17,8 @@ import org.junit.jupiter.api.RepeatedTest;
 
 import dk.itu.raven.util.matrix.RandomMatrix;
 import dk.itu.raven.join.Square;
+import dk.itu.raven.util.LongArrayWrapper;
+import dk.itu.raven.util.PrimitiveArrayWrapper;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.LongArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
@@ -49,10 +51,10 @@ public class KSquaredLongTest {
 		K2Raster_old k2i = new K2RasterBuilder_old().build(m, 2);
 		K2Raster k2l = new K2RasterBuilder().build(m, 2);
 
-		int[] expected = k2i.getWindow(0, k2i.getSize()-1, 0, k2i.getSize()-1);
-		long[] actual = k2l.getWindow(0, k2l.getSize()-1, 0, k2l.getSize()-1);
-		for (int i = 0; i < expected.length; i++) {
-			assertEquals(expected[i], actual[i]);
+		PrimitiveArrayWrapper expected = k2i.getWindow(0, k2i.getSize()-1, 0, k2i.getSize()-1);
+		PrimitiveArrayWrapper actual = k2l.getWindow(0, k2l.getSize()-1, 0, k2l.getSize()-1);
+		for (int i = 0; i < expected.length(); i++) {
+			assertEquals(expected.get(i), actual.get(i));
 		}
 	}
 
@@ -71,10 +73,10 @@ public class KSquaredLongTest {
 								 {4000000012L,4000000013L,4000000014L,4000000015L}};
 		Matrix m = new LongArrayMatrix(arr, 4, 4);
 		K2Raster k2l = new K2RasterBuilder().build(m, 2);
-		long[] expected = new long[] {4000000000L,4000000001L,4000000004L,4000000005L,4000000002L,4000000003L,4000000006L,4000000007L,4000000008L,4000000009L,4000000012L,4000000013L,4000000010L,4000000011L,4000000014L,4000000015L};
-		long[] actual = k2l.getWindow(0, 3, 0, 3);
+		PrimitiveArrayWrapper expected = new LongArrayWrapper(new long[] {4000000000L,4000000001L,4000000004L,4000000005L,4000000002L,4000000003L,4000000006L,4000000007L,4000000008L,4000000009L,4000000012L,4000000013L,4000000010L,4000000011L,4000000014L,4000000015L});
+		PrimitiveArrayWrapper actual = k2l.getWindow(0, 3, 0, 3);
 		for (int i = 0; i < 16; i++) {
-			assertEquals(expected[i], actual[i]);
+			assertEquals(expected.get(i), actual.get(i));
 		}
 	}
 
