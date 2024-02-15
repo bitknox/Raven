@@ -46,4 +46,5 @@ public abstract class Matrix {
     }
 
     protected abstract int getWithinRange(int r, int c) throws IOException;
+    protected abstract long getWithinRangeLong(int r, int c) throws IOException;
 }
