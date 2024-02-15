@@ -4,15 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dk.itu.raven.util.BitMap;
-import dk.itu.raven.util.GoodLongArrayList;
+import dk.itu.raven.util.GoodIntArrayList;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.Matrix;
 
-public class K2RasterLongBuilder {
+public class K2RasterBuilder_old {
     // intermediate datastructures
-    private List<GoodLongArrayList> vMax;
-    private List<GoodLongArrayList> vMin;
+    private List<GoodIntArrayList> vMax;
+    private List<GoodIntArrayList> vMin;
     private List<BitMap> t;
     private int[] pMax;
     private int[] pMin;
@@ -26,7 +26,7 @@ public class K2RasterLongBuilder {
      * 
      * @param m the raw matrix data
      */
-    public K2RasterLong build(Matrix m, int k) {
+    public K2Raster_old build(Matrix m, int k) {
         this.k = k;
 
         int h = m.getHeight();
@@ -44,22 +44,22 @@ public class K2RasterLongBuilder {
         this.n = real_h;
 
         t = new ArrayList<>(maxLevel);
-        vMax = new ArrayList<GoodLongArrayList>(maxLevel);
-        vMin = new ArrayList<GoodLongArrayList>(maxLevel);
+        vMax = new ArrayList<GoodIntArrayList>(maxLevel);
+        vMin = new ArrayList<GoodIntArrayList>(maxLevel);
         pMax = new int[maxLevel];
         pMin = new int[maxLevel];
         for (int i = 0; i < maxLevel; i++) {
             t.add(new BitMap(40));
-            vMax.add(new GoodLongArrayList());
-            vMin.add(new GoodLongArrayList());
+            vMax.add(new GoodIntArrayList());
+            vMin.add(new GoodIntArrayList());
 
         }
 
-        Pair<Long,Long> res = new Pair<Long,Long>(0L,0L);
+        Pair<Integer,Integer> res = new Pair<Integer,Integer>(0,0);
         buildK2(this.n, 1, 0, 0, res);
         m = null;
-        long maxVal = res.first;
-        long minVal = res.second;
+        int maxVal = res.first;
+        int minVal = res.second;
         vMax.get(0).set(0, maxVal);
         vMin.get(0).set(0, minVal);
 
@@ -73,8 +73,8 @@ public class K2RasterLongBuilder {
         Logger.log("size_max: " + size_max);
         Logger.log("size_min: " + size_min);
 
-        long[] LMaxList = new long[size_max + 1];
-        long[] LMinList = new long[size_min + 1];
+        int[] LMaxList = new int[size_max + 1];
+        int[] LMinList = new int[size_min + 1];
 
         BitMap tree = new BitMap(Math.max(1, size_max));
         int bitmapIndex = 0;
@@ -148,20 +148,20 @@ public class K2RasterLongBuilder {
         pMax = null;
 
         // TODO: use DAC
-        long[] lMax = LMaxList;
-        long[] lMin = LMinList;
+        int[] lMax = LMaxList;
+        int[] lMin = LMinList;
 
-        return new K2RasterLong(k, maxVal, minVal, tree, lMax, lMin, n, prefixSum);
+        return new K2Raster_old(k, maxVal, minVal, tree, lMax, lMin, n, prefixSum);
     }
 
-    private void buildK2(int n, int level, int row, int column, Pair<Long, Long> res) {
-        long minVal = Integer.MAX_VALUE;
-        long maxVal = 0;
+    private void buildK2(int n, int level, int row, int column, Pair<Integer, Integer> res) {
+        int minVal = Integer.MAX_VALUE;
+        int maxVal = 0;
 
         for (int i = 0; i < k; i++) {
             for (int j = 0; j < k; j++) {
                 if (n == k) { // last level
-                    long matrixVal = m.getLong(row + i, column + j);
+                    int matrixVal = m.get(row + i, column + j);
                     if (minVal > matrixVal) {
                         minVal = matrixVal;
                     }

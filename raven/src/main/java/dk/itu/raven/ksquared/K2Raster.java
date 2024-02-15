@@ -12,18 +12,18 @@ import dk.itu.raven.util.Pair;
  */
 public class K2Raster implements Serializable {
     public int k;
-    private int maxVal; // the maximum value stored in the matrix
-    private int minVal; // the minimum value stored in the matrix
+    private long maxVal; // the maximum value stored in the matrix
+    private long minVal; // the minimum value stored in the matrix
     public BitMap tree; // A tree where the i'th index is a one iff. the node with index i is internal
     // TODO: use DAC
-    private int[] lMax; // stores the difference between the maximum value stored in a node and the
+    private long[] lMax; // stores the difference between the maximum value stored in a node and the
                         // maximum value of its parent node
-    private int[] lMin; // stores the difference between the minimum value stored in a node and the
+    private long[] lMin; // stores the difference between the minimum value stored in a node and the
                         // minimum value of its parent node
     private int n; // the size of the matrix, always a power of k
     private int[] prefixSum; // a prefix sum of the tree
 
-    public K2Raster(int k, int maxVal, int minVal, BitMap tree, int[] lMax, int[] lMin, int n, int[] prefixSum) {
+    public K2Raster(int k, long maxVal, long minVal, BitMap tree, long[] lMax, long[] lMin, int n, int[] prefixSum) {
         this.k = k;
         this.maxVal = maxVal;
         this.minVal = minVal;
@@ -50,8 +50,8 @@ public class K2Raster implements Serializable {
      * @return an array of length 2, where the first element is the minimum value
      *         and the second element is the maximum value
      */
-    public int[] getValueRange() {
-        return new int[] { minVal, maxVal };
+    public long[] getValueRange() {
+        return new long[] { minVal, maxVal };
     }
 
     /**
@@ -62,7 +62,7 @@ public class K2Raster implements Serializable {
      * @return the maximum value stored in the sub-matrix corresponding to the node
      *         with the given index
      */
-    public int computeVMax(int parentMax, int index) {
+    public long computeVMax(long parentMax, int index) {
         if (index == 0)
             return maxVal;
         return parentMax - lMax[index - 1];
@@ -78,7 +78,7 @@ public class K2Raster implements Serializable {
      * @return the minimum value stored in the sub-matrix corresponding to the node
      *         with the given index
      */
-    public int computeVMin(int parentMax, int parentMin, int index) {
+    public long computeVMin(long parentMax, long parentMin, int index) {
         if (index == 0)
             return minVal;
         if (!hasChildren(index)) {
@@ -127,11 +127,11 @@ public class K2Raster implements Serializable {
      * @param maxVal the max value in the matrix
      * @return the value from the matrix at index {@code (r,c)}
      */
-    private int getCell(int n, int r, int c, int z, int maxVal) {
+    private long getCell(int n, int r, int c, int z, long maxVal) {
         int nKths = (n / k);
         z = this.tree.rank(z) * k * k;
         z = z + (r / nKths) * k + (c / nKths);
-        int val = lMax[z]; // LMax is 0-indexed
+        long val = lMax[z]; // LMax is 0-indexed
         maxVal = maxVal - val;
         if (!hasChildren(z + 1)) // +1 because the bitmap is 1-indexed
             return maxVal;
@@ -143,11 +143,11 @@ public class K2Raster implements Serializable {
      * @param c the column to access
      * @return the value from the matrix at index {@code (r,c)}
      */
-    public int getCell(int r, int c) {
+    public long getCell(int r, int c) {
         return getCell(this.n, r, c, -1, this.maxVal);
     }
 
-    private void getWindow(int n, int r1, int r2, int c1, int c2, int z, int maxVal, int[] out,
+    private void getWindow(int n, int r1, int r2, int c1, int c2, int z, long maxVal, long[] out,
             IntPointer index,
             int level, List<Pair<Integer, Integer>> indexRanks) {
         int nKths = (n / k);
@@ -162,7 +162,8 @@ public class K2Raster implements Serializable {
         int initialJ = c1 / nKths;
         int lastJ = c2 / nKths;
 
-        int r1p, r2p, c1p, c2p, maxvalp, zp;
+        int r1p, r2p, c1p, c2p, zp;
+        long maxvalp;
 
         for (int i = initialI; i <= lastI; i++) {
             if (i == initialI)
@@ -213,13 +214,13 @@ public class K2Raster implements Serializable {
      * @param c2 column number for the bottom right corner of window
      * @return a window of the matrix
      */
-    public int[] getWindow(int r1, int r2, int c1, int c2) {
+    public long[] getWindow(int r1, int r2, int c1, int c2) {
         if (r1 < 0 || r1 >= n || r2 < 0 || r2 >= n || c1 < 0 || c1 >= n || c2 < 0
                 || c2 >= n)
             throw new IndexOutOfBoundsException("looked up window (" + c1 + ", " + r1 + ", " + c2 + ", " + r2
                     + ") in matrix with size (" + n + ", " + n + ")");
         int returnSize = (r2 - r1 + 1) * (c2 - c1 + 1);
-        int[] out = new int[returnSize];
+        long[] out = new long[returnSize];
         int maxLevel = 1 + (int) Math.ceil(Math.log(n) / Math.log(k));
         GoodArrayList<Pair<Integer, Integer>> indexRanks = new GoodArrayList<Pair<Integer, Integer>>(maxLevel);
         for (int i = 0; i < maxLevel; i++) {
@@ -230,9 +231,9 @@ public class K2Raster implements Serializable {
         return out;
     }
 
-    private void searchValuesInWindow(int n, int r1, int r2, int c1, int c2, int baseX, int baseY, int z, int maxVal,
-            int minVal, int vb,
-            int ve, int[] out,
+    private void searchValuesInWindow(int n, int r1, int r2, int c1, int c2, int baseX, int baseY, int z, long maxVal,
+            long minVal, int vb,
+            int ve, long[] out,
             IntPointer index,
             int level) {
 
@@ -246,7 +247,8 @@ public class K2Raster implements Serializable {
         int initialJ = (c1 - baseX) / nKths;
         int lastJ = (c2 - baseX) / nKths;
 
-        int r1p, r2p, c1p, c2p, maxValp, minValp, zp;
+        int r1p, r2p, c1p, c2p, zp;
+        long maxValp, minValp;
 
         for (int i = initialI; i <= lastI; i++) {
             cBaseY = baseY + i * nKths;
@@ -307,13 +309,13 @@ public class K2Raster implements Serializable {
      * @return a window of the matrix with only the values {@code v} that satisfy
      *         {@code vb <= v <= ve}
      */
-    public int[] searchValuesInWindow(int r1, int r2, int c1, int c2, int thresholdLow, int thresholdHigh) {
+    public long[] searchValuesInWindow(int r1, int r2, int c1, int c2, int thresholdLow, int thresholdHigh) {
         if (r1 < 0 || r1 >= n || r2 < 0 || r2 >= n || c1 < 0 || c1 >= n || c2 < 0
                 || c2 >= n)
             throw new IndexOutOfBoundsException("looked up window (" + r1 + ", " + c1 + ", " + r2 + ", " + c2
                     + ") in matrix with size (" + n + ", " + n + ")");
         int returnSize = (r2 - r1 + 1) * (c2 - c1 + 1); // can be smaller.
-        int[] out = new int[returnSize];
+        long[] out = new long[returnSize];
         searchValuesInWindow(this.n, r1, r2, c1, c2, 0, 0, -1, this.maxVal, this.minVal, thresholdLow, thresholdHigh,
                 out,
                 new IntPointer(), 0);

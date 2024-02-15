@@ -6,27 +6,27 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
-import org.junit.jupiter.api.RepeatedTest;
 
-import com.github.davidmoten.rtree2.geometry.Geometry;
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometries;
+import com.github.davidmoten.rtree2.geometry.Geometry;
 import com.github.davidmoten.rtree2.geometry.Point;
 
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.ksquared.K2Raster;
 import dk.itu.raven.ksquared.K2RasterBuilder;
+import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RandomMatrix;
-import dk.itu.raven.util.Pair;
 
 public class RavenJoinTest {
     @Test

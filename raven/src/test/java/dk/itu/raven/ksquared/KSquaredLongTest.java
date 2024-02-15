@@ -46,8 +46,8 @@ public class KSquaredLongTest {
 	public void K2RasterLongWorksAsNormalK2Raster() {
 		Matrix m = new LongArrayMatrix(M, 8, 8);
 
-		K2Raster k2i = new K2RasterBuilder().build(m, 2);
-		K2RasterLong k2l = new K2RasterLongBuilder().build(m, 2);
+		K2Raster_old k2i = new K2RasterBuilder_old().build(m, 2);
+		K2Raster k2l = new K2RasterBuilder().build(m, 2);
 
 		int[] expected = k2i.getWindow(0, k2i.getSize()-1, 0, k2i.getSize()-1);
 		long[] actual = k2l.getWindow(0, k2l.getSize()-1, 0, k2l.getSize()-1);
@@ -59,7 +59,7 @@ public class KSquaredLongTest {
 	@Test
 	public void K2RasterLongSupportsLongs() {
 		Matrix m = new LongArrayMatrix(MLong, 8, 8);
-		K2RasterLong k2l = new K2RasterLongBuilder().build(m, 2);
+		K2Raster k2l = new K2RasterBuilder().build(m, 2);
 		assertEquals(4000000000L, k2l.getCell(2, 3));
 	}
 
@@ -70,7 +70,7 @@ public class KSquaredLongTest {
 								 {4000000008L,4000000009L,4000000010L,4000000011L},
 								 {4000000012L,4000000013L,4000000014L,4000000015L}};
 		Matrix m = new LongArrayMatrix(arr, 4, 4);
-		K2RasterLong k2l = new K2RasterLongBuilder().build(m, 2);
+		K2Raster k2l = new K2RasterBuilder().build(m, 2);
 		long[] expected = new long[] {4000000000L,4000000001L,4000000004L,4000000005L,4000000002L,4000000003L,4000000006L,4000000007L,4000000008L,4000000009L,4000000012L,4000000013L,4000000010L,4000000011L,4000000014L,4000000015L};
 		long[] actual = k2l.getWindow(0, 3, 0, 3);
 		for (int i = 0; i < 16; i++) {

@@ -13,12 +13,12 @@ import com.github.davidmoten.rtree2.geometry.Rectangle;
 
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
+import dk.itu.raven.io.CommandLineArgs;
 import dk.itu.raven.io.FileRasterReader;
 import dk.itu.raven.io.GeoToolsRasterReader;
 import dk.itu.raven.io.ShapfileReader;
 import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.join.RavenJoin;
-import dk.itu.raven.io.CommandLineArgs;
 import dk.itu.raven.ksquared.K2Raster;
 import dk.itu.raven.ksquared.K2RasterBuilder;
 import dk.itu.raven.util.Logger;
