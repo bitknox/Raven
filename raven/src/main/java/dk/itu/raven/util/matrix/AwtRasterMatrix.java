@@ -28,10 +28,10 @@ public class AwtRasterMatrix extends Matrix {
     @Override
     protected long getWithinRangeLong(int r, int c) throws IOException {
 
-        long color = raster.getSample(r, c, 0);
+        long color = raster.getSample(c, r, 0);
         for (int i = 1; i < numberOfBands; i++) {
             color <<= sampleSize[i];
-            color += raster.getSample(r, c, i);
+            color += raster.getSample(c, r, i);
         }
 
         return color;
@@ -39,7 +39,7 @@ public class AwtRasterMatrix extends Matrix {
 
     @Override
     protected int getWithinRange(int r, int c) throws IOException {
-        return raster.getSample(r, c, 0);
+        return raster.getSample(c, r, 0);
     }
     
 }
