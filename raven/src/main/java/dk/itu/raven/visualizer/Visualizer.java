@@ -116,7 +116,7 @@ public class Visualizer {
 	 * @return
 	 */
 	public BufferedImage drawShapefile(Iterable<Polygon> features) {
-		return drawShapefile(features, new VisualizerOptions());
+		return drawShapefile(features, new VisualizerOptionsBuilder().build());
 	}
 
 	/**
