@@ -69,7 +69,8 @@ public class K2Raster {
 
         }
 
-        Pair<Integer, Integer> res = build(this.n, 1, 0, 0);
+        Pair<Integer,Integer> res = new Pair<Integer,Integer>(0,0);
+        build(this.n, 1, 0, 0, res);
         m = null;
         maxVal = res.first;
         minVal = res.second;
@@ -246,7 +247,7 @@ public class K2Raster {
         return this.n;
     }
 
-    private Pair<Integer, Integer> build(int n, int level, int row, int column) {
+    private void build(int n, int level, int row, int column, Pair<Integer, Integer> res) {
         int minVal = Integer.MAX_VALUE;
         int maxVal = 0;
 
@@ -263,7 +264,7 @@ public class K2Raster {
                     vMax.get(level).set(pMax[level], matrixVal);
                     pMax[level]++;
                 } else {
-                    Pair<Integer, Integer> res = build(n / k, level + 1, row + i * (n / k), column + j * (n / k));
+                    build(n / k, level + 1, row + i * (n / k), column + j * (n / k), res);
                     vMax.get(level).set(pMax[level], res.first);
                     if (!res.first.equals(res.second)) {
                         vMin.get(level).set(pMin[level], res.second);
@@ -287,7 +288,8 @@ public class K2Raster {
             pMax[level] -= k * k;
         }
 
-        return new Pair<>(maxVal, minVal);
+        res.first = maxVal;
+        res.second = minVal;
     }
 
     /**
