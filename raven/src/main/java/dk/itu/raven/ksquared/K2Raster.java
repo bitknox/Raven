@@ -265,7 +265,7 @@ public class K2Raster {
                 } else {
                     Pair<Integer, Integer> res = build(n / k, level + 1, row + i * (n / k), column + j * (n / k));
                     vMax.get(level).set(pMax[level], res.first);
-                    if (res.first.intValue() != res.second.intValue()) {
+                    if (!res.first.equals(res.second)) {
                         vMin.get(level).set(pMin[level], res.second);
                         pMin[level]++;
                         t.get(level).set(pMax[level]);
