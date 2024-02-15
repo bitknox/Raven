@@ -29,7 +29,6 @@ import dk.itu.raven.visualizer.VisualizerOptions;
  * 
  */
 public class Raven {
-
     public static void main(String[] args) throws IOException {
         Logger.setDebug(true);
 
@@ -53,7 +52,6 @@ public class Raven {
                 geometries.second.maxX,
                 geometries.second.maxY);
 
-        // FIXME: Broken when no overlap exists.
         Matrix rasterData = rasterReader.readRasters(rect);
 
         // offset geometries such that they are aligned to the corner
@@ -79,7 +77,7 @@ public class Raven {
         // construct and compute the join
         RavenJoin join = new RavenJoin(k2Raster, rtree);
         long startJoinNano = System.nanoTime();
-        List<Pair<Geometry, Collection<PixelRange>>> result = join.join(2,8);
+        List<Pair<Geometry, Collection<PixelRange>>> result = join.join(200,255);
         long endJoinNano = System.nanoTime();
         System.out.println("Build time: " + (endJoinNano - startJoinNano) / 1000000 + "ms");
 

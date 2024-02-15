@@ -49,13 +49,14 @@ public class K2Raster {
         this.m = m;
 
         // ensures n is a power of k even if the n from the input is not
+        int maxLevel = 1;
         int real_h = 1;
-        while (real_h < n || real_h < w) {
+        while (real_h < h || real_h < w) {
             real_h *= k;
+            maxLevel++;
         }
         this.n = real_h;
 
-        int maxLevel = 1 + (int) Math.ceil(Math.log(Math.max(h, w)) / Math.log(k));
         t = new ArrayList<>(maxLevel);
         vMax = new ArrayList<GoodIntArrayList>(maxLevel);
         vMin = new ArrayList<GoodIntArrayList>(maxLevel);
@@ -90,7 +91,7 @@ public class K2Raster {
 
         tree = new BitMap(Math.max(1, size_max));
         int bitmapIndex = 0;
-
+        
         for (int i = 0; i < maxLevel - 1; i++) {
             for (int j = 0; j < pMax[i]; j++) {
                 if (t.get(i).isSet(j)) {
@@ -100,8 +101,8 @@ public class K2Raster {
                 }
             }
         }
+        
         pMax[0] = 1;
-
         if (maxVal != minVal) { // the root of the k2 raster tree is not a leaf
             tree.set(0);
             t.get(0).set(0);
@@ -264,13 +265,14 @@ public class K2Raster {
                 } else {
                     Pair<Integer, Integer> res = build(n / k, level + 1, row + i * (n / k), column + j * (n / k));
                     vMax.get(level).set(pMax[level], res.first);
-                    if (res.first != res.second) {
+                    if (res.first.intValue() != res.second.intValue()) {
                         vMin.get(level).set(pMin[level], res.second);
                         pMin[level]++;
                         t.get(level).set(pMax[level]);
                     } else {
                         t.get(level).unset(pMax[level]);
                     }
+
                     pMax[level]++;
                     if (minVal > res.second) {
                         minVal = res.second;
@@ -362,6 +364,7 @@ public class K2Raster {
                 zp = z + i * k + j;
 
                 maxvalp = maxVal - lMax[zp];
+                
                 if (!hasChildren(zp + 1)) {
                     int times = ((r2p - r1p) + 1) * ((c2p - c1p) + 1);
                     for (int l = 0; l < times; l++) {
