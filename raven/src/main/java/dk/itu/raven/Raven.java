@@ -47,7 +47,6 @@ public class Raven {
             return;
         }
 
-        Logger.setDebug(true);
         Logger.setLogLevel(jct.verbose);
 
         // Read geo raster file
