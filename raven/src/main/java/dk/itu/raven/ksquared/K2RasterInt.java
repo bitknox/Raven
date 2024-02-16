@@ -7,8 +7,8 @@ import dk.itu.raven.util.PrimitiveArrayWrapper;
 /**
  * K2-Raster datastructure for storing spatial raster data
  */
-public class K2Raster_old extends AbstractK2Raster {
-    public K2Raster_old(int k, int maxVal, int minVal, BitMap tree, int[] lMax, int[] lMin, int n, int[] prefixSum) {
+public class K2RasterInt extends AbstractK2Raster {
+    public K2RasterInt(int k, int maxVal, int minVal, BitMap tree, int[] lMax, int[] lMin, int n, int[] prefixSum) {
         super(k, minVal, maxVal, tree, n, prefixSum,new IntArrayWrapper(lMin),new IntArrayWrapper(lMax));
     }
 

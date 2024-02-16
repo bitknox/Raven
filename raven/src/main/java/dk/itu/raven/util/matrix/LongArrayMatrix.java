@@ -7,7 +7,7 @@ public class LongArrayMatrix extends Matrix {
     private long[][] m;
 
     public LongArrayMatrix(long[][] m, int width, int height) {
-        super(width, height);
+        super(width, height,64);
         this.m = m;
     }
 

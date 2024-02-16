@@ -19,8 +19,10 @@ import dk.itu.raven.io.GeoToolsRasterReader;
 import dk.itu.raven.io.ShapfileReader;
 import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.join.RavenJoin;
+import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.ksquared.K2Raster;
 import dk.itu.raven.ksquared.K2RasterBuilder;
+import dk.itu.raven.ksquared.K2RasterIntBuilder;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.Matrix;
@@ -81,7 +83,12 @@ public class Raven {
 
         // Build k2-raster structure
         long startBuildNano = System.nanoTime();
-        K2Raster k2Raster = new K2RasterBuilder().build(rasterData,2);
+        AbstractK2Raster k2Raster;
+        if (rasterData.getBitsUsed() > 32) {
+            k2Raster = new K2RasterBuilder().build(rasterData,2);
+        } else {
+            k2Raster = new K2RasterIntBuilder().build(rasterData,2);
+        }
         long endBuildNano = System.nanoTime();
         Logger.log("Build time: " + (endBuildNano - startBuildNano) / 1000000 + "ms");
 

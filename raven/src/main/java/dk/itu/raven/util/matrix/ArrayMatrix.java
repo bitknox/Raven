@@ -7,7 +7,7 @@ public class ArrayMatrix extends Matrix {
     private int[][] m;
 
     public ArrayMatrix(int[][] m, int width, int height) {
-        super(width, height);
+        super(width, height,32);
         this.m = m;
     }
 

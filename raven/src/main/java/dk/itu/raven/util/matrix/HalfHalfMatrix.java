@@ -8,7 +8,7 @@ public class HalfHalfMatrix extends Matrix {
 	public int[][] m;
 
 	public HalfHalfMatrix(int width, int height) {
-		super(width, height);
+		super(width, height,32);
 		m = new int[width][height];
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {

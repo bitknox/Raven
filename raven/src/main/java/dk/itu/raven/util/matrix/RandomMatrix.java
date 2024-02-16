@@ -10,13 +10,13 @@ public class RandomMatrix extends Matrix {
 	public int[][] M;
 
 	public RandomMatrix(long seed, int width, int height, int maxValue) {
-		super(width, height);
+		super(width, height,32);
 		Random r = new Random(seed);
 		init(r, maxValue);
 	}
 
 	public RandomMatrix(int width, int height, int maxValue) {
-		super(width, height);
+		super(width, height,32);
 		init(new Random(), maxValue);
 	}
 

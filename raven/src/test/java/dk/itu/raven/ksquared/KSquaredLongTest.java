@@ -48,7 +48,7 @@ public class KSquaredLongTest {
 	public void K2RasterLongWorksAsNormalK2Raster() {
 		Matrix m = new LongArrayMatrix(M, 8, 8);
 
-		K2Raster_old k2i = new K2RasterBuilder_old().build(m, 2);
+		K2RasterInt k2i = new K2RasterIntBuilder().build(m, 2);
 		K2Raster k2l = new K2RasterBuilder().build(m, 2);
 
 		PrimitiveArrayWrapper expected = k2i.getWindow(0, k2i.getSize()-1, 0, k2i.getSize()-1);

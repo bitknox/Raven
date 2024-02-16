@@ -5,22 +5,21 @@ import java.io.IOException;
 
 public class AwtRasterMatrix extends Matrix {
     private Raster raster;
-    int numberOfBands;
-    int sampleSize[];
+    private int numberOfBands;
+    private int sampleSize[];
 
     public AwtRasterMatrix(Raster raster) {
-        super(raster.getWidth(), raster.getHeight());
+        super(raster.getWidth(), raster.getHeight(),0);
         this.raster = raster;
 
         sampleSize = raster.getSampleModel().getSampleSize();
         numberOfBands = raster.getNumBands();
 
-        int totalBits = 0;
         for (int bits : sampleSize) {
-            totalBits += bits;
+            this.bitsUsed += bits;
         }
 
-        if (totalBits > 64) {
+        if (this.bitsUsed > 64) {
             throw new UnsupportedOperationException("The total bits per pixel is greater than 64");
         }
     }

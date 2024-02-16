@@ -9,7 +9,7 @@ import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.Matrix;
 
-public class K2RasterBuilder_old {
+public class K2RasterIntBuilder {
     // intermediate datastructures
     private List<GoodIntArrayList> vMax;
     private List<GoodIntArrayList> vMin;
@@ -26,7 +26,7 @@ public class K2RasterBuilder_old {
      * 
      * @param m the raw matrix data
      */
-    public K2Raster_old build(Matrix m, int k) {
+    public K2RasterInt build(Matrix m, int k) {
         this.k = k;
 
         int h = m.getHeight();
@@ -151,7 +151,7 @@ public class K2RasterBuilder_old {
         int[] lMax = LMaxList;
         int[] lMin = LMinList;
 
-        return new K2Raster_old(k, maxVal, minVal, tree, lMax, lMin, n, prefixSum);
+        return new K2RasterInt(k, maxVal, minVal, tree, lMax, lMin, n, prefixSum);
     }
 
     private void buildK2(int n, int level, int row, int column, Pair<Integer, Integer> res) {
