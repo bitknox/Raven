@@ -42,3 +42,31 @@ go run main.go
  }
 ]
 ```
+
+## Common execution interface
+
+Programs executed by the benchmarking tool should use the following input/output interfaces:
+
+```go
+
+/**
+* Input arguments
+*/
+
+args := []string{"inputVectorPath", "inputRasterPath", "iterations"}
+
+
+/**
+* Output interface (JSON)
+*/
+type BenchmarkResult struct {
+ // The name of the benchmark
+ Name string `json:"name"`
+ // The time it took to run the benchmark
+ Time float64 `json:"time"`
+ // The number of iterations
+ Iterations int `json:"iterations"`
+ // The number of bytes processed
+}
+
+```
