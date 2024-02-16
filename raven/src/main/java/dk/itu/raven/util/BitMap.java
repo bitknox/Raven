@@ -1,5 +1,6 @@
 package dk.itu.raven.util;
 
+import java.io.Serializable;
 import java.util.Iterator;
 
 /*
@@ -41,7 +42,7 @@ import java.util.Iterator;
  * @version 1.9.0
  * @since 1.8.0
  */
-public class BitMap implements Iterator<Integer>, Iterable<Integer> {
+public class BitMap implements Iterator<Integer>, Iterable<Integer>, Serializable {
 
     int defaultCapacity;
     int capacity;
