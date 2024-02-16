@@ -1,23 +1,40 @@
 package dk.itu.raven.util;
 
 public class Logger {
-	static boolean debug = false;
-	public static void log(Object o) {
-		if(debug) System.out.println(o.toString());
+	public enum LogLevel {
+		NONE(0),
+		ERROR(1),
+		WARNING(2),
+		INFO(3),
+		DEBUG(4);
+		int level;
+
+		private LogLevel(int level) {
+			this.level = level;
+		}
 	}
-	public static void log() {
-		if(debug) System.out.println("");
+	static LogLevel logLevel = LogLevel.NONE;
+
+	private static boolean hasSufficentLevel(LogLevel level) {
+		return level.level <= logLevel.level && logLevel != LogLevel.NONE;
 	}
 
-	public static void log(Exception e) {
-		if(debug) e.printStackTrace();
+	public static void log(Object o, LogLevel level) {
+		if(hasSufficentLevel(level)) System.out.println(o.toString());
+	}
+	public static void log(LogLevel level) {
+		if(hasSufficentLevel(level)) System.out.println("");
 	}
 
-	public static void setDebug(boolean debug) {
-		Logger.debug = debug;
+	public static void log(Exception e, LogLevel level) {
+		if(hasSufficentLevel(level)) e.printStackTrace();
+	}
+	
+	public static void setLogLevel(LogLevel level) {
+		logLevel = level;
 	}
 
-	public static boolean getDebug() {
-		return debug;
+	public static LogLevel getLogLevel() {
+		return logLevel;
 	}
 }
