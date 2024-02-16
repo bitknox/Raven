@@ -6,9 +6,6 @@ import java.util.List;
 
 import com.beust.jcommander.Parameter;
 
-import java.util.Arrays;
-import java.util.List;
-
 import dk.itu.raven.util.Logger;
 
 public class CommandLineArgs {
@@ -31,7 +28,7 @@ public class CommandLineArgs {
 	public String outputPath = null;
 
 	@Parameter(names = {"-ranges","--filter-ranges"}, description = "", splitter = RangeSplitter.class)
-	public List<Integer> ranges = Arrays.asList(Integer.MIN_VALUE,Integer.MAX_VALUE);
+	public List<Long> ranges = Arrays.asList((long)Integer.MIN_VALUE,(long)Integer.MAX_VALUE);
 
 	// @Parameter(names = { "-min", "--min-value" }, description = "Minimum filter value")
 	// public Integer minValue = Integer.MIN_VALUE;

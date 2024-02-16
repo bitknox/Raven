@@ -321,18 +321,8 @@ public class RavenJoin {
 	 * @return a list of Geometries paired with a collection of the pixelranges that
 	 *         it contains
 	 */
-	public List<Pair<Geometry, Collection<PixelRange>>> join(long lo1, long hi1) {
-		return join(new RasterFilterFunction() {
-			@Override
-			public boolean containsWithin(long lo2, long hi2) {
-				return lo2 <= hi1 && lo1 <= hi2;
-			}
-
-			@Override
-			public boolean containsOutside(long lo2, long hi2) {
-				return lo2 < lo1 || hi1 < hi2;
-			}
-		});
+	public List<Pair<Geometry, Collection<PixelRange>>> join(long lo, long hi) {
+		return join(JoinFilterFunctions.rangeFilter(lo, hi));
 	}
 
 	// based on:

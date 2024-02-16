@@ -22,6 +22,7 @@ import dk.itu.raven.ksquared.K2RasterBuilder;
 import dk.itu.raven.ksquared.K2RasterIntBuilder;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.Matrix;
+import dk.itu.raven.join.RasterFilterFunction;
 
 /**
  * Public API for interacting with the raven library safely.
@@ -30,6 +31,22 @@ import dk.itu.raven.util.matrix.Matrix;
  * wish.
  */
 public class RavenApi {
+
+	/**
+	 * Joins the vector and raster data using the k2-raster, rtrees and a filter
+	 * function to filter the results
+	 * 
+	 * @param k2Raster the k2-raster data
+	 * @param rtree    the rtree data
+	 * @param features the vector data
+	 * @param filter   a filter function to filter the results
+	 * @return a list of pairs of geometries and pixel ranges
+	 */
+	public List<Pair<Geometry, Collection<PixelRange>>> join(AbstractK2Raster k2Raster, RTree<String, Geometry> rtree,
+			Iterable<Polygon> features, RasterFilterFunction filter) {
+		return new RavenJoin(k2Raster, rtree).join(filter);
+	}
+
 	/**
 	 * Joins the vector and raster data using the k2-raster and rtree
 	 * 
@@ -40,8 +57,8 @@ public class RavenApi {
 	 */
 	public List<Pair<Geometry, Collection<PixelRange>>> join(AbstractK2Raster k2Raster, RTree<String, Geometry> rtree,
 			Iterable<Polygon> features) {
-		RavenJoin join = new RavenJoin(k2Raster, rtree);
-		return join.join();
+		return new RavenJoin(k2Raster, rtree).join();
+
 	}
 
 	/**
@@ -55,7 +72,8 @@ public class RavenApi {
 
 	public Pair<AbstractK2Raster, RTree<String, Geometry>> buildStructures(String vectorPath, String rasterPath)
 			throws IOException {
-		Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Matrix> data = createReaders(vectorPath, rasterPath);
+		Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Matrix> data = createReaders(vectorPath,
+				rasterPath);
 		AbstractK2Raster k2Raster = generateRasterStructure(data.second);
 		RTree<String, Geometry> rtree = generateRTree(data.first);
 		return new Pair<>(k2Raster, rtree);

@@ -13,14 +13,18 @@ import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.io.ShapfileReader;
 import dk.itu.raven.io.commandline.CommandLineArgs;
+import dk.itu.raven.join.JoinFilterFunctions;
+import dk.itu.raven.join.RasterFilterFunction;
 import dk.itu.raven.join.RavenJoin;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.util.Logger;
+import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.visualizer.Visualizer;
 import dk.itu.raven.visualizer.VisualizerOptions;
 import dk.itu.raven.visualizer.VisualizerOptionsBuilder;
+import static dk.itu.raven.util.Logger.LogLevel;
 
 /**
  * Main class for the raven application
@@ -51,27 +55,45 @@ public class Raven {
         long startBuildNano = System.nanoTime();
         AbstractK2Raster k2Raster = api.generateRasterStructure(data.second);
         long endBuildNano = System.nanoTime();
-        Logger.log("Build time: " + (endBuildNano - startBuildNano) / 1000000 + "ms", Logger.LogLevel.INFO);
-        Logger.log("Done Building Raster", Logger.LogLevel.INFO);
-        Logger.log(k2Raster.tree.size(), Logger.LogLevel.DEBUG);
+        Logger.log("Build time: " + (endBuildNano - startBuildNano) / 1000000 + "ms", LogLevel.INFO);
+        Logger.log("Done Building Raster", LogLevel.INFO);
+        Logger.log(k2Raster.tree.size(), LogLevel.DEBUG);
 
         int w = data.second.getWidth();
         int h = data.second.getHeight();
         int[] sampleSize = data.second.getSampleSize();
+        int bitsUsed = data.second.getBitsUsed();
         data.second = null;
 
-        
+        RasterFilterFunction function;
+
+        if (jct.ranges.size() == 2) {
+            if (sampleSize.length > 1) {
+                Logger.log("WARNING: only one range was given, but more than one raster sample exists", LogLevel.WARNING);
+            }
+            long lo = jct.ranges.get(0);
+            long hi = jct.ranges.get(1);
+            function = JoinFilterFunctions.rangeFilter(lo, hi);
+        } else if (jct.ranges.size() == sampleSize.length * 2) {
+            function = JoinFilterFunctions.multiSampleRangeFilter(jct.ranges, sampleSize, bitsUsed);
+        } else if (jct.ranges.size() == 0) {
+            function = JoinFilterFunctions.rangeFilter(Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } else {
+            throw new IllegalArgumentException("The number of provided search ranges does not match the number of raster samples");
+        }
+
+
 
         // create a R* tree with
         RTree<String, Geometry> rtree = api.generateRTree(data.first);
-        Logger.log("Done Building rtree", Logger.LogLevel.INFO);
+        Logger.log("Done Building rtree", LogLevel.INFO);
 
         // construct and compute the join
         RavenJoin join = new RavenJoin(k2Raster, rtree);
         long startJoinNano = System.nanoTime();
-        List<Pair<Geometry, Collection<PixelRange>>> result = join.join();
+        List<Pair<Geometry, Collection<PixelRange>>> result = join.join(function);
         long endJoinNano = System.nanoTime();
-        Logger.log("Build time: " + (endJoinNano - startJoinNano) / 1000000 + "ms", Logger.LogLevel.INFO);
+        Logger.log("Build time: " + (endJoinNano - startJoinNano) / 1000000 + "ms", LogLevel.INFO);
 
         // Visualize the result
         if (jct.outputPath != null) {
@@ -86,7 +108,7 @@ public class Raven {
             visual.drawResult(result, data.first.first, options);
         }
 
-        Logger.log("Done joining", Logger.LogLevel.INFO);
+        Logger.log("Done joining", LogLevel.INFO);
     }
 
 }
