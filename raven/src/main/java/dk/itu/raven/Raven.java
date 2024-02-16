@@ -20,7 +20,6 @@ import dk.itu.raven.io.ShapfileReader;
 import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.join.RavenJoin;
 import dk.itu.raven.ksquared.AbstractK2Raster;
-import dk.itu.raven.ksquared.K2Raster;
 import dk.itu.raven.ksquared.K2RasterBuilder;
 import dk.itu.raven.ksquared.K2RasterIntBuilder;
 import dk.itu.raven.util.Logger;
