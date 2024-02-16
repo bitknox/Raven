@@ -6,21 +6,21 @@ import java.util.Arrays;
  * A simple implementation of an ArrayList for integers. (Avoids copying the
  * entire array when resizing)
  */
-public class GoodIntArrayList {
+public class GoodLongArrayList {
     int size;
-    int[] array;
+    long[] array;
 
-    public GoodIntArrayList(int initialCapacity) {
+    public GoodLongArrayList(int initialCapacity) {
         if (initialCapacity > 0) {
-            this.array = new int[initialCapacity];
+            this.array = new long[initialCapacity];
         } else if (initialCapacity == 0) {
-            this.array = new int[2];
+            this.array = new long[2];
         } else {
             throw new IllegalArgumentException("Illegal Capacity: " + initialCapacity);
         }
     }
 
-    public GoodIntArrayList() {
+    public GoodLongArrayList() {
         this(0);
     }
 
@@ -32,11 +32,11 @@ public class GoodIntArrayList {
         return size == 0;
     }
 
-    public int get(int index) {
+    public long get(int index) {
         return array[index];
     }
 
-    public void set(int index, int element) {
+    public void set(int index, long element) {
         size = index > size ? index : size;
         ensureExplicitCapacity(index + 1);
         array[index] = element;

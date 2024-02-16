@@ -1,6 +1,5 @@
 package dk.itu.raven.util.matrix;
 
-import java.io.IOException;
 import java.util.Random;
 
 /*
@@ -11,13 +10,13 @@ public class RandomMatrix extends Matrix {
 	public int[][] M;
 
 	public RandomMatrix(long seed, int width, int height, int maxValue) {
-		super(width, height);
+		super(width, height,32);
 		Random r = new Random(seed);
 		init(r, maxValue);
 	}
 
 	public RandomMatrix(int width, int height, int maxValue) {
-		super(width, height);
+		super(width, height,32);
 		init(new Random(), maxValue);
 	}
 
@@ -34,12 +33,6 @@ public class RandomMatrix extends Matrix {
 	@Override
 	public int getWithinRange(int r, int c) {
 		return M[r][c];
-	}
-
-	@Override
-	protected long getWithinRangeLong(int r, int c) throws IOException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getWithinRangeLong'");
 	}
 
 }

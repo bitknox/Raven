@@ -7,7 +7,6 @@ import java.util.Arrays;
  * entire array when resizing)
  */
 public class GoodByteArrayList {
-    int capacity;
     int size;
     byte[] array;
 
