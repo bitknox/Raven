@@ -196,7 +196,7 @@ public class RavenJoin {
 	 *         </ul>
 	 */
 	private Tuple5<QuadOverlapType, Integer, Square, Long, Long> checkQuadrant(int k2Index, Square rasterBounding,
-			Rectangle bounding, long lo, long hi, long min, long max) {
+			Rectangle bounding, RasterFilterFunction function, long min, long max) {
 		long vMinMBR = min;
 		long vMaxMBR = max;
 		Logger.log(vMinMBR + ", " + vMaxMBR);
@@ -224,10 +224,10 @@ public class RavenJoin {
 
 		Logger.log(vMinMBR + ", " + vMaxMBR);
 
-		if (lo <= vMinMBR && hi >= vMaxMBR) {
+		if (!function.containsOutside(vMinMBR, vMaxMBR)) {
 			Logger.log("total overlap for " + returnedrasterBounding + " with mbr " + bounding);
 			return new Tuple5<>(QuadOverlapType.TotalOverlap, returnedK2Index, returnedrasterBounding, vMinMBR, vMaxMBR);
-		} else if (vMinMBR > hi || vMaxMBR < lo) {
+		} else if (!function.containsWithin(vMinMBR, vMaxMBR)) {
 			return new Tuple5<>(QuadOverlapType.NoOverlap, returnedK2Index, returnedrasterBounding, vMinMBR, vMaxMBR);
 		} else {
 			return new Tuple5<>(QuadOverlapType.PossibleOverlap, returnedK2Index, returnedrasterBounding, vMinMBR, vMaxMBR);
@@ -249,7 +249,7 @@ public class RavenJoin {
 	 * @return one of {@code TotalOverlap, PartialOverlap, NoOverlap}
 	 */
 	private MBROverlapType checkMBR(int k2Index, Square rasterBounding, Rectangle bounding,
-			long lo, long hi, long min, long max) {
+			RasterFilterFunction function, long min, long max) {
 		long vMinMBR = Long.MAX_VALUE;
 		long vMaxMBR = Long.MIN_VALUE;
 
@@ -285,9 +285,9 @@ public class RavenJoin {
 		if (vMinMBR == Long.MAX_VALUE || vMaxMBR == Long.MIN_VALUE) {
 			throw new RuntimeException("rasterBounding was never contained in bounding");
 		}
-		if (vMinMBR >= lo && vMaxMBR <= hi) {
+		if (!function.containsOutside(vMinMBR, vMaxMBR)) {
 			return MBROverlapType.TotalOverlap;
-		} else if (vMinMBR > hi || vMaxMBR < lo) {
+		} else if (!function.containsWithin(vMinMBR, vMaxMBR)) {
 			return MBROverlapType.NoOverlap;
 		} else {
 			return MBROverlapType.PartialOverlap;
@@ -295,26 +295,56 @@ public class RavenJoin {
 	}
 
 	/**
-	 * joins without filtering based on values
+	 * joins without filtering
 	 * 
 	 * @return a list of Geometries paired with a collection of the pixelranges that
 	 *         it contains
 	 */
 	public List<Pair<Geometry, Collection<PixelRange>>> join() {
-		return join(Long.MIN_VALUE, Long.MAX_VALUE);
+		return join(new RasterFilterFunction() {
+
+			@Override
+			public boolean containsWithin(long lo, long hi) {
+				return true;
+			}
+
+			@Override
+			public boolean containsOutside(long lo, long hi) {
+				return false;
+			}
+		});
+	}
+
+	/**
+	 * joins without defining a filtering function
+	 * 
+	 * @return a list of Geometries paired with a collection of the pixelranges that
+	 *         it contains
+	 */
+	public List<Pair<Geometry, Collection<PixelRange>>> join(long lo1, long hi1) {
+		return join(new RasterFilterFunction() {
+			@Override
+			public boolean containsWithin(long lo2, long hi2) {
+				return lo2 <= hi1 && lo1 <= hi2;
+			}
+
+			@Override
+			public boolean containsOutside(long lo2, long hi2) {
+				return lo2 < lo1 || hi1 < hi2;
+			}
+		});
 	}
 
 	// based on:
 	// https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0226943&type=printable
 	/**
-	 * joins while filtering based on values
+	 * joins while filtering based on a given function
 	 * 
-	 * @param lo the minimum pixel-value that should be included in the join
-	 * @param hi the maximum pixel-value that should be included in the join
+	 * @param function a function defining 
 	 * @return a list of Geometries paired with a collection of the pixelranges,
 	 *         whose values fall within the given range, that it contains
 	 */
-	public List<Pair<Geometry, Collection<PixelRange>>> join(long lo, long hi) {
+	public List<Pair<Geometry, Collection<PixelRange>>> join(RasterFilterFunction function) {
 		List<Pair<Geometry, Collection<PixelRange>>> def = new ArrayList<>(), prob = new ArrayList<>();
 		Stack<Tuple5<Node<String, Geometry>, Integer, Square, Long, Long>> S = new Stack<>();
 
@@ -328,7 +358,7 @@ public class RavenJoin {
 			Tuple5<Node<String, Geometry>, Integer, Square, Long, Long> p = S.pop();
 			if (!new Square(0, 0, AbstractK2Raster.getSize()).intersects(p.a.geometry().mbr())) continue;
 			Tuple5<QuadOverlapType, Integer, Square, Long, Long> checked = checkQuadrant(p.b, p.c, p.a.geometry().mbr(),
-					lo, hi, p.d,
+					function, p.d,
 					p.e);
 			switch (checked.a) {
 				case TotalOverlap:
@@ -345,7 +375,7 @@ public class RavenJoin {
 									checked.d, checked.e));
 						}
 					} else {
-						MBROverlapType overlap = checkMBR(checked.b, checked.c, p.a.geometry().mbr(), lo, hi, checked.d, checked.e);
+						MBROverlapType overlap = checkMBR(checked.b, checked.c, p.a.geometry().mbr(), function, checked.d, checked.e);
 						switch (overlap) {
 							case TotalOverlap:
 								extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, def, AbstractK2Raster.getSize() - 1);
@@ -366,7 +396,7 @@ public class RavenJoin {
 			}
 		}
 
-		combineLists(def, prob, lo, hi);
+		combineLists(def, prob, function);
 
 		return def;
 	}
@@ -380,7 +410,7 @@ public class RavenJoin {
 	 * @param hi   the maximum pixel-value that should be included in the join
 	 */
 	protected void combineLists(List<Pair<Geometry, Collection<PixelRange>>> def,
-			List<Pair<Geometry, Collection<PixelRange>>> prob, long lo, long hi) {
+			List<Pair<Geometry, Collection<PixelRange>>> prob, RasterFilterFunction function) {
 		Logger.log("def: " + def.size() + ", prob: " + prob.size());
 		for (Pair<Geometry, Collection<PixelRange>> pair : prob) {
 			Pair<Geometry, Collection<PixelRange>> result = new Pair<>(pair.first, new ArrayList<>());
@@ -388,7 +418,7 @@ public class RavenJoin {
 				PrimitiveArrayWrapper values = AbstractK2Raster.getWindow(range.row, range.row, range.x1, range.x2);
 				for (int i = 0; i < values.length(); i++) {
 					int start = i;
-					while (i < values.length() && values.get(i) >= lo && values.get(i) <= hi) {
+					while (i < values.length() && function.containsWithin(values.get(i), values.get(i))) {
 						i++;
 					}
 					if (start != i) {

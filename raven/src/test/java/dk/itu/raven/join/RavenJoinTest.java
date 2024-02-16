@@ -102,7 +102,17 @@ public class RavenJoinTest {
             }
         }
 
-        join.combineLists(def, prob, lo, hi);
+        join.combineLists(def, prob, new RasterFilterFunction() {
+			@Override
+			public boolean containsWithin(long lo2, long hi2) {
+				return lo2 <= hi && lo <= hi2;
+			}
+
+			@Override
+			public boolean containsOutside(long lo2, long hi2) {
+				return lo2 < lo || hi < hi2;
+			}
+		});
 
         for (PixelRange range : initialDef) {
             assertTrue(def.get(0).second.contains(range));
@@ -200,7 +210,17 @@ public class RavenJoinTest {
             }
         }
 
-        join.combineLists(def, prob, 0, 100);
+        join.combineLists(def, prob, new RasterFilterFunction() {
+			@Override
+			public boolean containsWithin(long lo2, long hi2) {
+				return lo2 <= 100 && 0 <= hi2;
+			}
+
+			@Override
+			public boolean containsOutside(long lo2, long hi2) {
+				return lo2 < 0 || 100 < hi2;
+			}
+		});
 
         for (PixelRange range : initialDef) {
             assertTrue(def.get(0).second.contains(range));

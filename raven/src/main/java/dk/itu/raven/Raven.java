@@ -71,6 +71,8 @@ public class Raven {
                 geometries.second.maxY);
 
         Matrix rasterData = rasterReader.readRasters(rect);
+        
+        // -range (0-0,0-0,0-255)
 
         // offset geometries such that they are aligned to the corner
         double offsetX = geometries.second.minX > 0 ? -geometries.second.minX : 0;
@@ -89,6 +91,9 @@ public class Raven {
         } else {
             k2Raster = new K2RasterIntBuilder().build(rasterData,2);
         }
+        int w = rasterData.getWidth();
+        int h = rasterData.getHeight();
+        rasterData = null;
         long endBuildNano = System.nanoTime();
         Logger.log("Build time: " + (endBuildNano - startBuildNano) / 1000000 + "ms");
 
@@ -106,7 +111,7 @@ public class Raven {
 
         // Visualize the result
         if (jct.outputPath != null) {
-            Visualizer visual = new Visualizer(rasterData.getWidth(), rasterData.getHeight());
+            Visualizer visual = new Visualizer(w, h);
             VisualizerOptionsBuilder builder = new VisualizerOptionsBuilder();
 
             builder.setOutputPath(jct.outputPath);

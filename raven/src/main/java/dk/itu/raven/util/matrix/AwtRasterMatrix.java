@@ -6,13 +6,12 @@ import java.io.IOException;
 public class AwtRasterMatrix extends Matrix {
     private Raster raster;
     private int numberOfBands;
-    private int sampleSize[];
 
     public AwtRasterMatrix(Raster raster) {
         super(raster.getWidth(), raster.getHeight(),0);
         this.raster = raster;
 
-        sampleSize = raster.getSampleModel().getSampleSize();
+        this.sampleSize = raster.getSampleModel().getSampleSize();
         numberOfBands = raster.getNumBands();
 
         for (int bits : sampleSize) {

@@ -11,11 +11,13 @@ This helps reduce the complexity of the K2Raster implementation.
 public abstract class Matrix {
     protected int width, height;
     protected int bitsUsed; 
+    protected int[] sampleSize;
 
     public Matrix(int width, int height, int bitsUsed) {
         this.width = width;
         this.height = height;
         this.bitsUsed = bitsUsed;
+        this.sampleSize = new int[] {bitsUsed};
     }
 
     public int get(int r, int c) {
@@ -66,5 +68,9 @@ public abstract class Matrix {
 
     public int getBitsUsed() {
         return this.bitsUsed;
+    }
+
+    public int[] getSampleSize() {
+        return this.sampleSize;
     }
 }

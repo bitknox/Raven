@@ -10,8 +10,11 @@ public class RastersMatrix extends Matrix {
 
     public RastersMatrix(Rasters rasters) {
         super(rasters.getWidth(), rasters.getHeight(), 0);
-        for (int bits : rasters.getBitsPerSample()) {
-            this.bitsUsed += bits;
+        int numSamples = rasters.getSamplesPerPixel();
+        this.sampleSize = new int[numSamples];
+        for (int idx = 0; idx < numSamples; idx++) {
+            this.sampleSize[idx] = rasters.getBitsPerSample().get(idx);
+            this.bitsUsed += this.sampleSize[idx];
         }
         this.rasters = rasters;
     }
