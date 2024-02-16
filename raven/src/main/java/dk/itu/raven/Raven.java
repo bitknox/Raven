@@ -13,12 +13,12 @@ import com.github.davidmoten.rtree2.geometry.Rectangle;
 
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
-import dk.itu.raven.io.CommandLineArgs;
 import dk.itu.raven.io.FileRasterReader;
 import dk.itu.raven.io.GeoToolsRasterReader;
 import dk.itu.raven.io.MilRasterReader;
 import dk.itu.raven.io.ShapfileReader;
 import dk.itu.raven.io.TFWFormat;
+import dk.itu.raven.io.commandline.CommandLineArgs;
 import dk.itu.raven.join.RavenJoin;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.ksquared.K2RasterBuilder;
@@ -47,7 +47,8 @@ public class Raven {
             return;
         }
 
-        Logger.setDebug(jct.verbose);
+        Logger.setDebug(true);
+        Logger.setLogLevel(jct.verbose);
 
         // Read geo raster file
         FileRasterReader rasterReader = new MilRasterReader(new File(jct.inputRaster));
@@ -90,19 +91,19 @@ public class Raven {
             k2Raster = new K2RasterIntBuilder().build(rasterData,2);
         }
         long endBuildNano = System.nanoTime();
-        Logger.log("Build time: " + (endBuildNano - startBuildNano) / 1000000 + "ms");
+        Logger.log("Build time: " + (endBuildNano - startBuildNano) / 1000000 + "ms",Logger.LogLevel.INFO);
 
-        Logger.log("Done Building Raster");
-        Logger.log(k2Raster.tree.size());
+        Logger.log("Done Building Raster",Logger.LogLevel.INFO);
+        Logger.log(k2Raster.tree.size(),Logger.LogLevel.DEBUG);
 
-        Logger.log("Done Building rtree");
+        Logger.log("Done Building rtree",Logger.LogLevel.INFO);
 
         // construct and compute the join
         RavenJoin join = new RavenJoin(k2Raster, rtree);
         long startJoinNano = System.nanoTime();
         List<Pair<Geometry, Collection<PixelRange>>> result = join.join(jct.minValue, jct.maxValue);
         long endJoinNano = System.nanoTime();
-        System.out.println("Build time: " + (endJoinNano - startJoinNano) / 1000000 + "ms");
+        Logger.log("Build time: " + (endJoinNano - startJoinNano) / 1000000 + "ms",Logger.LogLevel.INFO);
 
         // Visualize the result
         if (jct.outputPath != null) {
@@ -117,6 +118,6 @@ public class Raven {
             visual.drawResult(result, geometries.first, options);
         }
 
-        Logger.log("Done joining");
+        Logger.log("Done joining",Logger.LogLevel.INFO);
     }
 }

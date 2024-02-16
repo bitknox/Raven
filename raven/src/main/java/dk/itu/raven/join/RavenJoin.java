@@ -199,7 +199,7 @@ public class RavenJoin {
 			Rectangle bounding, long lo, long hi, long min, long max) {
 		long vMinMBR = min;
 		long vMaxMBR = max;
-		Logger.log(vMinMBR + ", " + vMaxMBR);
+		Logger.log(vMinMBR + ", " + vMaxMBR,Logger.LogLevel.DEBUG);
 		int returnedK2Index = k2Index;
 		Square returnedrasterBounding = rasterBounding;
 		Stack<Tuple4<Integer, Square, Long, Long>> k2Nodes = new Stack<>();
@@ -222,10 +222,10 @@ public class RavenJoin {
 			}
 		}
 
-		Logger.log(vMinMBR + ", " + vMaxMBR);
+		Logger.log(vMinMBR + ", " + vMaxMBR,Logger.LogLevel.DEBUG);
 
 		if (lo <= vMinMBR && hi >= vMaxMBR) {
-			Logger.log("total overlap for " + returnedrasterBounding + " with mbr " + bounding);
+			Logger.log("total overlap for " + returnedrasterBounding + " with mbr " + bounding,Logger.LogLevel.DEBUG);
 			return new Tuple5<>(QuadOverlapType.TotalOverlap, returnedK2Index, returnedrasterBounding, vMinMBR, vMaxMBR);
 		} else if (vMinMBR > hi || vMaxMBR < lo) {
 			return new Tuple5<>(QuadOverlapType.NoOverlap, returnedK2Index, returnedrasterBounding, vMinMBR, vMaxMBR);
@@ -352,7 +352,7 @@ public class RavenJoin {
 								break;
 							case PartialOverlap:
 								extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, prob, AbstractK2Raster.getSize() - 1);
-								Logger.log(p.a.geometry().mbr());
+								Logger.log(p.a.geometry().mbr(),Logger.LogLevel.DEBUG);
 								break;
 							case NoOverlap:
 								// ignored
@@ -381,7 +381,7 @@ public class RavenJoin {
 	 */
 	protected void combineLists(List<Pair<Geometry, Collection<PixelRange>>> def,
 			List<Pair<Geometry, Collection<PixelRange>>> prob, long lo, long hi) {
-		Logger.log("def: " + def.size() + ", prob: " + prob.size());
+		Logger.log("def: " + def.size() + ", prob: " + prob.size(),Logger.LogLevel.DEBUG);
 		for (Pair<Geometry, Collection<PixelRange>> pair : prob) {
 			Pair<Geometry, Collection<PixelRange>> result = new Pair<>(pair.first, new ArrayList<>());
 			for (PixelRange range : pair.second) {

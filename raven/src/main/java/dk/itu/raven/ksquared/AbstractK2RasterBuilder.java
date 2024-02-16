@@ -63,8 +63,8 @@ public abstract class AbstractK2RasterBuilder {
             size_min += pMin[i];
         }
 
-        Logger.log("size_max: " + size_max);
-        Logger.log("size_min: " + size_min);
+        Logger.log("size_max: " + size_max,Logger.LogLevel.DEBUG);
+        Logger.log("size_min: " + size_min,Logger.LogLevel.DEBUG);
 
         PrimitiveArrayWrapper LMaxList = getWrapper(size_max + 1);
         PrimitiveArrayWrapper LMinList = getWrapper(size_min + 1);
