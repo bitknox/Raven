@@ -1,7 +1,5 @@
 package dk.itu.raven.util.matrix;
 
-import java.io.IOException;
-
 /*
 Used for debugging
 */
@@ -10,7 +8,7 @@ public class HalfHalfMatrix extends Matrix {
 	public int[][] m;
 
 	public HalfHalfMatrix(int width, int height) {
-		super(width, height);
+		super(width, height,32);
 		m = new int[width][height];
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
@@ -26,12 +24,6 @@ public class HalfHalfMatrix extends Matrix {
 	@Override
 	public int getWithinRange(int r, int c) {
 		return m[r][c];
-	}
-
-	@Override
-	protected long getWithinRangeLong(int r, int c) throws IOException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getWithinRangeLong'");
 	}
 
 }

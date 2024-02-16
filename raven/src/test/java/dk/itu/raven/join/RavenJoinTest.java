@@ -6,27 +6,28 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
-import org.junit.jupiter.api.RepeatedTest;
 
-import com.github.davidmoten.rtree2.geometry.Geometry;
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometries;
+import com.github.davidmoten.rtree2.geometry.Geometry;
 import com.github.davidmoten.rtree2.geometry.Point;
 
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
+import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.ksquared.K2Raster;
 import dk.itu.raven.ksquared.K2RasterBuilder;
+import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RandomMatrix;
-import dk.itu.raven.util.Pair;
 
 public class RavenJoinTest {
     @Test
@@ -81,7 +82,7 @@ public class RavenJoinTest {
         Matrix matrix = new RandomMatrix(100, 100, 100);
         int lo = 25;
         int hi = 75;
-        K2Raster k2Raster = new K2RasterBuilder().build(matrix,2);
+        AbstractK2Raster k2Raster = new K2RasterBuilder().build(matrix,2);
         RavenJoin join = new RavenJoin(k2Raster, null);
         List<Pair<Geometry, Collection<PixelRange>>> def = new ArrayList<>();
         List<Pair<Geometry, Collection<PixelRange>>> prob = new ArrayList<>();
@@ -146,7 +147,7 @@ public class RavenJoinTest {
                 matrix[i][j] = fillValue;
         matrix[6][6] = 0;
 
-        K2Raster k2 = new K2RasterBuilder().build(new ArrayMatrix(matrix, 16, 16),2);
+        AbstractK2Raster k2 = new K2RasterBuilder().build(new ArrayMatrix(matrix, 16, 16),2);
 
         RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
         Polygon p = new Polygon(new Coordinate[] { new Coordinate(1, 1), new Coordinate(3, 1), new Coordinate(3, 3),
@@ -179,7 +180,7 @@ public class RavenJoinTest {
     @Test
     public void testCombineListExtremePixelRanges() {
         Matrix matrix = new RandomMatrix(64, 64, 100);
-        K2Raster k2Raster = new K2RasterBuilder().build(matrix,2);
+        AbstractK2Raster k2Raster = new K2RasterBuilder().build(matrix,2);
         RavenJoin join = new RavenJoin(k2Raster, null);
         List<Pair<Geometry, Collection<PixelRange>>> def = new ArrayList<>();
         List<Pair<Geometry, Collection<PixelRange>>> prob = new ArrayList<>();
