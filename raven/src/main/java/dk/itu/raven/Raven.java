@@ -105,7 +105,7 @@ public class Raven {
         // construct and compute the join
         RavenJoin join = new RavenJoin(k2Raster, rtree);
         long startJoinNano = System.nanoTime();
-        List<Pair<Geometry, Collection<PixelRange>>> result = join.join(jct.minValue, jct.maxValue);
+        List<Pair<Geometry, Collection<PixelRange>>> result = join.join();
         long endJoinNano = System.nanoTime();
         Logger.log("Build time: " + (endJoinNano - startJoinNano) / 1000000 + "ms",Logger.LogLevel.INFO);
 

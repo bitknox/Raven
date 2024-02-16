@@ -27,7 +27,7 @@ public class LogLevelValidator implements IParameterValidator {
     @Override
     public void validate(String name, String value) throws ParameterException {
         if (!valid.contains(value)) {
-            throw new ParameterException("Parameter " + name + " should be one of [" + validStrings +"] (found " + value +")");
+            throw new ParameterException("Parameter " + name + " should be one of [" + validStrings + "] (found " + value + ")");
         }
     }
     
