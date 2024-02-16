@@ -5,197 +5,75 @@ import java.util.List;
 
 import dk.itu.raven.util.BitMap;
 import dk.itu.raven.util.GoodIntArrayList;
-import dk.itu.raven.util.Logger;
-import dk.itu.raven.util.Pair;
-import dk.itu.raven.util.matrix.Matrix;
+import dk.itu.raven.util.IntArrayWrapper;
+import dk.itu.raven.util.PrimitiveArrayWrapper;
 
-public class K2RasterIntBuilder {
+public class K2RasterIntBuilder extends AbstractK2RasterBuilder {
     // intermediate datastructures
     private List<GoodIntArrayList> vMax;
     private List<GoodIntArrayList> vMin;
-    private List<BitMap> t;
-    private int[] pMax;
-    private int[] pMin;
-    private Matrix m;
-    private int n;
-    private int k;
 
-    /**
-     * bulds a K^2 Raster data-structure for an n*m matrix (meaning a 2-dimensional
-     * array with {@code n} rows and {@code m} columns)
-     * 
-     * @param m the raw matrix data
-     */
-    public K2RasterInt build(Matrix m, int k) {
-        this.k = k;
-
-        int h = m.getHeight();
-        int w = m.getWidth();
-
-        this.m = m;
-
-        // ensures n is a power of k even if the n from the input is not
-        int maxLevel = 1;
-        int real_h = 1;
-        while (real_h < h || real_h < w) {
-            real_h *= k;
-            maxLevel++;
-        }
-        this.n = real_h;
-
-        t = new ArrayList<>(maxLevel);
+    @Override
+    protected void init(int maxLevel) {
         vMax = new ArrayList<GoodIntArrayList>(maxLevel);
         vMin = new ArrayList<GoodIntArrayList>(maxLevel);
-        pMax = new int[maxLevel];
-        pMin = new int[maxLevel];
         for (int i = 0; i < maxLevel; i++) {
-            t.add(new BitMap(40));
             vMax.add(new GoodIntArrayList());
             vMin.add(new GoodIntArrayList());
 
         }
+    }
 
-        Pair<Integer,Integer> res = new Pair<Integer,Integer>(0,0);
-        buildK2(this.n, 1, 0, 0, res);
-        m = null;
-        int maxVal = res.first;
-        int minVal = res.second;
-        vMax.get(0).set(0, maxVal);
-        vMin.get(0).set(0, minVal);
+    @Override
+    protected long getMatrixVal(int r, int c) {
+        return m.get(r, c);
+    }
 
-        int size_max = 0;
-        int size_min = 0;
-        for (int i = 1; i < maxLevel; i++) {
-            size_max += pMax[i];
-            size_min += pMin[i];
-        }
+    @Override
+    protected void setVMax(int level, int index, long val) {
+        vMax.get(level).set(pMax[level], (int) val);
+    }
 
-        Logger.log("size_max: " + size_max);
-        Logger.log("size_min: " + size_min);
+    @Override
+    protected void setVMin(int level, int index, long val) {
+        vMin.get(level).set(pMin[level], (int) val);
+    }
 
-        int[] LMaxList = new int[size_max + 1];
-        int[] LMinList = new int[size_min + 1];
+    @Override
+    protected IntArrayWrapper getWrapper(int size) {
+        return new IntArrayWrapper(new int[size]);
+    }
 
-        BitMap tree = new BitMap(Math.max(1, size_max));
-        int bitmapIndex = 0;
-        
-        for (int i = 0; i < maxLevel - 1; i++) {
-            for (int j = 0; j < pMax[i]; j++) {
-                if (t.get(i).isSet(j)) {
-                    tree.set(++bitmapIndex);
-                } else {
-                    tree.unset(++bitmapIndex);
-                }
-            }
-        }
-        
-        pMax[0] = 1;
-        if (maxVal != minVal) { // the root of the k2 raster tree is not a leaf
-            tree.set(0);
-            t.get(0).set(0);
-            pMin[0] = 1;
-        } else { // the root of the k2 raster tree is a leaf
-            tree.unset(0);
-            t.get(0).unset(0);
-            pMin[0] = 0;
-        }
-
-        int[] prefixSum = new int[size_max + 1];
-        prefixSum[0] = 0;
-        for (int i = 1; i < size_max + 1; i++) {
-            prefixSum[i] = prefixSum[i - 1] + tree.getOrZero(i);
-        }
-
-        int imax = 0, imin = 0;
-
-        // compute LMin using the VMin computed in Build
-        for (int i = 0; i < maxLevel - 2; i++) {
-            int internalNodeCount = 0;
-            int innerInternalNodeCount = 0;
-            for (int j = 0; j < pMax[i]; j++) {
-                if (t.get(i).isSet(j)) {
-                    int start = internalNodeCount * k * k;
-                    for (int l = start; l < start + k * k; l++) {
-                        if (t.get(i + 1).isSet(l)) {
-                            LMinList[imin++] = Math.abs(
-                                    vMin.get(i + 1).get(innerInternalNodeCount) - vMin.get(i).get(internalNodeCount));
-                            innerInternalNodeCount++;
-                        }
-                    }
-                    internalNodeCount++;
-                }
-            }
-        }
+    @Override
+    protected void killVMin() {
         vMin = null;
-        pMin = null;
+    }
 
-        // compute LMax using the VMax computed in Build
-        for (int i = 0; i < maxLevel - 1; i++) {
-            int internalNodeCount = 0;
-            for (int j = 0; j < pMax[i]; j++) {
-                if (t.get(i).isSet(j)) {
-                    int start = internalNodeCount * k * k;
-                    for (int l = start; l < start + k * k; l++) {
-                        LMaxList[imax++] = Math.abs(vMax.get(i).get(j) - vMax.get(i + 1).get(l));
-                    }
-                    internalNodeCount++;
-                }
-            }
-        }
-
+    @Override
+    protected void killVMax() {
         vMax = null;
-        t = null;
-        pMax = null;
-
-        // TODO: use DAC
-        int[] lMax = LMaxList;
-        int[] lMin = LMinList;
-
-        return new K2RasterInt(k, maxVal, minVal, tree, lMax, lMin, n, prefixSum);
     }
 
-    private void buildK2(int n, int level, int row, int column, Pair<Integer, Integer> res) {
-        int minVal = Integer.MAX_VALUE;
-        int maxVal = 0;
-
-        for (int i = 0; i < k; i++) {
-            for (int j = 0; j < k; j++) {
-                if (n == k) { // last level
-                    int matrixVal = m.get(row + i, column + j);
-                    if (minVal > matrixVal) {
-                        minVal = matrixVal;
-                    }
-                    if (maxVal < matrixVal) {
-                        maxVal = matrixVal;
-                    }
-                    vMax.get(level).set(pMax[level], matrixVal);
-                    pMax[level]++;
-                } else {
-                    buildK2(n / k, level + 1, row + i * (n / k), column + j * (n / k), res);
-                    vMax.get(level).set(pMax[level], res.first);
-                    if (!res.first.equals(res.second)) {
-                        vMin.get(level).set(pMin[level], res.second);
-                        pMin[level]++;
-                        t.get(level).set(pMax[level]);
-                    } else {
-                        t.get(level).unset(pMax[level]);
-                    }
-
-                    pMax[level]++;
-                    if (minVal > res.second) {
-                        minVal = res.second;
-                    }
-                    if (maxVal < res.first) {
-                        maxVal = res.first;
-                    }
-                }
-            }
-        }
-        if (minVal == maxVal) {
-            pMax[level] -= k * k;
-        }
-
-        res.first = maxVal;
-        res.second = minVal;
+    @Override
+    protected long getVMax(int level, int index) {
+        return vMax.get(level).get(index);
     }
+
+    @Override
+    protected long getVMin(int level, int index) {
+        return vMin.get(level).get(index);
+    }
+
+    @Override
+    protected K2RasterInt getK2Raster(long maxVal, long minVal, BitMap tree, PrimitiveArrayWrapper lMax,
+            PrimitiveArrayWrapper lMin, int[] prefixSum) {
+        // IntArrayWrapper casts are safe, since they originate from this class (and are
+        // therfore defined as IntArrayWrapper originally)
+        // int casts are safe, becaus ethis class should only be used if the matrix
+        // contains only ints, using this class on matrices containing longs will
+        // truncate them
+        return new K2RasterInt(k, (int) maxVal, (int) minVal, tree, (IntArrayWrapper) lMax, (IntArrayWrapper) lMin, n,
+                prefixSum);
+    }
+
 }

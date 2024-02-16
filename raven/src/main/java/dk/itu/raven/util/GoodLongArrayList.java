@@ -7,7 +7,6 @@ import java.util.Arrays;
  * entire array when resizing)
  */
 public class GoodLongArrayList {
-    int capacity;
     int size;
     long[] array;
 

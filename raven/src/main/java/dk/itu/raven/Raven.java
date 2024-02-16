@@ -16,6 +16,7 @@ import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.io.CommandLineArgs;
 import dk.itu.raven.io.FileRasterReader;
 import dk.itu.raven.io.GeoToolsRasterReader;
+import dk.itu.raven.io.MilRasterReader;
 import dk.itu.raven.io.ShapfileReader;
 import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.join.RavenJoin;
@@ -49,7 +50,7 @@ public class Raven {
         Logger.setDebug(jct.verbose);
 
         // Read geo raster file
-        FileRasterReader rasterReader = new GeoToolsRasterReader(new File(jct.inputRaster));
+        FileRasterReader rasterReader = new MilRasterReader(new File(jct.inputRaster));
 
         // get getTiff transform (used to transform from (lat, lon) to pixel coordinates
         // in shapefileReader)

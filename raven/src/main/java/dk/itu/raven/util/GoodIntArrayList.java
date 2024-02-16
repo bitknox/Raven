@@ -7,7 +7,6 @@ import java.util.Arrays;
  * entire array when resizing)
  */
 public class GoodIntArrayList {
-    int capacity;
     int size;
     int[] array;
 

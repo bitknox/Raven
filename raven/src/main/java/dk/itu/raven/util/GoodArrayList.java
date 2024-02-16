@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.ListIterator;
 
 public class GoodArrayList<T> implements List<T> {
-    int capacity;
     int size;
     Object[] array;
 
