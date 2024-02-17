@@ -88,6 +88,7 @@ public class JoinFilterFunctionsTests {
                                             }
                                             assertTrue(function.containsWithin(lo, hi));
                                         }
+                                        // TODO:
                                         // if (function.containsOutside(lo, hi)) {
                                         //     assertTrue(treeOutside.query(lo - 1) != treeOutside.query(hi));
                                         // }
@@ -132,7 +133,7 @@ public class JoinFilterFunctionsTests {
         int tests = 100_000;
 
         for (int test = 0; test < tests; test++) {
-
+            // TODO:
         }
     }
 
@@ -190,6 +191,7 @@ public class JoinFilterFunctionsTests {
             if (treeWithin.query(lo - 1) != treeWithin.query(hi)) {
                 assertTrue(function.containsWithin(lo, hi));
             }
+            // TODO:
             // if (function.containsOutside(lo, hi)) {
             //     if (!(treeOutside.query(lo - 1) != treeOutside.query(hi))) {
             //         System.err.println("lo: " + lo + ", hi: " + hi);
