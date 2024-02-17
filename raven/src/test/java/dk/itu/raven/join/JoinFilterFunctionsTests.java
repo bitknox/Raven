@@ -88,13 +88,12 @@ public class JoinFilterFunctionsTests {
                                             }
                                             assertTrue(function.containsWithin(lo, hi));
                                         }
-                                        // TODO:
-                                        // if (function.containsOutside(lo, hi)) {
-                                        //     assertTrue(treeOutside.query(lo - 1) != treeOutside.query(hi));
-                                        // }
-                                        // if (treeOutside.query(lo - 1) != treeOutside.query(hi)) {
-                                        //     assertTrue(function.containsOutside(lo, hi));
-                                        // }
+                                        if (function.containsOutside(lo, hi)) {
+                                            assertTrue(treeOutside.query(lo - 1) != treeOutside.query(hi));
+                                        }
+                                        if (treeOutside.query(lo - 1) != treeOutside.query(hi)) {
+                                            assertTrue(function.containsOutside(lo, hi));
+                                        }
                                     }
                                 }
                             }
@@ -125,6 +124,7 @@ public class JoinFilterFunctionsTests {
 
         assertTrue(lo <= example && example <= hi);
         assertTrue(function.containsWithin(lo, hi));
+        assertTrue(function.containsOutside(lo, hi));
     }
 
     @Test
@@ -191,19 +191,18 @@ public class JoinFilterFunctionsTests {
             if (treeWithin.query(lo - 1) != treeWithin.query(hi)) {
                 assertTrue(function.containsWithin(lo, hi));
             }
-            // TODO:
-            // if (function.containsOutside(lo, hi)) {
-            //     if (!(treeOutside.query(lo - 1) != treeOutside.query(hi))) {
-            //         System.err.println("lo: " + lo + ", hi: " + hi);
-            //         for (long stop : Arrays.asList(lo1, hi1, lo2, hi2, lo3, hi3)) {
-            //             System.err.println(stop);
-            //         }
-            //     }
-            //     assertTrue(treeOutside.query(lo - 1) != treeOutside.query(hi));
-            // }
-            // if (treeOutside.query(lo - 1) != treeOutside.query(hi)) {
-            //     assertTrue(function.containsOutside(lo, hi));
-            // }
+            if (function.containsOutside(lo, hi)) {
+                if (!(treeOutside.query(lo - 1) != treeOutside.query(hi))) {
+                    System.err.println("lo: " + lo + ", hi: " + hi);
+                    for (long stop : Arrays.asList(lo1, hi1, lo2, hi2, lo3, hi3)) {
+                        System.err.println(stop);
+                    }
+                }
+                assertTrue(treeOutside.query(lo - 1) != treeOutside.query(hi));
+            }
+            if (treeOutside.query(lo - 1) != treeOutside.query(hi)) {
+                assertTrue(function.containsOutside(lo, hi));
+            }
 
         }
     }

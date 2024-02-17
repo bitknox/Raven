@@ -65,8 +65,9 @@ public abstract class JoinFilterFunctions {
                         lowerMet = true;
                         higherMet = true;
                     }
-                    
-                    // recompute the lom and him, as the lowerMet and higherMet flags might have changed.
+
+                    // recompute the lom and him, as the lowerMet and higherMet flags might have
+                    // changed.
                     lom = lowerMet ? 0 : (lo >> (bitsRemaining - sampleSize[i])) & mask;
                     him = higherMet ? mask : (hi >> (bitsRemaining - sampleSize[i])) & mask;
 
@@ -87,8 +88,7 @@ public abstract class JoinFilterFunctions {
                     } else if (him > lom && him - 1 >= min) {
                         // we can only set exactly higherMet, not lowerMet
                         higherMet = true;
-                    }
-                    else if (him > lom && lom + 1 <= max) {
+                    } else if (him > lom && lom + 1 <= max) {
                         // we can only set exactly lowerMet, not higherMet
                         lowerMet = true;
                     }
@@ -98,9 +98,12 @@ public abstract class JoinFilterFunctions {
                 return true;
             }
 
-            // FIXME: This one does not work
             @Override
             public boolean containsOutside(long lo, long hi) {
+                boolean differenceBefore = false; // signifies that an earlier sample has satisfied lom < him. This
+                                                  // means that both all 0s and all 1s are possible for the rest of the
+                                                  // samples.
+
                 int bitsRemaining = totalBits;
                 for (int i = 0; i < sampleSize.length; i++) {
                     long mask = (1 << sampleSize[i]) - 1;
@@ -109,15 +112,15 @@ public abstract class JoinFilterFunctions {
                     long min = ranges.get(2 * i);
                     long max = ranges.get(2 * i + 1);
 
-                    // Check if the entire range is outside the specified criteria
-                    if (him < min || lom > max) {
+                    // first part means that the range within the currect sample has some member not
+                    // overlapping with the target range.
+                    // second part means that there was an earlier sample where lom < him. this
+                    // means that unless the target range for the current sample accepts both all 0s
+                    // and all 1s, there is some number that is non-overlapping.
+                    if (lom < min || him > max || (differenceBefore && (min != 0 || max != mask)))
                         return true;
-                    }
-
-                    // Check if part of the range is outside the specified criteria
-                    if ((him - 1 >= min && him - 1 <= max) || (lom <= max - 1 && lom >= min)) {
-                        return true;
-                    }
+                    if (lom < him)
+                        differenceBefore = true;
 
                     bitsRemaining -= sampleSize[i];
                 }
