@@ -128,16 +128,6 @@ public class JoinFilterFunctionsTests {
     }
 
     @Test
-    public void testMultiSampleRangeFilterRandom() {
-        int bits = 8;
-        int tests = 100_000;
-
-        for (int test = 0; test < tests; test++) {
-            // TODO:
-        }
-    }
-
-    @Test
     public void testMultiSampleRangeFilterRandomWithConstantRanges() {
         int bits = 5;
         int tests = 10_000_000;
@@ -152,7 +142,7 @@ public class JoinFilterFunctionsTests {
         FenwickTree treeWithin = new FenwickTree(1<<(3*bits));
         FenwickTree treeOutside = new FenwickTree(1<<(3*bits));
 
-        // TODO: use fenwick with range updates
+        // TODO: use fenwick with range updates and skip certain numbers for a speed-up
         for (int num = 0; num < 1<<(3*bits); num++) {
             int first = num >> (2 * bits);
             int second = (num >> (bits)) & ((1 << bits) - 1);
@@ -192,12 +182,6 @@ public class JoinFilterFunctionsTests {
                 assertTrue(function.containsWithin(lo, hi));
             }
             if (function.containsOutside(lo, hi)) {
-                if (!(treeOutside.query(lo - 1) != treeOutside.query(hi))) {
-                    System.err.println("lo: " + lo + ", hi: " + hi);
-                    for (long stop : Arrays.asList(lo1, hi1, lo2, hi2, lo3, hi3)) {
-                        System.err.println(stop);
-                    }
-                }
                 assertTrue(treeOutside.query(lo - 1) != treeOutside.query(hi));
             }
             if (treeOutside.query(lo - 1) != treeOutside.query(hi)) {
