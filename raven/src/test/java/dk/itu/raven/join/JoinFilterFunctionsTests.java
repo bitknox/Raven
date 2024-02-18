@@ -9,47 +9,13 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 public class JoinFilterFunctionsTests {
-    private class FenwickTree {
-        int[] arr;
-        int size;
-
-        public FenwickTree(int size) {
-            this.arr = new int[size + 1];
-            this.size = size;
-        }
-
-        public int query(int idx) {
-            if (idx == -1)
-                return 0;
-            idx++;
-            int sum = 0;
-
-            while (idx > 0) {
-                sum += arr[idx];
-                idx -= idx & (-idx);
-            }
-
-            return sum;
-        }
-
-        public void update(int idx, int value) {
-            idx++;
-            while (idx <= size) {
-                arr[idx] += value;
-                idx += idx & (-idx);
-            }
-        }
-
-        public void clear() {
-            this.arr = new int[this.size + 1];
-        }
-    }
-
     @Test
     public void testMultiSampleRangeFilterExhaustive() {
         int bits = 2;
-        FenwickTree treeWithin = new FenwickTree(1 << (3 * bits));
-        FenwickTree treeOutside = new FenwickTree(1 << (3 * bits));
+        // used to quickly verify that the function gives correct results
+        int[] prefixSumWithin = new int[(1 << (3 * bits)) + 1];
+        int[] prefixSumOutside = new int[(1 << (3 * bits)) + 1];
+        // go through all possible search ranges using the allotted bits
         for (long lo1 = 0; lo1 < 1 << bits; lo1++) {
             for (long hi1 = lo1; hi1 < 1 << bits; hi1++) {
                 for (long lo2 = 0; lo2 < 1 << bits; lo2++) {
@@ -59,39 +25,50 @@ public class JoinFilterFunctionsTests {
                                 RasterFilterFunction function = JoinFilterFunctions.multiSampleRangeFilter(
                                         Arrays.asList(lo1, hi1, lo2, hi2, lo3, hi3), new int[] { bits, bits, bits },
                                         bits * 3);
-                                treeWithin.clear();
-                                treeOutside.clear();
-                                for (int i = 0; i < 1 << (3 * bits); i++) {
-                                    int first = i >> (2 * bits);
-                                    int second = (i >> (bits)) & ((1 << bits) - 1);
-                                    int third = i & ((1 << bits) - 1);
+                                prefixSumWithin[0] = 0;
+                                prefixSumOutside[0] = 0;
+
+                                // compute a prefix sum array for the number of matches for both methods in the
+                                // function for all possible numbers using the allotted bits
+                                for (int num = 0; num < 1 << (3 * bits); num++) {
+                                    int first = num >> (2 * bits);
+                                    int second = (num >> (bits)) & ((1 << bits) - 1);
+                                    int third = num & ((1 << bits) - 1);
+                                    prefixSumWithin[num + 1] = prefixSumWithin[num];
+                                    prefixSumOutside[num + 1] = prefixSumOutside[num];
                                     if (first <= hi1 && first >= lo1 &&
                                             second <= hi2 && second >= lo2 &&
                                             third <= hi3 && third >= lo3) {
-                                        treeWithin.update(i, 1);
+                                        prefixSumWithin[num + 1]++;
                                     } else {
-                                        treeOutside.update(i, 1);
+                                        prefixSumOutside[num + 1]++;
                                     }
                                 }
 
+                                // go through all possible lo and hi combinations using the allotted bits
                                 for (int lo = 0; lo < 1 << (3 * bits); lo++) {
                                     for (int hi = lo; hi < 1 << (3 * bits); hi++) {
+                                        // the function says there are some matching numbers within the range, check
+                                        // that
+                                        // this is true
                                         if (function.containsWithin(lo, hi)) {
-                                            assertTrue(treeWithin.query(lo - 1) != treeWithin.query(hi));
+                                            assertTrue(prefixSumWithin[lo] != prefixSumWithin[hi + 1]);
                                         }
-                                        if (treeWithin.query(lo - 1) != treeWithin.query(hi)) {
-                                            if (!(function.containsWithin(lo, hi))) {
-                                                System.err.println("lo: " + lo + ", hi: " + hi);
-                                                for (long stop : Arrays.asList(lo1, hi1, lo2, hi2, lo3, hi3)) {
-                                                    System.err.println(stop);
-                                                }
-                                            }
+                                        // there are some matching numbers within the the range, check that the function
+                                        // agrees
+                                        if (prefixSumWithin[lo] != prefixSumWithin[hi + 1]) {
                                             assertTrue(function.containsWithin(lo, hi));
                                         }
+                                        // the function says there are some non-matching numbers within the range, check
+                                        // that
+                                        // this is true
                                         if (function.containsOutside(lo, hi)) {
-                                            assertTrue(treeOutside.query(lo - 1) != treeOutside.query(hi));
+                                            assertTrue(prefixSumOutside[lo] != prefixSumOutside[hi + 1]);
                                         }
-                                        if (treeOutside.query(lo - 1) != treeOutside.query(hi)) {
+                                        // there are some non-matching numbers within the the range, check that the
+                                        // function
+                                        // agrees
+                                        if (prefixSumOutside[lo] != prefixSumOutside[hi + 1]) {
                                             assertTrue(function.containsOutside(lo, hi));
                                         }
                                     }
@@ -104,87 +81,107 @@ public class JoinFilterFunctionsTests {
         }
     }
 
-    @Test 
+    @Test
     public void testMultiSampleRangeFilterCustom() {
-        int[] samples = new int[] {4,4,4};
+        int[] samples = new int[] { 4, 4, 4 };
         int totalBits = 12;
-        // 0000-0010    0001-0001   1000-1010
-        List<Long> ranges = Arrays.asList(0L,2L,1L,1L,8L,10L);
+        // 0000-0010 0001-0001 1000-1010
+        List<Long> ranges = Arrays.asList(0L, 2L, 1L, 1L, 8L, 10L);
 
         RasterFilterFunction function = JoinFilterFunctions.multiSampleRangeFilter(ranges, samples, totalBits);
 
         // 0011 0000 0000
-        int hi = (3<<8) + (0<<4) + (0); 
+        int hi = (3 << 8) + (0 << 4) + (0);
         // 0000 0000 0000
-        int lo = (0<<8) + (0<<4) + (0);
+        int lo = (0 << 8) + (0 << 4) + (0);
 
-        
         // range contains (for example) 0010 0001 1000
-        int example = (2<<8) + (1<<4) + (8);
+        int example = (2 << 8) + (1 << 4) + (8);
 
         assertTrue(lo <= example && example <= hi);
         assertTrue(function.containsWithin(lo, hi));
+
+        // for example 0011 0000 0000, which does not satisfy the first range
         assertTrue(function.containsOutside(lo, hi));
     }
 
     @Test
     public void testMultiSampleRangeFilterRandomWithConstantRanges() {
-        int bits = 5;
+        int bits = 6;
         int tests = 10_000_000;
 
         long lo1 = 0;
-        long hi1 = (1<<bits)-1;
+        long hi1 = (1 << bits) - 1;
         long lo2 = 0;
         long hi2 = 0;
         long lo3 = 14;
         long hi3 = 17;
 
-        FenwickTree treeWithin = new FenwickTree(1<<(3*bits));
-        FenwickTree treeOutside = new FenwickTree(1<<(3*bits));
+        // compute prefix sums for both numbers within and outside the range
+        int[] prefixSumWithin = new int[(1 << (3 * bits)) + 1];
+        int[] prefixSumOutside = new int[(1 << (3 * bits)) + 1];
 
-        // TODO: use fenwick with range updates and skip certain numbers for a speed-up
-        for (int num = 0; num < 1<<(3*bits); num++) {
+        prefixSumWithin[0] = 0;
+        prefixSumOutside[0] = 0;
+        for (int num = 0; num < 1 << (3 * bits); num++) {
+            prefixSumWithin[num + 1] = prefixSumWithin[num];
+            prefixSumOutside[num + 1] = prefixSumOutside[num];
             int first = num >> (2 * bits);
             int second = (num >> (bits)) & ((1 << bits) - 1);
             int third = num & ((1 << bits) - 1);
             if (first <= hi1 && first >= lo1 &&
                     second <= hi2 && second >= lo2 &&
                     third <= hi3 && third >= lo3) {
-                treeWithin.update(num, 1);
+                prefixSumWithin[num + 1]++;
             } else {
-                treeOutside.update(num, 1);
+                prefixSumOutside[num + 1]++;
             }
         }
 
-        List<Long> ranges = Arrays.asList(lo1,hi1,lo2,hi2,lo3,hi3);
+        List<Long> ranges = Arrays.asList(lo1, hi1, lo2, hi2, lo3, hi3);
         Random r = new Random(42);
 
-        RasterFilterFunction function = JoinFilterFunctions.multiSampleRangeFilter(ranges, new int[] {bits,bits,bits}, 3*bits);
+        RasterFilterFunction function = JoinFilterFunctions.multiSampleRangeFilter(ranges,
+                new int[] { bits, bits, bits }, 3 * bits);
 
+        // generate random lo and hi values and check that the function outputs the
+        // correct numbers for all of them
         for (int test = 0; test < tests; test++) {
-
             int lo = r.nextInt();
-            if (lo < 0) lo *= -1;
+            if (lo < 0)
+                lo *= -1;
             int hi = r.nextInt();
-            if (hi < 0) hi *= -1;
-            lo %= (1<<(3*bits));
-            hi %= (1<<(3*bits));
+            if (hi < 0)
+                hi *= -1;
+            lo %= (1 << (3 * bits));
+            hi %= (1 << (3 * bits));
             if (lo > hi) {
                 int temp = lo;
                 lo = hi;
                 hi = temp;
             }
 
+            // the function says there are some matching numbers within the range, check
+            // that
+            // this is true
             if (function.containsWithin(lo, hi)) {
-                assertTrue(treeWithin.query(lo - 1) != treeWithin.query(hi));
+                assertTrue(prefixSumWithin[lo] != prefixSumWithin[hi + 1]);
             }
-            if (treeWithin.query(lo - 1) != treeWithin.query(hi)) {
+            // there are some matching numbers within the the range, check that the function
+            // agrees
+            if (prefixSumWithin[lo] != prefixSumWithin[hi + 1]) {
                 assertTrue(function.containsWithin(lo, hi));
             }
+            // the function says there are some non-matching numbers within the range, check
+            // that
+            // this is true
             if (function.containsOutside(lo, hi)) {
-                assertTrue(treeOutside.query(lo - 1) != treeOutside.query(hi));
+                assertTrue(prefixSumOutside[lo] != prefixSumOutside[hi + 1]);
             }
-            if (treeOutside.query(lo - 1) != treeOutside.query(hi)) {
+            // there are some non-matching numbers within the the range, check that the
+            // function
+            // agrees
+            if (prefixSumOutside[lo] != prefixSumOutside[hi + 1]) {
                 assertTrue(function.containsOutside(lo, hi));
             }
 
