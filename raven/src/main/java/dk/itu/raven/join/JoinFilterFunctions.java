@@ -3,6 +3,20 @@ package dk.itu.raven.join;
 import java.util.List;
 
 public abstract class JoinFilterFunctions {
+    public static RasterFilterFunction acceptAll() {
+        return new RasterFilterFunction() {
+            @Override
+            public boolean containsWithin(long lo, long hi) {
+                return true;
+            }
+
+            @Override
+            public boolean containsOutside(long lo, long hi) {
+                return false;
+            }
+        };
+    }
+
     public static RasterFilterFunction rangeFilter(long lo, long hi) {
         return new RasterFilterFunction() {
             @Override

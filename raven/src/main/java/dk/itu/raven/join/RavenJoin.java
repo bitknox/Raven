@@ -142,7 +142,8 @@ public class RavenJoin {
 			List<Pair<Geometry, Collection<PixelRange>>> def, int maxX) {
 		for (Entry<String, Geometry> entry : ((Leaf<String, Geometry>) pr).entries()) {
 			// all geometries we store are polygons
-			def.add(new Pair<>(entry.geometry(), extractCellsPolygon((Polygon) entry.geometry(), pk, rasterBounding, maxX)));
+			def.add(new Pair<>(entry.geometry(),
+					extractCellsPolygon((Polygon) entry.geometry(), pk, rasterBounding, maxX)));
 		}
 	}
 
@@ -199,7 +200,7 @@ public class RavenJoin {
 			Rectangle bounding, RasterFilterFunction function, long min, long max) {
 		long vMinMBR = min;
 		long vMaxMBR = max;
-		Logger.log(vMinMBR + ", " + vMaxMBR,Logger.LogLevel.DEBUG);
+		Logger.log(vMinMBR + ", " + vMaxMBR, Logger.LogLevel.DEBUG);
 		int returnedK2Index = k2Index;
 		Square returnedrasterBounding = rasterBounding;
 		Stack<Tuple4<Integer, Square, Long, Long>> k2Nodes = new Stack<>();
@@ -222,15 +223,17 @@ public class RavenJoin {
 			}
 		}
 
-		Logger.log(vMinMBR + ", " + vMaxMBR,Logger.LogLevel.DEBUG);
+		Logger.log(vMinMBR + ", " + vMaxMBR, Logger.LogLevel.DEBUG);
 
 		if (!function.containsOutside(vMinMBR, vMaxMBR)) {
-			Logger.log("total overlap for " + returnedrasterBounding + " with mbr " + bounding,Logger.LogLevel.DEBUG);
-			return new Tuple5<>(QuadOverlapType.TotalOverlap, returnedK2Index, returnedrasterBounding, vMinMBR, vMaxMBR);
+			Logger.log("total overlap for " + returnedrasterBounding + " with mbr " + bounding, Logger.LogLevel.DEBUG);
+			return new Tuple5<>(QuadOverlapType.TotalOverlap, returnedK2Index, returnedrasterBounding, vMinMBR,
+					vMaxMBR);
 		} else if (!function.containsWithin(vMinMBR, vMaxMBR)) {
 			return new Tuple5<>(QuadOverlapType.NoOverlap, returnedK2Index, returnedrasterBounding, vMinMBR, vMaxMBR);
 		} else {
-			return new Tuple5<>(QuadOverlapType.PossibleOverlap, returnedK2Index, returnedrasterBounding, vMinMBR, vMaxMBR);
+			return new Tuple5<>(QuadOverlapType.PossibleOverlap, returnedK2Index, returnedrasterBounding, vMinMBR,
+					vMaxMBR);
 		}
 	}
 
@@ -301,18 +304,7 @@ public class RavenJoin {
 	 *         it contains
 	 */
 	public List<Pair<Geometry, Collection<PixelRange>>> join() {
-		return join(new RasterFilterFunction() {
-
-			@Override
-			public boolean containsWithin(long lo, long hi) {
-				return true;
-			}
-
-			@Override
-			public boolean containsOutside(long lo, long hi) {
-				return false;
-			}
-		});
+		return join(JoinFilterFunctions.acceptAll());
 	}
 
 	/**
@@ -330,7 +322,7 @@ public class RavenJoin {
 	/**
 	 * joins while filtering based on a given function
 	 * 
-	 * @param function a function defining 
+	 * @param function a function defining
 	 * @return a list of Geometries paired with a collection of the pixelranges,
 	 *         whose values fall within the given range, that it contains
 	 */
@@ -338,7 +330,7 @@ public class RavenJoin {
 		List<Pair<Geometry, Collection<PixelRange>>> def = new ArrayList<>(), prob = new ArrayList<>();
 		Stack<Tuple5<Node<String, Geometry>, Integer, Square, Long, Long>> S = new Stack<>();
 
-		Pair<Long,Long> minMax = AbstractK2Raster.getValueRange();
+		Pair<Long, Long> minMax = AbstractK2Raster.getValueRange();
 
 		for (Node<String, Geometry> node : TreeExtensions.getChildren(tree.root().get())) {
 			S.push(new Tuple5<>(node, 0, new Square(0, 0, AbstractK2Raster.getSize()), minMax.first, minMax.second));
@@ -346,33 +338,40 @@ public class RavenJoin {
 
 		while (!S.empty()) {
 			Tuple5<Node<String, Geometry>, Integer, Square, Long, Long> p = S.pop();
-			if (!new Square(0, 0, AbstractK2Raster.getSize()).intersects(p.a.geometry().mbr())) continue;
+			if (!new Square(0, 0, AbstractK2Raster.getSize()).intersects(p.a.geometry().mbr()))
+				continue;
 			Tuple5<QuadOverlapType, Integer, Square, Long, Long> checked = checkQuadrant(p.b, p.c, p.a.geometry().mbr(),
 					function, p.d,
 					p.e);
 			switch (checked.a) {
 				case TotalOverlap:
 					if (TreeExtensions.isLeaf(p.a)) {
-						extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, def, AbstractK2Raster.getSize() - 1);
+						extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, def,
+								AbstractK2Raster.getSize() - 1);
 					} else {
-						addDescendantsLeaves((NonLeaf<String, Geometry>) p.a, checked.b, checked.c, def, AbstractK2Raster.getSize() - 1);
+						addDescendantsLeaves((NonLeaf<String, Geometry>) p.a, checked.b, checked.c, def,
+								AbstractK2Raster.getSize() - 1);
 					}
 					break;
 				case PossibleOverlap:
 					if (!TreeExtensions.isLeaf(p.a)) {
 						for (Node<String, Geometry> c : ((NonLeaf<String, Geometry>) p.a).children()) {
-							S.push(new Tuple5<Node<String, Geometry>, Integer, Square, Long, Long>(c, checked.b, checked.c,
+							S.push(new Tuple5<Node<String, Geometry>, Integer, Square, Long, Long>(c, checked.b,
+									checked.c,
 									checked.d, checked.e));
 						}
 					} else {
-						MBROverlapType overlap = checkMBR(checked.b, checked.c, p.a.geometry().mbr(), function, checked.d, checked.e);
+						MBROverlapType overlap = checkMBR(checked.b, checked.c, p.a.geometry().mbr(), function,
+								checked.d, checked.e);
 						switch (overlap) {
 							case TotalOverlap:
-								extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, def, AbstractK2Raster.getSize() - 1);
+								extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, def,
+										AbstractK2Raster.getSize() - 1);
 								break;
 							case PartialOverlap:
-								extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, prob, AbstractK2Raster.getSize() - 1);
-								Logger.log(p.a.geometry().mbr(),Logger.LogLevel.DEBUG);
+								extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, prob,
+										AbstractK2Raster.getSize() - 1);
+								Logger.log(p.a.geometry().mbr(), Logger.LogLevel.DEBUG);
 								break;
 							case NoOverlap:
 								// ignored
@@ -401,7 +400,7 @@ public class RavenJoin {
 	 */
 	protected void combineLists(List<Pair<Geometry, Collection<PixelRange>>> def,
 			List<Pair<Geometry, Collection<PixelRange>>> prob, RasterFilterFunction function) {
-		Logger.log("def: " + def.size() + ", prob: " + prob.size(),Logger.LogLevel.DEBUG);
+		Logger.log("def: " + def.size() + ", prob: " + prob.size(), Logger.LogLevel.DEBUG);
 		for (Pair<Geometry, Collection<PixelRange>> pair : prob) {
 			Pair<Geometry, Collection<PixelRange>> result = new Pair<>(pair.first, new ArrayList<>());
 			for (PixelRange range : pair.second) {
