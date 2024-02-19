@@ -18,7 +18,6 @@ import dk.itu.raven.join.RasterFilterFunction;
 import dk.itu.raven.join.RavenJoin;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.util.Logger;
-import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.visualizer.Visualizer;
@@ -69,20 +68,21 @@ public class Raven {
 
         if (jct.ranges.size() == 2) {
             if (sampleSize.length > 1) {
-                Logger.log("WARNING: only one range was given, but more than one raster sample exists", LogLevel.WARNING);
+                Logger.log("WARNING: only one range was given, but more than one raster sample exists ("
+                        + sampleSize.length + ")", LogLevel.WARNING);
             }
             long lo = jct.ranges.get(0);
             long hi = jct.ranges.get(1);
             function = JoinFilterFunctions.rangeFilter(lo, hi);
         } else if (jct.ranges.size() == sampleSize.length * 2) {
+            Logger.log("using multiSampleRangeFilter", LogLevel.DEBUG);
             function = JoinFilterFunctions.multiSampleRangeFilter(jct.ranges, sampleSize, bitsUsed);
         } else if (jct.ranges.size() == 0) {
             function = JoinFilterFunctions.rangeFilter(Integer.MIN_VALUE, Integer.MAX_VALUE);
         } else {
-            throw new IllegalArgumentException("The number of provided search ranges does not match the number of raster samples");
+            throw new IllegalArgumentException(
+                    "The number of provided search ranges does not match the number of raster samples");
         }
-
-
 
         // create a R* tree with
         RTree<String, Geometry> rtree = api.generateRTree(data.first);
@@ -93,7 +93,7 @@ public class Raven {
         long startJoinNano = System.nanoTime();
         List<Pair<Geometry, Collection<PixelRange>>> result = join.join(function);
         long endJoinNano = System.nanoTime();
-        Logger.log("Build time: " + (endJoinNano - startJoinNano) / 1000000 + "ms", LogLevel.INFO);
+        Logger.log("Join time: " + (endJoinNano - startJoinNano) / 1000000 + "ms", LogLevel.INFO);
 
         // Visualize the result
         if (jct.outputPath != null) {

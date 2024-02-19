@@ -13,7 +13,7 @@ import com.github.davidmoten.rtree2.geometry.Rectangle;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.io.FileRasterReader;
-import dk.itu.raven.io.MilRasterReader;
+import dk.itu.raven.io.GeoToolsRasterReader;
 import dk.itu.raven.io.ShapfileReader;
 import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.join.RavenJoin;
@@ -90,7 +90,7 @@ public class RavenApi {
 	public Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Matrix> createReaders(String vectorPath,
 			String rasterPath) throws IOException {
 		// Read geo raster file
-		FileRasterReader rasterReader = new MilRasterReader(new File(rasterPath));
+		FileRasterReader rasterReader = new GeoToolsRasterReader(new File(rasterPath));
 
 		// get getTiff transform (used to transform from (lat, lon) to pixel coordinates
 		// in shapefileReader)

@@ -29,7 +29,7 @@ public class RastersMatrix extends Matrix {
     public long getWithinRangeLong(int r, int c) {
         long color = rasters.getPixelSample(0, c, r).intValue();
         for (int i = 1; i < rasters.getSamplesPerPixel(); i++) {
-            color <<= rasters.getBitsPerSample().get(i);
+            color <<= rasters.getBitsPerSample().get(i - 1);
             color += rasters.getPixelSample(i, c, r).intValue();
         }
         return color;

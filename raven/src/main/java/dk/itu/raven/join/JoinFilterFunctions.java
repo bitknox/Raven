@@ -17,7 +17,6 @@ public abstract class JoinFilterFunctions {
         };
     }
 
-    // TODO: Explain this with detailed comments. & Test this function
     public static RasterFilterFunction multiSampleRangeFilter(List<Long> ranges, int[] sampleSize, int totalBits) {
         return new RasterFilterFunction() {
             @Override
@@ -123,50 +122,6 @@ public abstract class JoinFilterFunctions {
                         differenceBefore = true;
 
                     bitsRemaining -= sampleSize[i];
-                }
-                return false;
-            }
-        };
-    }
-
-    // TODO: this is a function made for testing the other one, remove it?
-    public static RasterFilterFunction multiSampleRangeFilterSlow(List<Long> ranges, int[] sampleSize, int totalBits) {
-        return new RasterFilterFunction() {
-            @Override
-            public boolean containsWithin(long lo, long hi) {
-                for (long num = lo; num <= hi; num++) {
-                    int sum = 0;
-                    boolean bad = false;
-                    for (int i = 0; i < sampleSize.length; i++) {
-                        sum += sampleSize[i];
-                        long chunk = num >> (totalBits - sum);
-                        chunk &= (1 << sampleSize[i]) - 1;
-
-                        if (!(chunk >= ranges.get(i * 2) && chunk <= ranges.get(i * 2 + 1))) {
-                            bad = true;
-                            break;
-                        }
-                    }
-                    if (!bad) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            @Override
-            public boolean containsOutside(long lo, long hi) {
-                for (long num = lo; num <= hi; num++) {
-                    int sum = 0;
-                    for (int i = 0; i < sampleSize.length; i++) {
-                        sum += sampleSize[i];
-                        long chunk = num >> (totalBits - sum);
-                        chunk &= (1 << sampleSize[i]) - 1;
-
-                        if (!(chunk >= ranges.get(i * 2) && chunk <= ranges.get(i * 2 + 1))) {
-                            return true;
-                        }
-                    }
                 }
                 return false;
             }
