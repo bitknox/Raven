@@ -1,25 +1,11 @@
 package dk.itu.raven.ksquared;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.Random;
-import java.util.Stack;
 
 import org.junit.jupiter.api.Test;
-import org.geotools.api.metadata.citation.Address;
-import org.junit.jupiter.api.RepeatedTest;
 
-import dk.itu.raven.util.matrix.RandomMatrix;
-import dk.itu.raven.join.Square;
 import dk.itu.raven.util.LongArrayWrapper;
 import dk.itu.raven.util.PrimitiveArrayWrapper;
-import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.LongArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 
