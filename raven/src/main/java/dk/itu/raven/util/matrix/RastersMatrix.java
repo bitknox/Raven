@@ -10,8 +10,11 @@ public class RastersMatrix extends Matrix {
 
     public RastersMatrix(Rasters rasters) {
         super(rasters.getWidth(), rasters.getHeight(), 0);
-        for (int bits : rasters.getBitsPerSample()) {
-            this.bitsUsed += bits;
+        int numSamples = rasters.getSamplesPerPixel();
+        this.sampleSize = new int[numSamples];
+        for (int idx = 0; idx < numSamples; idx++) {
+            this.sampleSize[idx] = rasters.getBitsPerSample().get(idx);
+            this.bitsUsed += this.sampleSize[idx];
         }
         this.rasters = rasters;
     }
@@ -26,7 +29,7 @@ public class RastersMatrix extends Matrix {
     public long getWithinRangeLong(int r, int c) {
         long color = rasters.getPixelSample(0, c, r).intValue();
         for (int i = 1; i < rasters.getSamplesPerPixel(); i++) {
-            color <<= rasters.getBitsPerSample().get(i);
+            color <<= rasters.getBitsPerSample().get(i - 1);
             color += rasters.getPixelSample(i, c, r).intValue();
         }
         return color;
