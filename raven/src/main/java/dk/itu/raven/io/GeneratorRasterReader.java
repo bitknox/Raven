@@ -1,9 +1,11 @@
 package dk.itu.raven.io;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 import com.github.davidmoten.rtree2.geometry.Rectangle;
 
+import dk.itu.raven.SpatialDataChunk;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RandomMatrix;
@@ -43,5 +45,11 @@ public class GeneratorRasterReader implements RasterReader {
 	@Override
 	public TFWFormat getTransform() throws IOException {
 		return transform;
+	}
+
+	@Override
+	public Stream<SpatialDataChunk> streamRasters(Rectangle rect) throws IOException {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'streamRasters'");
 	}
 }

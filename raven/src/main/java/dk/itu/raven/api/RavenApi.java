@@ -2,14 +2,18 @@ package dk.itu.raven.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometries;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 import com.github.davidmoten.rtree2.geometry.Rectangle;
 
+import dk.itu.raven.JoinChunk;
+import dk.itu.raven.SpatialDataChunk;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.io.FileRasterReader;
@@ -20,7 +24,9 @@ import dk.itu.raven.join.RavenJoin;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.ksquared.K2RasterBuilder;
 import dk.itu.raven.ksquared.K2RasterIntBuilder;
+import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Pair;
+import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.join.RasterFilterFunction;
 
@@ -77,6 +83,69 @@ public class RavenApi {
 		AbstractK2Raster k2Raster = generateRasterStructure(data.second);
 		RTree<String, Geometry> rtree = generateRTree(data.first);
 		return new Pair<>(k2Raster, rtree);
+	}
+
+	public Stream<List<Pair<Geometry, Collection<PixelRange>>>> join(Stream<JoinChunk> stream) {
+		return stream.map(chunk -> {
+			if (!chunk.getRtree().root().isPresent())
+				return new ArrayList<>();
+			return new RavenJoin(chunk.getRaster(), chunk.getRtree()).join();
+		});
+	}
+
+	public Stream<JoinChunk> streamBuildStructures(String vectorPath, String rasterPath) throws IOException {
+		Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Stream<SpatialDataChunk>> data = createStreamers(
+				vectorPath, rasterPath);
+		// TODO: check if it is faster to just use the original rtree
+		RTree<String, Geometry> rtree = generateRTree(data.first);
+		Stream<SpatialDataChunk> streamRasters = data.second;
+		return streamRasters.map(chunk -> {
+			// RTree<String, Geometry> rtree2 = RTree.star().maxChildren(6).create();
+			// for (var entry :
+			// rtree.search(Geometries.rectangle(chunk.getOffset().getMinX(),
+			// chunk.getOffset().getMinY(),
+			// chunk.getOffset().getMaxX(), chunk.getOffset().getMaxY()))) {
+			// rtree2.add(entry);
+			// }
+			Logger.log("matrix[0,0]: " + chunk.getMatrix().get(0, 0), LogLevel.DEBUG);
+			return new JoinChunk(generateRasterStructure(chunk.getMatrix()), rtree);
+		});
+
+	}
+
+	/**
+	 * Reads the vector and stream raster data and returns the geometries and raster
+	 * data
+	 * 
+	 * @param vectorPath
+	 * @param rasterPath
+	 * @return a pair of the geometries and a stream of the raster data
+	 * @throws IOException
+	 */
+	public Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Stream<SpatialDataChunk>> createStreamers(
+			String vectorPath,
+			String rasterPath) throws IOException {
+		// Read geo raster file
+		FileRasterReader rasterReader = new GeoToolsRasterReader(new File(rasterPath));
+
+		// get getTiff transform (used to transform from (lat, lon) to pixel coordinates
+		// in shapefileReader)
+		TFWFormat format = rasterReader.getTransform();
+
+		ShapfileReader featureReader = new ShapfileReader(format);
+
+		// load geometries from shapefile
+		Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds> geometries = featureReader
+				.readShapefile(vectorPath);
+
+		// rectangle representing the bounds of the shapefile data
+		Rectangle rect = Geometries.rectangle(geometries.second.minX, geometries.second.minY,
+				geometries.second.maxX,
+				geometries.second.maxY);
+
+		Stream<SpatialDataChunk> rasterData = rasterReader.streamRasters(rect);
+
+		return new Pair<>(geometries, rasterData);
 	}
 
 	/**

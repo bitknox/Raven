@@ -1,8 +1,10 @@
 package dk.itu.raven;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collector;
 
 import com.beust.jcommander.JCommander;
 import com.github.davidmoten.rtree2.RTree;
@@ -47,8 +49,8 @@ public class Raven {
 
         RavenApi api = new RavenApi();
 
-        Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Matrix> data = api
-                .createReaders(jct.inputVector, jct.inputRaster);
+        Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Matrix> data = api.createReaders(jct.inputVector,
+                jct.inputRaster);
 
         // Build k2-raster structure
         long startBuildNano = System.nanoTime();
@@ -91,7 +93,12 @@ public class Raven {
         // construct and compute the join
         RavenJoin join = new RavenJoin(k2Raster, rtree);
         long startJoinNano = System.nanoTime();
-        List<Pair<Geometry, Collection<PixelRange>>> result = join.join(function);
+
+        List<Pair<Geometry, Collection<PixelRange>>> results = api
+                .join(api.streamBuildStructures(jct.inputVector, jct.inputRaster))
+                .collect(ArrayList::new, (l, x) -> l.addAll(x), (l, r) -> l.addAll(r));
+
+        // List<Pair<Geometry, Collection<PixelRange>>> result = join.join(function);
         long endJoinNano = System.nanoTime();
         Logger.log("Join time: " + (endJoinNano - startJoinNano) / 1000000 + "ms", LogLevel.INFO);
 
@@ -105,7 +112,7 @@ public class Raven {
 
             VisualizerOptions options = builder.build();
 
-            visual.drawResult(result, data.first.first, options);
+            visual.drawResult(results, data.first.first, options);
         }
 
         Logger.log("Done joining", LogLevel.INFO);
