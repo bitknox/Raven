@@ -15,7 +15,8 @@ public class CommandLineArgs {
 	@Parameter(names = { "--help", "-h" }, help = true)
 	public boolean help = false;
 
-	@Parameter(names = { "-log", "-verbose" }, description = "Level of verbosity", validateWith = {LogLevelValidator.class})
+	@Parameter(names = { "-log", "-verbose" }, description = "Level of verbosity", validateWith = {
+			LogLevelValidator.class })
 	public Logger.LogLevel verbose = Logger.LogLevel.WARNING;
 
 	@Parameter(names = { "-ir", "--input-raster" }, description = "Input raster file", required = true)
@@ -27,12 +28,8 @@ public class CommandLineArgs {
 	@Parameter(names = { "-o", "--output" }, description = "Optional join visualization output file")
 	public String outputPath = null;
 
-	@Parameter(names = {"-ranges","--filter-ranges"}, description = "", splitter = RangeSplitter.class)
-	public List<Long> ranges = Arrays.asList((long)Integer.MIN_VALUE,(long)Integer.MAX_VALUE);
+	@Parameter(names = { "-ranges",
+			"--filter-ranges" }, description = "Filter function. If one range is given it will filter based on the packed value. If a range is given for every sample, it will accept only values that fall within the range for all samples", splitter = RangeSplitter.class)
+	public List<Long> ranges = Arrays.asList((long) Integer.MIN_VALUE, (long) Integer.MAX_VALUE);
 
-	// @Parameter(names = { "-min", "--min-value" }, description = "Minimum filter value")
-	// public Integer minValue = Integer.MIN_VALUE;
-
-	// @Parameter(names = { "-max", "--max-filter" }, description = "Maximum filter value")
-	// public Integer maxValue = Integer.MAX_VALUE;
 }
