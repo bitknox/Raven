@@ -40,9 +40,9 @@ public class MatrixReader implements RasterReader {
 	}
 
 	@Override
-	public Stream<SpatialDataChunk> streamRasters(Rectangle rect) throws IOException {
+	public Stream<SpatialDataChunk> rasterPartitionStream(Rectangle rect, int widthStep, int heightStep)
+			throws IOException {
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'streamRasters'");
+		throw new UnsupportedOperationException("Unimplemented method 'rasterPartitionStream'");
 	}
-
 }

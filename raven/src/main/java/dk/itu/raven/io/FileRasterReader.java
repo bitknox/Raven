@@ -2,8 +2,8 @@ package dk.itu.raven.io;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.stream.Stream;
 import java.util.ArrayList;
+import java.util.stream.Stream;
 
 import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder;
 import org.geotools.coverage.grid.io.imageio.geotiff.PixelScale;
@@ -15,11 +15,11 @@ import com.github.davidmoten.rtree2.geometry.Rectangle;
 
 import dk.itu.raven.SpatialDataChunk;
 
-// TODO: Support inline tfw.
 public abstract class FileRasterReader implements RasterReader {
 	File tiff;
 	File tfw;
 
+	ImageMetadata metadata;
 	TFWFormat transform;
 
 	public FileRasterReader(File directory) throws IOException {
@@ -56,21 +56,25 @@ public abstract class FileRasterReader implements RasterReader {
 			transform = new TFWFormat(pixelScale.getScaleX(), 0, 0, -pixelScale.getScaleY(), tiePoint[0].getValueAt(3),
 					tiePoint[0].getValueAt(4));
 		}
+
+		this.metadata = readImageMetadata();
 	}
 
 	public TFWFormat getTransform() {
 		return transform;
 	}
 
-	public abstract ImageMetadata readImageMetadata() throws IOException;
+	protected abstract ImageMetadata readImageMetadata() throws IOException;
 
-	public Stream<SpatialDataChunk> streamRasters(Rectangle rect) throws IOException {
-		ImageMetadata imageSize = readImageMetadata();
+	public ImageMetadata getImageMetadata() {
+		return this.metadata;
+	};
 
-		int widthStep = 2048;
-		int heightStep = 2048;
+	public Stream<SpatialDataChunk> rasterPartitionStream(Rectangle rect, int widthStep, int heightStep)
+			throws IOException {
+		ImageMetadata imageSize = getImageMetadata();
 
-		// Read between
+		// Limit to image size.
 		int startX = (int) Math.max(rect.x1(), 0);
 		int startY = (int) Math.max(rect.y1(), 0);
 		int endX = (int) Math.ceil(Math.min(imageSize.getWidth(), rect.x2()));

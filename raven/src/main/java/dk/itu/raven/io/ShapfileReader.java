@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.jts.geom.Geometry;
 import org.geotools.api.data.FileDataStore;
 import org.geotools.api.data.FileDataStoreFinder;
 import org.geotools.api.data.SimpleFeatureSource;
@@ -15,9 +14,10 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.GeometryAttributeImpl;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 
-import com.github.davidmoten.rtree2.geometry.Point;
 import com.github.davidmoten.rtree2.geometry.Geometries;
+import com.github.davidmoten.rtree2.geometry.Point;
 
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.util.Pair;
@@ -26,8 +26,10 @@ public class ShapfileReader {
 
 	private TFWFormat transform;
 	private ShapeFileBounds bounds;
+	private File file;
 
-	public ShapfileReader(TFWFormat transform) {
+	public ShapfileReader(String path, TFWFormat transform) {
+		this.file = new File(path);
 		this.transform = transform;
 		this.bounds = new ShapeFileBounds();
 	}
@@ -54,8 +56,7 @@ public class ShapfileReader {
 		}
 	}
 
-	public Pair<Iterable<Polygon>, ShapeFileBounds> readShapefile(String path) throws IOException {
-		File file = new File(path);
+	public Pair<Iterable<Polygon>, ShapeFileBounds> readShapefile() throws IOException {
 		FileDataStore myData = FileDataStoreFinder.getDataStore(file);
 		SimpleFeatureSource source = myData.getFeatureSource();
 		bounds.reset();

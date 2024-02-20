@@ -61,14 +61,12 @@ public class GeoToolsRasterReader extends FileRasterReader {
     }
 
     @Override
-    public Stream<SpatialDataChunk> streamRasters(Rectangle rect) throws IOException {
+    public Stream<SpatialDataChunk> rasterPartitionStream(Rectangle rect, int widthStep, int heightStep)
+            throws IOException {
 
         GeoTiffReader reader = new GeoTiffReader(tiff);
         int imageWidth = reader.getOriginalGridRange().getSpan(0);
         int imageHeight = reader.getOriginalGridRange().getSpan(1);
-
-        int widthStep = 200;
-        int heightStep = 200;
 
         int startX = 0;
         int startY = 0;

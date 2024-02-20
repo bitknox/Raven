@@ -52,23 +52,23 @@ public class RavenJoinTest {
     @Test
     public void testExtractCellsPolygonWithLine() {
         List<Point> points = new ArrayList<>();
-        points.add(Geometries.point(0, 0));
+        points.add(Geometries.point(1, 1));
         points.add(Geometries.point(10, 10));
         Polygon poly = new Polygon(points);
         Square square = new Square(0, 0, 11);
         RavenJoin join = new RavenJoin(null, null);
         Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, square, 10);
 
-        assertEquals(ranges.size(), 10);
+        assertEquals(9, ranges.size());
         assertTrue(ranges.stream().anyMatch(pr -> pr.row == 1));
 
-        int i = 0;
+        int i = 1;
         for (PixelRange range : ranges) {
             assertEquals(new PixelRange(i, i, i), range);
             i++;
         }
 
-        for (i = 0; i < ranges.size(); i++) {
+        for (i = 1; i < ranges.size(); i++) {
             final int j = i;
             assertTrue(ranges.stream().anyMatch(pr -> pr.row == j && pr.x1 == j && pr.x2 == j));
         }

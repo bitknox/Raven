@@ -51,7 +51,8 @@ public class RavenJoin {
 	public RavenJoin(AbstractK2Raster AbstractK2Raster, RTree<String, Geometry> tree) {
 		this.AbstractK2Raster = AbstractK2Raster;
 		this.tree = tree;
-		this.offset = new java.awt.Rectangle(0, 0, AbstractK2Raster.getSize(), AbstractK2Raster.getSize());
+		this.offset = new java.awt.Rectangle(0, 0, 0, 0); // width and height are set to 0 since only the x and y are
+															// needed
 	}
 
 	/**

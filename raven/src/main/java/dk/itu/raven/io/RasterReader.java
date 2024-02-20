@@ -12,7 +12,9 @@ public interface RasterReader {
 
 	public abstract Matrix readRasters(Rectangle rect) throws IOException;
 
-	public abstract Stream<SpatialDataChunk> streamRasters(Rectangle rect) throws IOException;
+	public abstract Stream<SpatialDataChunk> rasterPartitionStream(Rectangle rect, int widthPartitionSize,
+			int heightPartitionSize)
+			throws IOException;
 
 	public abstract TFWFormat getTransform() throws IOException;
 

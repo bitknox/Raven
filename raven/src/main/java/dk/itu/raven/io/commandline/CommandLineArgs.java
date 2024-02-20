@@ -32,4 +32,6 @@ public class CommandLineArgs {
 			"--filter-ranges" }, description = "Filter function. If one range is given it will filter based on the packed value. If a range is given for every sample, it will accept only values that fall within the range for all samples", splitter = RangeSplitter.class)
 	public List<Long> ranges = Arrays.asList((long) Integer.MIN_VALUE, (long) Integer.MAX_VALUE);
 
+	@Parameter(names = { "-tile", "-tile-size" }, description = "Size of the raster image tiles")
+	public int tileSize = 2048;
 }
