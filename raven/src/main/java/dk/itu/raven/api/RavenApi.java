@@ -17,7 +17,8 @@ import dk.itu.raven.SpatialDataChunk;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.io.FileRasterReader;
-import dk.itu.raven.io.GeoToolsRasterReader;
+import dk.itu.raven.io.ImageIORasterReader;
+import dk.itu.raven.io.ImageMetadata;
 import dk.itu.raven.io.ShapfileReader;
 import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.join.RavenJoin;
@@ -85,17 +86,18 @@ public class RavenApi {
 		return new Pair<>(k2Raster, rtree);
 	}
 
-	public Stream<List<Pair<Geometry, Collection<PixelRange>>>> join(Stream<JoinChunk> stream) {
+	public Stream<List<Pair<Geometry, Collection<PixelRange>>>> join(Stream<JoinChunk> stream,
+			RasterFilterFunction function) {
 		return stream.map(chunk -> {
 			if (!chunk.getRtree().root().isPresent())
 				return new ArrayList<>();
-			return new RavenJoin(chunk.getRaster(), chunk.getRtree()).join();
+			return new RavenJoin(chunk.getRaster(), chunk.getRtree(), chunk.getOffset()).join(function);
 		});
 	}
 
-	public Stream<JoinChunk> streamBuildStructures(String vectorPath, String rasterPath) throws IOException {
-		Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Stream<SpatialDataChunk>> data = createStreamers(
-				vectorPath, rasterPath);
+	public Stream<JoinChunk> streamBuildStructures(
+			Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Stream<SpatialDataChunk>> data)
+			throws IOException {
 		// TODO: check if it is faster to just use the original rtree
 		RTree<String, Geometry> rtree = generateRTree(data.first);
 		Stream<SpatialDataChunk> streamRasters = data.second;
@@ -108,9 +110,17 @@ public class RavenApi {
 			// rtree2.add(entry);
 			// }
 			Logger.log("matrix[0,0]: " + chunk.getMatrix().get(0, 0), LogLevel.DEBUG);
-			return new JoinChunk(generateRasterStructure(chunk.getMatrix()), rtree);
+			return new JoinChunk(generateRasterStructure(chunk.getMatrix()), chunk.getOffset(), rtree);
 		});
 
+	}
+
+	public FileRasterReader getRasterReader(String rasterPath) throws IOException {
+		return new ImageIORasterReader(new File(rasterPath));
+	}
+
+	public ImageMetadata getImageMetadata(String rasterPath) throws IOException {
+		return getRasterReader(rasterPath).readImageMetadata();
 	}
 
 	/**
@@ -126,7 +136,7 @@ public class RavenApi {
 			String vectorPath,
 			String rasterPath) throws IOException {
 		// Read geo raster file
-		FileRasterReader rasterReader = new GeoToolsRasterReader(new File(rasterPath));
+		FileRasterReader rasterReader = getRasterReader(rasterPath);
 
 		// get getTiff transform (used to transform from (lat, lon) to pixel coordinates
 		// in shapefileReader)
@@ -159,7 +169,7 @@ public class RavenApi {
 	public Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Matrix> createReaders(String vectorPath,
 			String rasterPath) throws IOException {
 		// Read geo raster file
-		FileRasterReader rasterReader = new GeoToolsRasterReader(new File(rasterPath));
+		FileRasterReader rasterReader = getRasterReader(rasterPath);
 
 		// get getTiff transform (used to transform from (lat, lon) to pixel coordinates
 		// in shapefileReader)

@@ -1,9 +1,11 @@
 package dk.itu.raven;
 
+import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 import java.util.stream.Collector;
 
 import com.beust.jcommander.JCommander;
@@ -13,6 +15,7 @@ import com.github.davidmoten.rtree2.geometry.Geometry;
 import dk.itu.raven.api.RavenApi;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
+import dk.itu.raven.io.ImageMetadata;
 import dk.itu.raven.io.ShapfileReader;
 import dk.itu.raven.io.commandline.CommandLineArgs;
 import dk.itu.raven.join.JoinFilterFunctions;
@@ -49,36 +52,27 @@ public class Raven {
 
         RavenApi api = new RavenApi();
 
-        Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Matrix> data = api.createReaders(jct.inputVector,
-                jct.inputRaster);
+        ImageMetadata metadata = api.getImageMetadata(jct.inputRaster);
 
-        // Build k2-raster structure
-        long startBuildNano = System.nanoTime();
-        AbstractK2Raster k2Raster = api.generateRasterStructure(data.second);
-        long endBuildNano = System.nanoTime();
-        Logger.log("Build time: " + (endBuildNano - startBuildNano) / 1000000 + "ms", LogLevel.INFO);
-        Logger.log("Done Building Raster", LogLevel.INFO);
-        Logger.log(k2Raster.tree.size(), LogLevel.DEBUG);
+        int totalBits = 0;
+        for (int bits : metadata.getBitsPerSample()) {
+            totalBits += bits;
+        }
 
-        int w = data.second.getWidth();
-        int h = data.second.getHeight();
-        int[] sampleSize = data.second.getSampleSize();
-        int bitsUsed = data.second.getBitsUsed();
-        data.second = null;
-
-        RasterFilterFunction function;
+        RasterFilterFunction function = JoinFilterFunctions.acceptAll();
 
         if (jct.ranges.size() == 2) {
-            if (sampleSize.length > 1) {
+            if (metadata.getBitsPerSample().length > 1) {
                 Logger.log("WARNING: only one range was given, but more than one raster sample exists ("
-                        + sampleSize.length + ")", LogLevel.WARNING);
+                        + metadata.getBitsPerSample().length + ")", LogLevel.WARNING);
             }
             long lo = jct.ranges.get(0);
             long hi = jct.ranges.get(1);
             function = JoinFilterFunctions.rangeFilter(lo, hi);
-        } else if (jct.ranges.size() == sampleSize.length * 2) {
+        } else if (jct.ranges.size() == metadata.getBitsPerSample().length * 2) {
             Logger.log("using multiSampleRangeFilter", LogLevel.DEBUG);
-            function = JoinFilterFunctions.multiSampleRangeFilter(jct.ranges, sampleSize, bitsUsed);
+            function = JoinFilterFunctions.multiSampleRangeFilter(jct.ranges, metadata.getBitsPerSample(),
+                    totalBits);
         } else if (jct.ranges.size() == 0) {
             function = JoinFilterFunctions.rangeFilter(Integer.MIN_VALUE, Integer.MAX_VALUE);
         } else {
@@ -86,25 +80,22 @@ public class Raven {
                     "The number of provided search ranges does not match the number of raster samples");
         }
 
-        // create a R* tree with
-        RTree<String, Geometry> rtree = api.generateRTree(data.first);
-        Logger.log("Done Building rtree", LogLevel.INFO);
+        Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Stream<SpatialDataChunk>> data = api
+                .createStreamers(jct.inputVector, jct.inputRaster);
 
-        // construct and compute the join
-        RavenJoin join = new RavenJoin(k2Raster, rtree);
         long startJoinNano = System.nanoTime();
-
         List<Pair<Geometry, Collection<PixelRange>>> results = api
-                .join(api.streamBuildStructures(jct.inputVector, jct.inputRaster))
+                .join(api.streamBuildStructures(data),
+                        function)
                 .collect(ArrayList::new, (l, x) -> l.addAll(x), (l, r) -> l.addAll(r));
-
-        // List<Pair<Geometry, Collection<PixelRange>>> result = join.join(function);
         long endJoinNano = System.nanoTime();
-        Logger.log("Join time: " + (endJoinNano - startJoinNano) / 1000000 + "ms", LogLevel.INFO);
+
+        Logger.log("Streamed Join time: " + (endJoinNano - startJoinNano) / 1000000 + "ms", LogLevel.INFO);
 
         // Visualize the result
         if (jct.outputPath != null) {
-            Visualizer visual = new Visualizer(w, h);
+
+            Visualizer visual = new Visualizer(metadata.getWidth(), metadata.getHeight());
             VisualizerOptionsBuilder builder = new VisualizerOptionsBuilder();
 
             builder.setOutputPath(jct.outputPath);

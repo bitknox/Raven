@@ -3,11 +3,9 @@ package dk.itu.raven.io;
 import java.awt.Dimension;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
-import javax.media.jai.ROI;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.stream.Stream;
 
 import org.geotools.api.parameter.GeneralParameterValue;
@@ -15,20 +13,16 @@ import org.geotools.api.parameter.ParameterValue;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder;
 import org.geotools.coverage.grid.io.imageio.geotiff.PixelScale;
 import org.geotools.coverage.grid.io.imageio.geotiff.TiePoint;
-import org.geotools.coverage.util.CoverageUtilities;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.geotools.geometry.GeneralBounds;
 
 import com.github.davidmoten.rtree2.geometry.Rectangle;
 
 import dk.itu.raven.SpatialDataChunk;
-import dk.itu.raven.geometry.PixelCoordinate;
-import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.AwtRasterMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 
@@ -139,6 +133,12 @@ public class GeoToolsRasterReader extends FileRasterReader {
         gg.setValue(new GridGeometry2D(range, envelope));
         params[0] = gg;
         return params;
+    }
+
+    @Override
+    public ImageMetadata readImageMetadata() throws IOException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'readImageMetadata'");
     }
 
 }

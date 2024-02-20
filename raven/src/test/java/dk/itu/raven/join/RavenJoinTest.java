@@ -161,7 +161,7 @@ public class RavenJoinTest {
         rtree = rtree.add(null, p2);
 
         RavenJoin join = new RavenJoin(k2, rtree);
-        List<Pair<Geometry, Collection<PixelRange>>> res = join.join(42, 42);
+        List<Pair<Geometry, Collection<PixelRange>>> res = join.join(JoinFilterFunctions.rangeFilter(42, 42));
 
         assertEquals(res.get(0).first, p);
         int idx = 0;

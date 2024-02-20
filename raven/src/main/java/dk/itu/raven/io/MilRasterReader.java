@@ -2,11 +2,10 @@ package dk.itu.raven.io;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.stream.Stream;
 
 import com.github.davidmoten.rtree2.geometry.Rectangle;
 
-import dk.itu.raven.SpatialDataChunk;
+import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RastersMatrix;
 import mil.nga.tiff.FileDirectory;
@@ -19,8 +18,6 @@ public class MilRasterReader extends FileRasterReader {
 
 	public MilRasterReader(File directory) throws IOException {
 		super(directory);
-		if (tfw == null)
-			throw new IOException("no TFW file found");
 	}
 
 	@Override
@@ -45,9 +42,16 @@ public class MilRasterReader extends FileRasterReader {
 	}
 
 	@Override
-	public Stream<SpatialDataChunk> streamRasters(Rectangle rect) throws IOException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'streamRasters'");
-	}
+	public ImageMetadata readImageMetadata() throws IOException {
+		long start = System.currentTimeMillis();
+		TIFFImage image = TiffReader.readTiff(tiff);
+		long end = System.currentTimeMillis();
+		Logger.log("Read tiff in " + (end - start) + "ms", Logger.LogLevel.INFO);
+		FileDirectory directory = image.getFileDirectory();
+		int imageWidth = directory.getImageWidth().intValue();
+		int imageHeight = directory.getImageHeight().intValue();
 
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'readImageMetadata'");
+	}
 }

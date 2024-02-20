@@ -40,10 +40,18 @@ public class RavenJoin {
 
 	private AbstractK2Raster AbstractK2Raster;
 	private RTree<String, Geometry> tree;
+	private java.awt.Rectangle offset;
+
+	public RavenJoin(AbstractK2Raster AbstractK2Raster, RTree<String, Geometry> tree, java.awt.Rectangle offset) {
+		this.AbstractK2Raster = AbstractK2Raster;
+		this.tree = tree;
+		this.offset = offset;
+	}
 
 	public RavenJoin(AbstractK2Raster AbstractK2Raster, RTree<String, Geometry> tree) {
 		this.AbstractK2Raster = AbstractK2Raster;
 		this.tree = tree;
+		this.offset = new java.awt.Rectangle(0, 0, AbstractK2Raster.getSize(), AbstractK2Raster.getSize());
 	}
 
 	/**
@@ -98,16 +106,20 @@ public class RavenJoin {
 			int start = 0;
 			for (int x : bst.keys()) {
 				if ((bst.get(x) % 2) == 0) { // an even number of intersections happen at this point
-					if (!inRange) {
+					if (!inRange && x != 0 && x != rasterBounding.getSize() && x != maxX) {
 						// if a range is ongoing, ignore these intersections, otherwise add this single
-						// pixel as a range
-						ranges.add(new PixelRange(y + rasterBounding.getTopY(), x + rasterBounding.getTopX(),
+						// pixel as a range. If there is an even number of intersections at the edge of
+						// the viewport, it should not be added as a single pixel, as that means a
+						// vector-shape has both started and ended outside the image.
+						ranges.add(new PixelRange(y + rasterBounding.getTopY(),
+								x + rasterBounding.getTopX(),
 								x + rasterBounding.getTopX()));
 					}
 				} else {
 					if (inRange) {
 						inRange = false;
-						ranges.add(new PixelRange(y + rasterBounding.getTopY(), start + rasterBounding.getTopX(),
+						ranges.add(new PixelRange(y + rasterBounding.getTopY(),
+								start + rasterBounding.getTopX(),
 								x + rasterBounding.getTopX()));
 					} else {
 						inRange = true;
@@ -307,16 +319,6 @@ public class RavenJoin {
 		return join(JoinFilterFunctions.acceptAll());
 	}
 
-	/**
-	 * joins without defining a filtering function
-	 * 
-	 * @return a list of Geometries paired with a collection of the pixelranges that
-	 *         it contains
-	 */
-	public List<Pair<Geometry, Collection<PixelRange>>> join(long lo, long hi) {
-		return join(JoinFilterFunctions.rangeFilter(lo, hi));
-	}
-
 	// based on:
 	// https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0226943&type=printable
 	/**
@@ -333,12 +335,13 @@ public class RavenJoin {
 		Pair<Long, Long> minMax = AbstractK2Raster.getValueRange();
 
 		for (Node<String, Geometry> node : TreeExtensions.getChildren(tree.root().get())) {
-			S.push(new Tuple5<>(node, 0, new Square(0, 0, AbstractK2Raster.getSize()), minMax.first, minMax.second));
+			S.push(new Tuple5<>(node, 0, new Square(offset.x, offset.y, AbstractK2Raster.getSize()), minMax.first,
+					minMax.second));
 		}
 
 		while (!S.empty()) {
 			Tuple5<Node<String, Geometry>, Integer, Square, Long, Long> p = S.pop();
-			if (!new Square(0, 0, AbstractK2Raster.getSize()).intersects(p.a.geometry().mbr()))
+			if (!new Square(offset.x, offset.y, AbstractK2Raster.getSize()).intersects(p.a.geometry().mbr()))
 				continue;
 			Tuple5<QuadOverlapType, Integer, Square, Long, Long> checked = checkQuadrant(p.b, p.c, p.a.geometry().mbr(),
 					function, p.d,
@@ -404,7 +407,8 @@ public class RavenJoin {
 		for (Pair<Geometry, Collection<PixelRange>> pair : prob) {
 			Pair<Geometry, Collection<PixelRange>> result = new Pair<>(pair.first, new ArrayList<>());
 			for (PixelRange range : pair.second) {
-				PrimitiveArrayWrapper values = AbstractK2Raster.getWindow(range.row, range.row, range.x1, range.x2);
+				PrimitiveArrayWrapper values = AbstractK2Raster.getWindow(range.row - offset.y, range.row - offset.y,
+						range.x1 - offset.x, range.x2 - offset.x);
 				for (int i = 0; i < values.length(); i++) {
 					int start = i;
 					while (i < values.length() && function.containsWithin(values.get(i), values.get(i))) {
