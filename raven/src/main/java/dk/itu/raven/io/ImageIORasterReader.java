@@ -33,6 +33,7 @@ public class ImageIORasterReader extends FileRasterReader {
     @Override
     public Matrix readRasters(Rectangle rect) throws IOException {
         ImageReader reader = ImageIO.getImageReaders(new FileImageInputStream(tiff)).next();
+        reader.setInput(new FileImageInputStream(tiff));
         ImageReadParam param = reader.getDefaultReadParam();
         int minX = (int) Math.max(rect.x1(), 0.0);
         int minY = (int) Math.max(rect.y1(), 0.0);
@@ -56,26 +57,27 @@ public class ImageIORasterReader extends FileRasterReader {
         reader.setInput(new FileImageInputStream(tiff));
 
         IIOMetadata metadata = reader.getImageMetadata(0);
-        String formatString = metadata.getNativeMetadataFormatName();
         Element metadataNode = (Element) metadata.getAsTree("javax_imageio_1.0");
-        NodeList lst = metadataNode.getElementsByTagName("*");
+        // NodeList lst = metadataNode.getElementsByTagName("*");
 
-        for (int i = 0; i < lst.getLength(); i++) {
-            if (lst.item(i).getNodeName().equals("PaletteEntry"))
-                continue;
-            Logger.log(lst.item(i).getNodeName() + ": ", LogLevel.DEBUG);
-            for (int j = 0; j < lst.item(i).getAttributes().getLength(); j++) {
-                Logger.log("  " + lst.item(i).getAttributes().item(j).getNodeName() + ": "
-                        + lst.item(i).getAttributes().item(j).getNodeValue(), LogLevel.DEBUG);
-            }
-        }
+        // for (int i = 0; i < lst.getLength(); i++) {
+        // if (lst.item(i).getNodeName().equals("PaletteEntry"))
+        // continue;
+        // Logger.log(lst.item(i).getNodeName() + ": ", LogLevel.DEBUG);
+        // for (int j = 0; j < lst.item(i).getAttributes().getLength(); j++) {
+        // Logger.log(" " + lst.item(i).getAttributes().item(j).getNodeName() + ": "
+        // + lst.item(i).getAttributes().item(j).getNodeValue(), LogLevel.DEBUG);
+        // }
+        // }
 
-        int width = Integer
-                .parseInt(metadataNode.getElementsByTagName("ImageWidth").item(0).getAttributes().getNamedItem("value")
-                        .getNodeValue());
-        int height = Integer
-                .parseInt(metadataNode.getElementsByTagName("ImageLength").item(0).getAttributes().getNamedItem("value")
-                        .getNodeValue());
+        int width = reader.getWidth(0);
+        int height = reader.getHeight(0);
+        // int width = Integer
+        // .parseInt(metadataNode.getElementsByTagName("ImageWidth").item(0).getAttributes().getNamedItem("value")
+        // .getNodeValue());
+        // int height = Integer
+        // .parseInt(metadataNode.getElementsByTagName("ImageLength").item(0).getAttributes().getNamedItem("value")
+        // .getNodeValue());
         int samplesPerPixel = Integer
                 .parseInt(metadataNode.getElementsByTagName("NumChannels").item(0).getAttributes().getNamedItem("value")
                         .getNodeValue());
