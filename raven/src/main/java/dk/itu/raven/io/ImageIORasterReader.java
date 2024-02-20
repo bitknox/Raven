@@ -3,7 +3,6 @@ package dk.itu.raven.io;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
@@ -15,7 +14,6 @@ import org.w3c.dom.Element;
 
 import com.github.davidmoten.rtree2.geometry.Rectangle;
 
-import dk.itu.raven.SpatialDataChunk;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.matrix.AwtRasterMatrix;
 import dk.itu.raven.util.matrix.Matrix;

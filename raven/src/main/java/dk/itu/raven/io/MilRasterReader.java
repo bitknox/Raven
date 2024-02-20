@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import com.github.davidmoten.rtree2.geometry.Rectangle;
 
-import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RastersMatrix;
 import mil.nga.tiff.FileDirectory;
@@ -43,14 +42,6 @@ public class MilRasterReader extends FileRasterReader {
 
 	@Override
 	public ImageMetadata readImageMetadata() throws IOException {
-		long start = System.currentTimeMillis();
-		TIFFImage image = TiffReader.readTiff(tiff);
-		long end = System.currentTimeMillis();
-		Logger.log("Read tiff in " + (end - start) + "ms", Logger.LogLevel.INFO);
-		FileDirectory directory = image.getFileDirectory();
-		int imageWidth = directory.getImageWidth().intValue();
-		int imageHeight = directory.getImageHeight().intValue();
-
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'readImageMetadata'");
 	}
