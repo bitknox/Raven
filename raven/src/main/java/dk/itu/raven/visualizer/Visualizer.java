@@ -15,6 +15,8 @@ import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 import com.github.davidmoten.rtree2.geometry.Point;
 
+import dk.itu.raven.geometry.GeometryUtil;
+import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.io.ShapefileReader;
@@ -39,6 +41,15 @@ public class Visualizer {
 		this.r = new Random();
 	}
 
+	private Iterable<Polygon> getFeatures(ShapefileReader shapeFileReader) throws IOException {
+		Pair<Iterable<Polygon>, ShapeFileBounds> geometries = shapeFileReader.readShapefile();
+		Offset<Double> offset = GeometryUtil.getGeometryOffset(geometries.second);
+		for (Polygon geom : geometries.first) {
+			geom.offset(offset.getOffsetX(), offset.getOffsetY());
+		}
+		return geometries.first;
+	}
+
 	/**
 	 * Draws a join result with with geometries laid on top of the raster result.
 	 * 
@@ -49,12 +60,7 @@ public class Visualizer {
 	 */
 	public BufferedImage drawResult(AbstractJoinResult results,
 			ShapefileReader shapeFileReader, VisualizerOptions options) throws IOException {
-		Pair<Iterable<Polygon>, ShapeFileBounds> geometries = shapeFileReader.readShapefile();
-		double offsetX = geometries.second.minX > 0 ? -geometries.second.minX : 0;
-		double offsetY = geometries.second.minY > 0 ? -geometries.second.minY : 0;
-		for (Polygon geom : geometries.first) {
-			geom.offset(offsetX, offsetY);
-		}
+		Iterable<Polygon> features = getFeatures(shapeFileReader);
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_BYTE_INDEXED);
 		Graphics2D rasterGraphics = image.createGraphics();
 		rasterGraphics.setColor(Color.white);
@@ -70,7 +76,7 @@ public class Visualizer {
 			}
 		});
 		rasterGraphics.setColor(Color.RED);
-		for (Polygon poly : geometries.first) {
+		for (Polygon poly : features) {
 			Point old = poly.getFirst();
 			for (Point next : poly) {
 				rasterGraphics.drawLine((int) old.x(), (int) old.y(), (int) next.x(), (int) next.y());
@@ -91,7 +97,8 @@ public class Visualizer {
 	 * @return A buffered image showing the outlines of all polygons in
 	 *         {@code features}
 	 */
-	public BufferedImage drawShapefile(Iterable<Polygon> features, VisualizerOptions options) throws IOException {
+	public BufferedImage drawShapefile(ShapefileReader shapeFileReader, VisualizerOptions options) throws IOException {
+		Iterable<Polygon> features = getFeatures(shapeFileReader);
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D vectorGraphics = image.createGraphics();
 		vectorGraphics.setColor(Color.white);
@@ -122,8 +129,8 @@ public class Visualizer {
 	 * @param features The vectorfile features
 	 * @return
 	 */
-	public BufferedImage drawShapefile(Iterable<Polygon> features) throws IOException {
-		return drawShapefile(features, new VisualizerOptionsBuilder().build());
+	public BufferedImage drawShapefile(ShapefileReader shapeFileReader) throws IOException {
+		return drawShapefile(shapeFileReader, new VisualizerOptionsBuilder().build());
 	}
 
 	/**
@@ -200,8 +207,10 @@ public class Visualizer {
 	 * @return A buffered image containing both vector shapes, MBRs from the R*-tree
 	 *         and K2 raster nodes drawn on top of eachother
 	 */
-	public BufferedImage drawVectorRasterOverlap(Iterable<Polygon> features, RTree<String, Geometry> tree,
+	public BufferedImage drawVectorRasterOverlap(ShapefileReader shapeFileReader, RTree<String, Geometry> tree,
 			K2Raster k2Raster, int k2RecursionDepth, VisualizerOptions options) throws IOException {
+		Iterable<Polygon> features = getFeatures(shapeFileReader);
+
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics = image.createGraphics();
 

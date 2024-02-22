@@ -70,8 +70,7 @@ public abstract class FileRasterReader implements IRasterReader {
 		return this.metadata;
 	};
 
-	public Stream<SpatialDataChunk> rasterPartitionStream(Rectangle rect, int widthStep, int heightStep)
-			throws IOException {
+	public Stream<SpatialDataChunk> rasterPartitionStream(Rectangle rect, int widthStep, int heightStep) {
 		ImageMetadata imageSize = getImageMetadata();
 
 		// Limit to image size.
@@ -98,8 +97,9 @@ public abstract class FileRasterReader implements IRasterReader {
 				return chunk;
 			} catch (Exception e) {
 				e.printStackTrace();
+				System.exit(-1);
+				return null; // unreachable
 			}
-			return null;
 		});
 	}
 }
