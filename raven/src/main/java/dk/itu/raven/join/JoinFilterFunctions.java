@@ -3,8 +3,8 @@ package dk.itu.raven.join;
 import java.util.List;
 
 public abstract class JoinFilterFunctions {
-    public static RasterFilterFunction acceptAll() {
-        return new RasterFilterFunction() {
+    public static IRasterFilterFunction acceptAll() {
+        return new IRasterFilterFunction() {
             @Override
             public boolean containsWithin(long lo, long hi) {
                 return true;
@@ -17,8 +17,8 @@ public abstract class JoinFilterFunctions {
         };
     }
 
-    public static RasterFilterFunction rangeFilter(long lo, long hi) {
-        return new RasterFilterFunction() {
+    public static IRasterFilterFunction rangeFilter(long lo, long hi) {
+        return new IRasterFilterFunction() {
             @Override
             public boolean containsWithin(long lo2, long hi2) {
                 return lo2 <= hi && lo <= hi2;
@@ -31,8 +31,8 @@ public abstract class JoinFilterFunctions {
         };
     }
 
-    public static RasterFilterFunction multiSampleRangeFilter(List<Long> ranges, int[] sampleSize, int totalBits) {
-        return new RasterFilterFunction() {
+    public static IRasterFilterFunction multiSampleRangeFilter(List<Long> ranges, int[] sampleSize, int totalBits) {
+        return new IRasterFilterFunction() {
             @Override
             public boolean containsWithin(long lo, long hi) {
                 boolean lowerMet = false; // signifies that we are allowed to set all further lom's to 0

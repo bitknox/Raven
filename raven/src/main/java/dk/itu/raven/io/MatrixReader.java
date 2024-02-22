@@ -1,13 +1,15 @@
 package dk.itu.raven.io;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 import com.github.davidmoten.rtree2.geometry.Rectangle;
 
+import dk.itu.raven.SpatialDataChunk;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 
-public class MatrixReader implements RasterReader {
+public class MatrixReader implements IRasterReader {
 	public Matrix matrix;
 	public TFWFormat transform;
 
@@ -37,4 +39,10 @@ public class MatrixReader implements RasterReader {
 		return transform;
 	}
 
+	@Override
+	public Stream<SpatialDataChunk> rasterPartitionStream(Rectangle rect, int widthStep, int heightStep)
+			throws IOException {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'rasterPartitionStream'");
+	}
 }

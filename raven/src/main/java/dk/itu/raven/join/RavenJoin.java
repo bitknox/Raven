@@ -17,6 +17,7 @@ import com.github.davidmoten.rtree2.geometry.Rectangle;
 import dk.itu.raven.util.TreeExtensions;
 import dk.itu.raven.util.Tuple4;
 import dk.itu.raven.util.Tuple5;
+import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.ksquared.AbstractK2Raster;
@@ -25,7 +26,7 @@ import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.PrimitiveArrayWrapper;
 import dk.itu.raven.util.Logger;
 
-public class RavenJoin {
+public class RavenJoin extends AbstractRavenJoin {
 	private enum QuadOverlapType {
 		TotalOverlap,
 		PossibleOverlap,
@@ -40,10 +41,18 @@ public class RavenJoin {
 
 	private AbstractK2Raster AbstractK2Raster;
 	private RTree<String, Geometry> tree;
+	private Offset<Integer> offset;
+
+	public RavenJoin(AbstractK2Raster AbstractK2Raster, RTree<String, Geometry> tree, Offset<Integer> offset) {
+		this.AbstractK2Raster = AbstractK2Raster;
+		this.tree = tree;
+		this.offset = offset;
+	}
 
 	public RavenJoin(AbstractK2Raster AbstractK2Raster, RTree<String, Geometry> tree) {
 		this.AbstractK2Raster = AbstractK2Raster;
 		this.tree = tree;
+		this.offset = new Offset<>(0, 0);
 	}
 
 	/**
@@ -98,16 +107,20 @@ public class RavenJoin {
 			int start = 0;
 			for (int x : bst.keys()) {
 				if ((bst.get(x) % 2) == 0) { // an even number of intersections happen at this point
-					if (!inRange) {
+					if (!inRange && x != 0 && x != rasterBounding.getSize() && x != maxX) {
 						// if a range is ongoing, ignore these intersections, otherwise add this single
-						// pixel as a range
-						ranges.add(new PixelRange(y + rasterBounding.getTopY(), x + rasterBounding.getTopX(),
+						// pixel as a range. If there is an even number of intersections at the edge of
+						// the viewport, it should not be added as a single pixel, as that means a
+						// vector-shape has both started and ended outside the image.
+						ranges.add(new PixelRange(y + rasterBounding.getTopY(),
+								x + rasterBounding.getTopX(),
 								x + rasterBounding.getTopX()));
 					}
 				} else {
 					if (inRange) {
 						inRange = false;
-						ranges.add(new PixelRange(y + rasterBounding.getTopY(), start + rasterBounding.getTopX(),
+						ranges.add(new PixelRange(y + rasterBounding.getTopY(),
+								start + rasterBounding.getTopX(),
 								x + rasterBounding.getTopX()));
 					} else {
 						inRange = true;
@@ -139,10 +152,10 @@ public class RavenJoin {
 	// based loosely on:
 	// https://bitbucket.org/bdlabucr/beast/src/master/raptor/src/main/java/edu/ucr/cs/bdlab/raptor/Intersections.java
 	private void extractCells(Leaf<String, Geometry> pr, int pk, Square rasterBounding,
-			List<Pair<Geometry, Collection<PixelRange>>> def, int maxX) {
+			JoinResult def, int maxX) {
 		for (Entry<String, Geometry> entry : ((Leaf<String, Geometry>) pr).entries()) {
 			// all geometries we store are polygons
-			def.add(new Pair<>(entry.geometry(),
+			def.add(new JoinResultItem(entry.geometry(),
 					extractCellsPolygon((Polygon) entry.geometry(), pk, rasterBounding, maxX)));
 		}
 	}
@@ -157,7 +170,7 @@ public class RavenJoin {
 	 * @param def            the list all the pixelranges should be added to
 	 */
 	private void addDescendantsLeaves(NonLeaf<String, Geometry> pr, int pk, Square rasterBounding,
-			List<Pair<Geometry, Collection<PixelRange>>> def, int maxX) {
+			JoinResult def, int maxX) {
 		for (Node<String, Geometry> n : pr.children()) {
 			if (TreeExtensions.isLeaf(n)) {
 				extractCells((Leaf<String, Geometry>) n, pk, rasterBounding, def, maxX);
@@ -197,7 +210,7 @@ public class RavenJoin {
 	 *         </ul>
 	 */
 	private Tuple5<QuadOverlapType, Integer, Square, Long, Long> checkQuadrant(int k2Index, Square rasterBounding,
-			Rectangle bounding, RasterFilterFunction function, long min, long max) {
+			Rectangle bounding, IRasterFilterFunction function, long min, long max) {
 		long vMinMBR = min;
 		long vMaxMBR = max;
 		Logger.log(vMinMBR + ", " + vMaxMBR, Logger.LogLevel.DEBUG);
@@ -252,7 +265,7 @@ public class RavenJoin {
 	 * @return one of {@code TotalOverlap, PartialOverlap, NoOverlap}
 	 */
 	private MBROverlapType checkMBR(int k2Index, Square rasterBounding, Rectangle bounding,
-			RasterFilterFunction function, long min, long max) {
+			IRasterFilterFunction function, long min, long max) {
 		long vMinMBR = Long.MAX_VALUE;
 		long vMaxMBR = Long.MIN_VALUE;
 
@@ -297,26 +310,6 @@ public class RavenJoin {
 		}
 	}
 
-	/**
-	 * joins without filtering
-	 * 
-	 * @return a list of Geometries paired with a collection of the pixelranges that
-	 *         it contains
-	 */
-	public List<Pair<Geometry, Collection<PixelRange>>> join() {
-		return join(JoinFilterFunctions.acceptAll());
-	}
-
-	/**
-	 * joins without defining a filtering function
-	 * 
-	 * @return a list of Geometries paired with a collection of the pixelranges that
-	 *         it contains
-	 */
-	public List<Pair<Geometry, Collection<PixelRange>>> join(long lo, long hi) {
-		return join(JoinFilterFunctions.rangeFilter(lo, hi));
-	}
-
 	// based on:
 	// https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0226943&type=printable
 	/**
@@ -326,19 +319,23 @@ public class RavenJoin {
 	 * @return a list of Geometries paired with a collection of the pixelranges,
 	 *         whose values fall within the given range, that it contains
 	 */
-	public List<Pair<Geometry, Collection<PixelRange>>> join(RasterFilterFunction function) {
-		List<Pair<Geometry, Collection<PixelRange>>> def = new ArrayList<>(), prob = new ArrayList<>();
+	@Override
+	public JoinResult join(IRasterFilterFunction function) {
+		JoinResult def = new JoinResult(), prob = new JoinResult();
 		Stack<Tuple5<Node<String, Geometry>, Integer, Square, Long, Long>> S = new Stack<>();
 
 		Pair<Long, Long> minMax = AbstractK2Raster.getValueRange();
 
 		for (Node<String, Geometry> node : TreeExtensions.getChildren(tree.root().get())) {
-			S.push(new Tuple5<>(node, 0, new Square(0, 0, AbstractK2Raster.getSize()), minMax.first, minMax.second));
+			S.push(new Tuple5<>(node, 0,
+					new Square(offset.getOffsetX(), offset.getOffsetY(), AbstractK2Raster.getSize()), minMax.first,
+					minMax.second));
 		}
 
 		while (!S.empty()) {
 			Tuple5<Node<String, Geometry>, Integer, Square, Long, Long> p = S.pop();
-			if (!new Square(0, 0, AbstractK2Raster.getSize()).intersects(p.a.geometry().mbr()))
+			if (!new Square(offset.getOffsetX(), offset.getOffsetY(), AbstractK2Raster.getSize())
+					.intersects(p.a.geometry().mbr()))
 				continue;
 			Tuple5<QuadOverlapType, Integer, Square, Long, Long> checked = checkQuadrant(p.b, p.c, p.a.geometry().mbr(),
 					function, p.d,
@@ -398,20 +395,22 @@ public class RavenJoin {
 	 * @param lo   the minimum pixel-value that should be included in the join
 	 * @param hi   the maximum pixel-value that should be included in the join
 	 */
-	protected void combineLists(List<Pair<Geometry, Collection<PixelRange>>> def,
-			List<Pair<Geometry, Collection<PixelRange>>> prob, RasterFilterFunction function) {
+	protected void combineLists(JoinResult def,
+			JoinResult prob, IRasterFilterFunction function) {
 		Logger.log("def: " + def.size() + ", prob: " + prob.size(), Logger.LogLevel.DEBUG);
-		for (Pair<Geometry, Collection<PixelRange>> pair : prob) {
-			Pair<Geometry, Collection<PixelRange>> result = new Pair<>(pair.first, new ArrayList<>());
-			for (PixelRange range : pair.second) {
-				PrimitiveArrayWrapper values = AbstractK2Raster.getWindow(range.row, range.row, range.x1, range.x2);
+		for (JoinResultItem item : prob) {
+			JoinResultItem result = new JoinResultItem(item.geometry, new ArrayList<>());
+			for (PixelRange range : item.pixelRanges) {
+				PrimitiveArrayWrapper values = AbstractK2Raster.getWindow(range.row - offset.getOffsetY(),
+						range.row - offset.getOffsetY(), range.x1 - offset.getOffsetX(),
+						range.x2 - offset.getOffsetX());
 				for (int i = 0; i < values.length(); i++) {
 					int start = i;
 					while (i < values.length() && function.containsWithin(values.get(i), values.get(i))) {
 						i++;
 					}
 					if (start != i) {
-						result.second.add(new PixelRange(range.row, start + range.x1, i - 1 + range.x1));
+						result.pixelRanges.add(new PixelRange(range.row, start + range.x1, i - 1 + range.x1));
 					}
 				}
 			}
