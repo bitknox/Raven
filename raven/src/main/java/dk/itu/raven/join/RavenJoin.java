@@ -17,6 +17,7 @@ import com.github.davidmoten.rtree2.geometry.Rectangle;
 import dk.itu.raven.util.TreeExtensions;
 import dk.itu.raven.util.Tuple4;
 import dk.itu.raven.util.Tuple5;
+import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.ksquared.AbstractK2Raster;
@@ -40,9 +41,9 @@ public class RavenJoin extends AbstractRavenJoin {
 
 	private AbstractK2Raster AbstractK2Raster;
 	private RTree<String, Geometry> tree;
-	private java.awt.Rectangle offset;
+	private Offset<Integer> offset;
 
-	public RavenJoin(AbstractK2Raster AbstractK2Raster, RTree<String, Geometry> tree, java.awt.Rectangle offset) {
+	public RavenJoin(AbstractK2Raster AbstractK2Raster, RTree<String, Geometry> tree, Offset<Integer> offset) {
 		this.AbstractK2Raster = AbstractK2Raster;
 		this.tree = tree;
 		this.offset = offset;
@@ -51,8 +52,7 @@ public class RavenJoin extends AbstractRavenJoin {
 	public RavenJoin(AbstractK2Raster AbstractK2Raster, RTree<String, Geometry> tree) {
 		this.AbstractK2Raster = AbstractK2Raster;
 		this.tree = tree;
-		this.offset = new java.awt.Rectangle(0, 0, 0, 0); // width and height are set to 0 since only the x and y are
-															// needed
+		this.offset = new Offset<>(0, 0);
 	}
 
 	/**
@@ -327,13 +327,15 @@ public class RavenJoin extends AbstractRavenJoin {
 		Pair<Long, Long> minMax = AbstractK2Raster.getValueRange();
 
 		for (Node<String, Geometry> node : TreeExtensions.getChildren(tree.root().get())) {
-			S.push(new Tuple5<>(node, 0, new Square(offset.x, offset.y, AbstractK2Raster.getSize()), minMax.first,
+			S.push(new Tuple5<>(node, 0,
+					new Square(offset.getOffsetX(), offset.getOffsetY(), AbstractK2Raster.getSize()), minMax.first,
 					minMax.second));
 		}
 
 		while (!S.empty()) {
 			Tuple5<Node<String, Geometry>, Integer, Square, Long, Long> p = S.pop();
-			if (!new Square(offset.x, offset.y, AbstractK2Raster.getSize()).intersects(p.a.geometry().mbr()))
+			if (!new Square(offset.getOffsetX(), offset.getOffsetY(), AbstractK2Raster.getSize())
+					.intersects(p.a.geometry().mbr()))
 				continue;
 			Tuple5<QuadOverlapType, Integer, Square, Long, Long> checked = checkQuadrant(p.b, p.c, p.a.geometry().mbr(),
 					function, p.d,
@@ -399,8 +401,9 @@ public class RavenJoin extends AbstractRavenJoin {
 		for (JoinResultItem item : prob) {
 			JoinResultItem result = new JoinResultItem(item.geometry, new ArrayList<>());
 			for (PixelRange range : item.pixelRanges) {
-				PrimitiveArrayWrapper values = AbstractK2Raster.getWindow(range.row - offset.y, range.row - offset.y,
-						range.x1 - offset.x, range.x2 - offset.x);
+				PrimitiveArrayWrapper values = AbstractK2Raster.getWindow(range.row - offset.getOffsetY(),
+						range.row - offset.getOffsetY(), range.x1 - offset.getOffsetX(),
+						range.x2 - offset.getOffsetX());
 				for (int i = 0; i < values.length(); i++) {
 					int start = i;
 					while (i < values.length() && function.containsWithin(values.get(i), values.get(i))) {
