@@ -6,8 +6,6 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
@@ -19,6 +17,9 @@ import com.github.davidmoten.rtree2.geometry.Point;
 
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
+import dk.itu.raven.io.ShapefileReader;
+import dk.itu.raven.io.ShapefileReader.ShapeFileBounds;
+import dk.itu.raven.join.AbstractJoinResult;
 import dk.itu.raven.join.Square;
 import dk.itu.raven.ksquared.K2Raster;
 import dk.itu.raven.util.Pair;
@@ -46,24 +47,30 @@ public class Visualizer {
 	 * @param options  visualizer options
 	 * @return The imagebuffer
 	 */
-	public BufferedImage drawResult(List<Pair<Geometry, Collection<PixelRange>>> results, Iterable<Polygon> features,
-			VisualizerOptions options) {
+	public BufferedImage drawResult(AbstractJoinResult results,
+			ShapefileReader shapeFileReader, VisualizerOptions options) throws IOException {
+		Pair<Iterable<Polygon>, ShapeFileBounds> geometries = shapeFileReader.readShapefile();
+		double offsetX = geometries.second.minX > 0 ? -geometries.second.minX : 0;
+		double offsetY = geometries.second.minY > 0 ? -geometries.second.minY : 0;
+		for (Polygon geom : geometries.first) {
+			geom.offset(offsetX, offsetY);
+		}
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_BYTE_INDEXED);
 		Graphics2D rasterGraphics = image.createGraphics();
 		rasterGraphics.setColor(Color.white);
 		rasterGraphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
-		for (Pair<Geometry, Collection<PixelRange>> pair : results) {
+		results.forEach(item -> {
 			if (options.useRandomColor) {
 				rasterGraphics.setColor(new Color(r.nextInt(256), r.nextInt(256), r.nextInt(256)));
 			} else {
 				rasterGraphics.setColor(options.color);
 			}
-			for (PixelRange range : pair.second) {
+			for (PixelRange range : item.pixelRanges) {
 				rasterGraphics.drawLine(range.x1, range.row, range.x2, range.row);
 			}
-		}
+		});
 		rasterGraphics.setColor(Color.RED);
-		for (Polygon poly : features) {
+		for (Polygon poly : geometries.first) {
 			Point old = poly.getFirst();
 			for (Point next : poly) {
 				rasterGraphics.drawLine((int) old.x(), (int) old.y(), (int) next.x(), (int) next.y());
@@ -84,7 +91,7 @@ public class Visualizer {
 	 * @return A buffered image showing the outlines of all polygons in
 	 *         {@code features}
 	 */
-	public BufferedImage drawShapefile(Iterable<Polygon> features, VisualizerOptions options) {
+	public BufferedImage drawShapefile(Iterable<Polygon> features, VisualizerOptions options) throws IOException {
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D vectorGraphics = image.createGraphics();
 		vectorGraphics.setColor(Color.white);
@@ -115,7 +122,7 @@ public class Visualizer {
 	 * @param features The vectorfile features
 	 * @return
 	 */
-	public BufferedImage drawShapefile(Iterable<Polygon> features) {
+	public BufferedImage drawShapefile(Iterable<Polygon> features) throws IOException {
 		return drawShapefile(features, new VisualizerOptionsBuilder().build());
 	}
 
@@ -158,7 +165,8 @@ public class Visualizer {
 		for (int i = 0; i < children.length; i++) {
 			int child = children[i];
 			Square childRasterBounding = rasterBounding.getChildSquare(childSize, i, k2Raster.k);
-			graphics.drawRect(childRasterBounding.getTopX(), childRasterBounding.getTopY(), childRasterBounding.getSize(),
+			graphics.drawRect(childRasterBounding.getTopX(), childRasterBounding.getTopY(),
+					childRasterBounding.getSize(),
 					childRasterBounding.getSize());
 			drawK2Squares(k2Raster, child, childRasterBounding, level - 1, graphics);
 		}
@@ -169,7 +177,7 @@ public class Visualizer {
 	 * @param k2Raster The K2-Raster datastructure
 	 * @return A bufferd image representing the datastructure
 	 */
-	public BufferedImage drawK2SquareImage(K2Raster k2Raster, VisualizerOptions options) {
+	public BufferedImage drawK2SquareImage(K2Raster k2Raster, VisualizerOptions options) throws IOException {
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics = image.createGraphics();
 		graphics.setColor(Color.white);
@@ -193,7 +201,7 @@ public class Visualizer {
 	 *         and K2 raster nodes drawn on top of eachother
 	 */
 	public BufferedImage drawVectorRasterOverlap(Iterable<Polygon> features, RTree<String, Geometry> tree,
-			K2Raster k2Raster, int k2RecursionDepth, VisualizerOptions options) {
+			K2Raster k2Raster, int k2RecursionDepth, VisualizerOptions options) throws IOException {
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics = image.createGraphics();
 
@@ -228,12 +236,9 @@ public class Visualizer {
 	 * @param outputPath   The path where the images is written
 	 * @param outputFormat The image format
 	 */
-	private void writeImage(BufferedImage image, String outputPath, String outputFormat) {
-		try {
-			ImageIO.write(image, outputFormat, new File(outputPath));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	private void writeImage(BufferedImage image, String outputPath, String outputFormat) throws IOException {
+		ImageIO.write(image, outputFormat, new File(outputPath));
+
 	}
 
 }

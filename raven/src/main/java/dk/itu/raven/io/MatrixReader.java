@@ -9,7 +9,7 @@ import dk.itu.raven.SpatialDataChunk;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 
-public class MatrixReader implements RasterReader {
+public class MatrixReader implements IRasterReader {
 	public Matrix matrix;
 	public TFWFormat transform;
 

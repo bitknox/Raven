@@ -2,9 +2,6 @@ package dk.itu.raven.api;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.stream.Stream;
 
 import com.github.davidmoten.rtree2.RTree;
@@ -14,14 +11,14 @@ import com.github.davidmoten.rtree2.geometry.Rectangle;
 
 import dk.itu.raven.JoinChunk;
 import dk.itu.raven.SpatialDataChunk;
-import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.io.FileRasterReader;
 import dk.itu.raven.io.ImageIORasterReader;
-import dk.itu.raven.io.ShapfileReader;
+import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.TFWFormat;
-import dk.itu.raven.join.RasterFilterFunction;
+import dk.itu.raven.join.ParallelStreamedRavenJoin;
 import dk.itu.raven.join.RavenJoin;
+import dk.itu.raven.join.StreamedRavenJoin;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.ksquared.K2RasterBuilder;
 import dk.itu.raven.ksquared.K2RasterIntBuilder;
@@ -39,35 +36,6 @@ import dk.itu.raven.util.matrix.Matrix;
 public class RavenApi {
 
 	/**
-	 * Joins the vector and raster data using the k2-raster, rtrees and a filter
-	 * function to filter the results
-	 * 
-	 * @param k2Raster the k2-raster data
-	 * @param rtree    the rtree data
-	 * @param features the vector data
-	 * @param filter   a filter function to filter the results
-	 * @return a list of pairs of geometries and pixel ranges
-	 */
-	public List<Pair<Geometry, Collection<PixelRange>>> join(AbstractK2Raster k2Raster, RTree<String, Geometry> rtree,
-			Iterable<Polygon> features, RasterFilterFunction filter) {
-		return new RavenJoin(k2Raster, rtree).join(filter);
-	}
-
-	/**
-	 * Joins the vector and raster data using the k2-raster and rtree
-	 * 
-	 * @param k2Raster
-	 * @param rtree
-	 * @param features
-	 * @return a list of pairs of geometries and pixel ranges
-	 */
-	public List<Pair<Geometry, Collection<PixelRange>>> join(AbstractK2Raster k2Raster, RTree<String, Geometry> rtree,
-			Iterable<Polygon> features) {
-		return new RavenJoin(k2Raster, rtree).join();
-
-	}
-
-	/**
 	 * Builds the data structures needed for join operation
 	 * 
 	 * @param vectorPath path to the vector data
@@ -75,10 +43,10 @@ public class RavenApi {
 	 * @return a pair of the k2-raster and the rtree
 	 * @throws IOException
 	 */
-	public Pair<AbstractK2Raster, RTree<String, Geometry>> buildStructures(ShapfileReader featureReader,
+	public Pair<AbstractK2Raster, RTree<String, Geometry>> buildStructures(ShapefileReader featureReader,
 			FileRasterReader rasterReader)
 			throws IOException {
-		Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Matrix> data = readData(featureReader,
+		Pair<Pair<Iterable<Polygon>, ShapefileReader.ShapeFileBounds>, Matrix> data = readData(featureReader,
 				rasterReader);
 		AbstractK2Raster k2Raster = generateRasterStructure(data.second);
 		RTree<String, Geometry> rtree = generateRTree(data.first);
@@ -93,13 +61,22 @@ public class RavenApi {
 	 * @param features
 	 * @return a stream of results of the join
 	 */
-	public Stream<List<Pair<Geometry, Collection<PixelRange>>>> join(Stream<JoinChunk> stream,
-			RasterFilterFunction function) {
-		return stream.map(chunk -> {
-			if (!chunk.getRtree().root().isPresent())
-				return new ArrayList<>();
-			return new RavenJoin(chunk.getRaster(), chunk.getRtree(), chunk.getOffset()).join(function);
+	public StreamedRavenJoin getStreamedJoin(String rasterPath, String vectorPath,
+			int widthStep, int heightStep, boolean parallel) throws IOException {
+		FileRasterReader rasterReader = createRasterReader(rasterPath);
+		ShapefileReader vectorReader = createShapefileReader(vectorPath, rasterReader.getTransform());
+
+		var pair = streamData(vectorReader, rasterReader, widthStep, heightStep);
+		var stream = streamStructures(pair.first, pair.second).filter(chunk -> {
+			return chunk.getRtree().root().isPresent();
+		}).map(chunk -> {
+			return new RavenJoin(chunk.getRaster(), chunk.getRtree(), chunk.getOffset());
 		});
+		if (parallel) {
+			return new ParallelStreamedRavenJoin(stream);
+		} else {
+			return new StreamedRavenJoin(stream);
+		}
 	}
 
 	/**
@@ -110,20 +87,21 @@ public class RavenApi {
 	 * @return a stream of the join chunks
 	 * @throws IOException
 	 */
-	public Stream<JoinChunk> streamStructures(Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds> geometries,
+	public Stream<JoinChunk> streamStructures(Pair<Iterable<Polygon>, ShapefileReader.ShapeFileBounds> geometries,
 			Stream<SpatialDataChunk> rasterStream)
 			throws IOException {
 		// TODO: check if it is faster to just use the original rtree
 		RTree<String, Geometry> rtree = generateRTree(geometries);
 		return rasterStream.map(chunk -> {
-			RTree<String, Geometry> rtree2 = RTree.star().maxChildren(6).create();
-			for (var entry : rtree.search(Geometries.rectangle(chunk.getOffset().getMinX(),
-					chunk.getOffset().getMinY(),
-					chunk.getOffset().getMaxX(), chunk.getOffset().getMaxY()))) {
-				rtree2 = rtree2.add(entry);
-			}
+			// RTree<String, Geometry> rtree2 = RTree.star().maxChildren(6).create();
+			// for (var entry :
+			// rtree.search(Geometries.rectangle(chunk.getOffset().getMinX(),
+			// chunk.getOffset().getMinY(),
+			// chunk.getOffset().getMaxX(), chunk.getOffset().getMaxY()))) {
+			// rtree2 = rtree2.add(entry);
+			// }
 			Logger.log("matrix[0,0]: " + chunk.getMatrix().get(0, 0), LogLevel.DEBUG);
-			return new JoinChunk(generateRasterStructure(chunk.getMatrix()), chunk.getOffset(), rtree2);
+			return new JoinChunk(generateRasterStructure(chunk.getMatrix()), chunk.getOffset(), rtree);
 		});
 
 	}
@@ -139,8 +117,8 @@ public class RavenApi {
 		return new ImageIORasterReader(new File(rasterPath));
 	}
 
-	public ShapfileReader createShapefileReader(String vectorPath, TFWFormat transform) {
-		return new ShapfileReader(vectorPath, transform);
+	public ShapefileReader createShapefileReader(String vectorPath, TFWFormat transform) {
+		return new ShapefileReader(vectorPath, transform);
 	}
 
 	/**
@@ -152,11 +130,11 @@ public class RavenApi {
 	 * @return a pair of the geometries and a stream of the raster data
 	 * @throws IOException
 	 */
-	public Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Stream<SpatialDataChunk>> streamData(
-			ShapfileReader featureReader, FileRasterReader rasterReader, int widthStep, int heightStep)
+	public Pair<Pair<Iterable<Polygon>, ShapefileReader.ShapeFileBounds>, Stream<SpatialDataChunk>> streamData(
+			ShapefileReader featureReader, FileRasterReader rasterReader, int widthStep, int heightStep)
 			throws IOException {
 		// load geometries from shapefile
-		Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds> geometries = featureReader
+		Pair<Iterable<Polygon>, ShapefileReader.ShapeFileBounds> geometries = featureReader
 				.readShapefile();
 
 		// rectangle representing the bounds of the shapefile data
@@ -177,11 +155,12 @@ public class RavenApi {
 	 * @return a pair of the geometries and the raster data
 	 * @throws IOException
 	 */
-	public Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Matrix> readData(ShapfileReader featureReader,
+	public Pair<Pair<Iterable<Polygon>, ShapefileReader.ShapeFileBounds>, Matrix> readData(
+			ShapefileReader featureReader,
 			FileRasterReader rasterReader) throws IOException {
 
 		// load geometries from shapefile
-		Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds> geometries = featureReader
+		Pair<Iterable<Polygon>, ShapefileReader.ShapeFileBounds> geometries = featureReader
 				.readShapefile();
 
 		// rectangle representing the bounds of the shapefile data
@@ -216,7 +195,7 @@ public class RavenApi {
 	 * @param geometries
 	 * @return the R* tree
 	 */
-	public RTree<String, Geometry> generateRTree(Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds> geometries) {
+	public RTree<String, Geometry> generateRTree(Pair<Iterable<Polygon>, ShapefileReader.ShapeFileBounds> geometries) {
 		// create a R* tree with
 		RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
 
@@ -229,5 +208,20 @@ public class RavenApi {
 			rtree = rtree.add(null, geom);
 		}
 		return rtree;
+	}
+
+	/**
+	 * constructs a RavenJoin object
+	 * 
+	 * @param rasterPath
+	 * @param vectorPath
+	 * @return
+	 * @throws IOException
+	 */
+	public RavenJoin getJoin(String rasterPath, String vectorPath) throws IOException {
+		FileRasterReader rasterReader = createRasterReader(rasterPath);
+		ShapefileReader vectorReader = createShapefileReader(vectorPath, rasterReader.getTransform());
+		Pair<AbstractK2Raster, RTree<String, Geometry>> structures = buildStructures(vectorReader, rasterReader);
+		return new RavenJoin(structures.first, structures.second);
 	}
 }

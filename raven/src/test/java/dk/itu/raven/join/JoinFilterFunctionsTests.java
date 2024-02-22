@@ -22,7 +22,7 @@ public class JoinFilterFunctionsTests {
                     for (long hi2 = lo2; hi2 < 1 << bits; hi2++) {
                         for (long lo3 = 0; lo3 < 1 << bits; lo3++) {
                             for (long hi3 = lo3; hi3 < 1 << bits; hi3++) {
-                                RasterFilterFunction function = JoinFilterFunctions.multiSampleRangeFilter(
+                                IRasterFilterFunction function = JoinFilterFunctions.multiSampleRangeFilter(
                                         Arrays.asList(lo1, hi1, lo2, hi2, lo3, hi3), new int[] { bits, bits, bits },
                                         bits * 3);
                                 prefixSumWithin[0] = 0;
@@ -88,7 +88,7 @@ public class JoinFilterFunctionsTests {
         // 0000-0010 0001-0001 1000-1010
         List<Long> ranges = Arrays.asList(0L, 2L, 1L, 1L, 8L, 10L);
 
-        RasterFilterFunction function = JoinFilterFunctions.multiSampleRangeFilter(ranges, samples, totalBits);
+        IRasterFilterFunction function = JoinFilterFunctions.multiSampleRangeFilter(ranges, samples, totalBits);
 
         // 0011 0000 0000
         int hi = (3 << 8) + (0 << 4) + (0);
@@ -141,7 +141,7 @@ public class JoinFilterFunctionsTests {
         List<Long> ranges = Arrays.asList(lo1, hi1, lo2, hi2, lo3, hi3);
         Random r = new Random(42);
 
-        RasterFilterFunction function = JoinFilterFunctions.multiSampleRangeFilter(ranges,
+        IRasterFilterFunction function = JoinFilterFunctions.multiSampleRangeFilter(ranges,
                 new int[] { bits, bits, bits }, 3 * bits);
 
         // generate random lo and hi values and check that the function outputs the

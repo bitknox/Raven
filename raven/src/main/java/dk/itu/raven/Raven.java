@@ -1,26 +1,20 @@
 package dk.itu.raven;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Stream;
 
 import com.beust.jcommander.JCommander;
-import com.github.davidmoten.rtree2.geometry.Geometry;
 
 import dk.itu.raven.api.RavenApi;
-import dk.itu.raven.geometry.PixelRange;
-import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.io.FileRasterReader;
 import dk.itu.raven.io.ImageMetadata;
-import dk.itu.raven.io.ShapfileReader;
+import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.commandline.CommandLineArgs;
+import dk.itu.raven.join.AbstractJoinResult;
+import dk.itu.raven.join.AbstractRavenJoin;
+import dk.itu.raven.join.IRasterFilterFunction;
 import dk.itu.raven.join.JoinFilterFunctions;
-import dk.itu.raven.join.RasterFilterFunction;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
-import dk.itu.raven.util.Pair;
 import dk.itu.raven.visualizer.Visualizer;
 import dk.itu.raven.visualizer.VisualizerOptions;
 import dk.itu.raven.visualizer.VisualizerOptionsBuilder;
@@ -48,7 +42,7 @@ public class Raven {
         RavenApi api = new RavenApi();
 
         FileRasterReader rasterReader = api.createRasterReader(jct.inputRaster);
-        ShapfileReader shapefileReader = api.createShapefileReader(jct.inputVector, rasterReader.getTransform());
+        ShapefileReader shapefileReader = api.createShapefileReader(jct.inputVector, rasterReader.getTransform());
 
         ImageMetadata metadata = rasterReader.getImageMetadata();
 
@@ -57,7 +51,7 @@ public class Raven {
             totalBits += bits;
         }
 
-        RasterFilterFunction function = JoinFilterFunctions.acceptAll();
+        IRasterFilterFunction function = JoinFilterFunctions.acceptAll();
 
         if (jct.ranges.size() == 2) {
             if (metadata.getBitsPerSample().length > 1) {
@@ -78,16 +72,20 @@ public class Raven {
                     "The number of provided search ranges does not match the number of raster samples");
         }
 
-        Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Stream<SpatialDataChunk>> data = api
-                .streamData(shapefileReader, rasterReader, jct.tileSize, jct.tileSize);
-
         long startJoinNano = System.nanoTime();
-        List<Pair<Geometry, Collection<PixelRange>>> results = api
-                .join(api.streamStructures(data.first, data.second), function).parallel()
-                .collect(ArrayList::new, (l, x) -> l.addAll(x), (l, r) -> l.addAll(r));
-        long endJoinNano = System.nanoTime();
+        AbstractRavenJoin join;
+        if (jct.streamed) {
+            join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, jct.parallel);
+        } else {
+            join = api.getJoin(jct.inputRaster, jct.inputVector);
+        }
+        AbstractJoinResult result = join.join(function);
 
-        Logger.log("Streamed Join time: " + (endJoinNano - startJoinNano) / 1000000 + "ms", LogLevel.INFO);
+        // result.count();
+        result = result.asMemoryAllocatedResult();
+
+        long endJoinNano = System.nanoTime();
+        Logger.log("Join time: " + (endJoinNano - startJoinNano) / 1000000 + "ms", LogLevel.INFO);
 
         // Visualize the result
         if (jct.outputPath != null) {
@@ -100,7 +98,7 @@ public class Raven {
 
             VisualizerOptions options = builder.build();
 
-            visual.drawResult(results, data.first.first, options);
+            visual.drawResult(result, shapefileReader, options);
         }
 
         Logger.log("Done joining", LogLevel.INFO);

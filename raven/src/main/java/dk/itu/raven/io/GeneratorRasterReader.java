@@ -10,7 +10,7 @@ import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RandomMatrix;
 
-public class GeneratorRasterReader implements RasterReader {
+public class GeneratorRasterReader implements IRasterReader {
 	private int width;
 	private int height;
 	private int maxValue;

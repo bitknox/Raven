@@ -15,7 +15,7 @@ import com.github.davidmoten.rtree2.geometry.Rectangle;
 
 import dk.itu.raven.SpatialDataChunk;
 
-public abstract class FileRasterReader implements RasterReader {
+public abstract class FileRasterReader implements IRasterReader {
 	File tiff;
 	File tfw;
 
@@ -92,8 +92,8 @@ public abstract class FileRasterReader implements RasterReader {
 			try {
 				SpatialDataChunk chunk = new SpatialDataChunk();
 				chunk.setMatrix(readRasters(w));
-				java.awt.Rectangle offset = new java.awt.Rectangle((int) w.x1(), (int) w.y1(), (int) (w.x2() - w.x1()),
-						(int) (w.y2() - w.y1()));
+				java.awt.Rectangle offset = new java.awt.Rectangle((int) (w.x1() - rect.x1()),
+						(int) (w.y1() - rect.y1()), (int) (w.x2() - w.x1()), (int) (w.y2() - w.y1()));
 				chunk.setOffset(offset);
 				return chunk;
 			} catch (Exception e) {

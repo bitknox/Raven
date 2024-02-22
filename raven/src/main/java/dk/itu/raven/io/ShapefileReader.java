@@ -22,13 +22,13 @@ import com.github.davidmoten.rtree2.geometry.Point;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.util.Pair;
 
-public class ShapfileReader {
+public class ShapefileReader {
 
 	private TFWFormat transform;
 	private ShapeFileBounds bounds;
 	private File file;
 
-	public ShapfileReader(String path, TFWFormat transform) {
+	public ShapefileReader(String path, TFWFormat transform) {
 		this.file = new File(path);
 		this.transform = transform;
 		this.bounds = new ShapeFileBounds();

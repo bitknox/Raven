@@ -8,7 +8,7 @@ import com.github.davidmoten.rtree2.geometry.Rectangle;
 import dk.itu.raven.SpatialDataChunk;
 import dk.itu.raven.util.matrix.Matrix;
 
-public interface RasterReader {
+public interface IRasterReader {
 
 	public abstract Matrix readRasters(Rectangle rect) throws IOException;
 

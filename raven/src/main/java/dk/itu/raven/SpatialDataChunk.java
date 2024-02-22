@@ -1,13 +1,13 @@
 package dk.itu.raven;
 
 import dk.itu.raven.geometry.Polygon;
-import dk.itu.raven.io.ShapfileReader;
+import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.Matrix;
 
 public class SpatialDataChunk {
     private Matrix matrix;
-    private Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds> geometries;
+    private Pair<Iterable<Polygon>, ShapefileReader.ShapeFileBounds> geometries;
     private java.awt.Rectangle offset;
 
     public SpatialDataChunk() {
@@ -17,7 +17,7 @@ public class SpatialDataChunk {
         this.matrix = matrix;
     }
 
-    public void setGeometries(Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds> geometries) {
+    public void setGeometries(Pair<Iterable<Polygon>, ShapefileReader.ShapeFileBounds> geometries) {
         this.geometries = geometries;
     }
 
@@ -29,7 +29,7 @@ public class SpatialDataChunk {
         return matrix;
     }
 
-    public Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds> getGeometries() {
+    public Pair<Iterable<Polygon>, ShapefileReader.ShapeFileBounds> getGeometries() {
         return geometries;
     }
 

@@ -23,7 +23,6 @@ import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.ksquared.K2RasterBuilder;
-import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RandomMatrix;
@@ -83,34 +82,35 @@ public class RavenJoinTest {
         int hi = 75;
         AbstractK2Raster k2Raster = new K2RasterBuilder().build(matrix, 2);
         RavenJoin join = new RavenJoin(k2Raster, null);
-        List<Pair<Geometry, Collection<PixelRange>>> def = new ArrayList<>();
-        List<Pair<Geometry, Collection<PixelRange>>> prob = new ArrayList<>();
+        JoinResult def = new JoinResult();
+        JoinResult prob = new JoinResult();
         List<PixelRange> initialDef = new ArrayList<>();
-        def.add(new Pair<Geometry, Collection<PixelRange>>(null, new ArrayList<>()));
-        prob.add(new Pair<Geometry, Collection<PixelRange>>(null, new ArrayList<>()));
+        def.add(new JoinResultItem(null, new ArrayList<>()));
+        prob.add(new JoinResultItem(null, new ArrayList<>()));
         for (int i = 0; i < matrix.getHeight(); i++) {
             int start = r.nextInt(25);
             int end = 75 + r.nextInt(25);
             PixelRange range = new PixelRange(i, start, end);
 
             if (i % 2 == 0) {
-                def.get(0).second.add(range);
+                def.get(0).pixelRanges.add(range);
                 initialDef.add(range);
             } else {
-                prob.get(0).second.add(range);
+                prob.get(0).pixelRanges.add(range);
             }
         }
 
         join.combineLists(def, prob, JoinFilterFunctions.rangeFilter(lo, hi));
 
         for (PixelRange range : initialDef) {
-            assertTrue(def.get(0).second.contains(range));
+            assertTrue(def.get(0).pixelRanges.contains(range));
         }
 
         HashSet<Long> seen = new HashSet<>();
         // check that all ranges in def are within the range of lo and hi
-        for (Pair<Geometry, Collection<PixelRange>> pair : def.subList(1, def.size())) {
-            for (PixelRange range : pair.second) {
+        for (int j = 1; j < def.size(); j++) {
+            JoinResultItem item = def.get(j);
+            for (PixelRange range : item.pixelRanges) {
                 for (int i = range.x1; i <= range.x2; i++) {
                     long hash = range.row;
                     hash <<= 32;
@@ -123,7 +123,7 @@ public class RavenJoinTest {
         }
 
         // check that all pixels in prob with a value in the range are present in def
-        for (PixelRange range : prob.get(0).second) {
+        for (PixelRange range : prob.get(0).pixelRanges) {
             for (int i = range.x1; i <= range.x2; i++) {
                 int val = matrix.get(range.row, i);
                 if (val <= hi && val >= lo) {
@@ -161,17 +161,17 @@ public class RavenJoinTest {
         rtree = rtree.add(null, p2);
 
         RavenJoin join = new RavenJoin(k2, rtree);
-        List<Pair<Geometry, Collection<PixelRange>>> res = join.join(JoinFilterFunctions.rangeFilter(42, 42));
+        JoinResult res = join.join(JoinFilterFunctions.rangeFilter(42, 42));
 
-        assertEquals(res.get(0).first, p);
+        assertEquals(res.get(0).geometry, p);
         int idx = 0;
-        assertEquals(res.get(0).second.size(), expected.length);
-        assertEquals(res.get(1).second.size(), expected2.length);
-        for (PixelRange range : res.get(0).second) {
+        assertEquals(res.get(0).pixelRanges.size(), expected.length);
+        assertEquals(res.get(1).pixelRanges.size(), expected2.length);
+        for (PixelRange range : res.get(0).pixelRanges) {
             assertEquals(expected[idx++], range);
         }
         idx = 0;
-        for (PixelRange range : res.get(1).second) {
+        for (PixelRange range : res.get(1).pixelRanges) {
             assertEquals(expected2[idx++], range);
         }
     }
@@ -181,32 +181,39 @@ public class RavenJoinTest {
         Matrix matrix = new RandomMatrix(64, 64, 100);
         AbstractK2Raster k2Raster = new K2RasterBuilder().build(matrix, 2);
         RavenJoin join = new RavenJoin(k2Raster, null);
-        List<Pair<Geometry, Collection<PixelRange>>> def = new ArrayList<>();
-        List<Pair<Geometry, Collection<PixelRange>>> prob = new ArrayList<>();
+        JoinResult def = new JoinResult();
+        JoinResult prob = new JoinResult();
         List<PixelRange> initialDef = new ArrayList<>();
-        def.add(new Pair<Geometry, Collection<PixelRange>>(null, new ArrayList<>()));
-        prob.add(new Pair<Geometry, Collection<PixelRange>>(null, new ArrayList<>()));
+        def.add(new JoinResultItem(null, new ArrayList<>()));
+        prob.add(new JoinResultItem(null, new ArrayList<>()));
         for (int i = 0; i < matrix.getHeight(); i++) {
             int start = 0;
             int end = 63;
             PixelRange range = new PixelRange(i, start, end);
 
             if (i % 2 == 0) {
-                def.get(0).second.add(range);
+                def.get(0).pixelRanges.add(range);
                 initialDef.add(range);
             } else {
-                prob.get(0).second.add(range);
+                prob.get(0).pixelRanges.add(range);
             }
         }
 
         join.combineLists(def, prob, JoinFilterFunctions.rangeFilter(0, 100));
 
         for (PixelRange range : initialDef) {
-            assertTrue(def.get(0).second.contains(range));
+            assertTrue(def.get(0).pixelRanges.contains(range));
         }
 
-        for (PixelRange range : prob.get(0).second) {
-            assertTrue(def.stream().anyMatch(pr -> pr.second.contains(range)));
+        for (PixelRange range : prob.get(0).pixelRanges) {
+            boolean contained = false;
+            for (JoinResultItem item : def) {
+                if (item.pixelRanges.contains(range)) {
+                    contained = true;
+                    break;
+                }
+            }
+            assertTrue(contained);
         }
     }
 

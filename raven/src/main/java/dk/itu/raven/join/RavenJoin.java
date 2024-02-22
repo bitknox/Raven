@@ -25,7 +25,7 @@ import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.PrimitiveArrayWrapper;
 import dk.itu.raven.util.Logger;
 
-public class RavenJoin {
+public class RavenJoin extends AbstractRavenJoin {
 	private enum QuadOverlapType {
 		TotalOverlap,
 		PossibleOverlap,
@@ -152,10 +152,10 @@ public class RavenJoin {
 	// based loosely on:
 	// https://bitbucket.org/bdlabucr/beast/src/master/raptor/src/main/java/edu/ucr/cs/bdlab/raptor/Intersections.java
 	private void extractCells(Leaf<String, Geometry> pr, int pk, Square rasterBounding,
-			List<Pair<Geometry, Collection<PixelRange>>> def, int maxX) {
+			JoinResult def, int maxX) {
 		for (Entry<String, Geometry> entry : ((Leaf<String, Geometry>) pr).entries()) {
 			// all geometries we store are polygons
-			def.add(new Pair<>(entry.geometry(),
+			def.add(new JoinResultItem(entry.geometry(),
 					extractCellsPolygon((Polygon) entry.geometry(), pk, rasterBounding, maxX)));
 		}
 	}
@@ -170,7 +170,7 @@ public class RavenJoin {
 	 * @param def            the list all the pixelranges should be added to
 	 */
 	private void addDescendantsLeaves(NonLeaf<String, Geometry> pr, int pk, Square rasterBounding,
-			List<Pair<Geometry, Collection<PixelRange>>> def, int maxX) {
+			JoinResult def, int maxX) {
 		for (Node<String, Geometry> n : pr.children()) {
 			if (TreeExtensions.isLeaf(n)) {
 				extractCells((Leaf<String, Geometry>) n, pk, rasterBounding, def, maxX);
@@ -210,7 +210,7 @@ public class RavenJoin {
 	 *         </ul>
 	 */
 	private Tuple5<QuadOverlapType, Integer, Square, Long, Long> checkQuadrant(int k2Index, Square rasterBounding,
-			Rectangle bounding, RasterFilterFunction function, long min, long max) {
+			Rectangle bounding, IRasterFilterFunction function, long min, long max) {
 		long vMinMBR = min;
 		long vMaxMBR = max;
 		Logger.log(vMinMBR + ", " + vMaxMBR, Logger.LogLevel.DEBUG);
@@ -265,7 +265,7 @@ public class RavenJoin {
 	 * @return one of {@code TotalOverlap, PartialOverlap, NoOverlap}
 	 */
 	private MBROverlapType checkMBR(int k2Index, Square rasterBounding, Rectangle bounding,
-			RasterFilterFunction function, long min, long max) {
+			IRasterFilterFunction function, long min, long max) {
 		long vMinMBR = Long.MAX_VALUE;
 		long vMaxMBR = Long.MIN_VALUE;
 
@@ -310,16 +310,6 @@ public class RavenJoin {
 		}
 	}
 
-	/**
-	 * joins without filtering
-	 * 
-	 * @return a list of Geometries paired with a collection of the pixelranges that
-	 *         it contains
-	 */
-	public List<Pair<Geometry, Collection<PixelRange>>> join() {
-		return join(JoinFilterFunctions.acceptAll());
-	}
-
 	// based on:
 	// https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0226943&type=printable
 	/**
@@ -329,8 +319,9 @@ public class RavenJoin {
 	 * @return a list of Geometries paired with a collection of the pixelranges,
 	 *         whose values fall within the given range, that it contains
 	 */
-	public List<Pair<Geometry, Collection<PixelRange>>> join(RasterFilterFunction function) {
-		List<Pair<Geometry, Collection<PixelRange>>> def = new ArrayList<>(), prob = new ArrayList<>();
+	@Override
+	public JoinResult join(IRasterFilterFunction function) {
+		JoinResult def = new JoinResult(), prob = new JoinResult();
 		Stack<Tuple5<Node<String, Geometry>, Integer, Square, Long, Long>> S = new Stack<>();
 
 		Pair<Long, Long> minMax = AbstractK2Raster.getValueRange();
@@ -402,12 +393,12 @@ public class RavenJoin {
 	 * @param lo   the minimum pixel-value that should be included in the join
 	 * @param hi   the maximum pixel-value that should be included in the join
 	 */
-	protected void combineLists(List<Pair<Geometry, Collection<PixelRange>>> def,
-			List<Pair<Geometry, Collection<PixelRange>>> prob, RasterFilterFunction function) {
+	protected void combineLists(JoinResult def,
+			JoinResult prob, IRasterFilterFunction function) {
 		Logger.log("def: " + def.size() + ", prob: " + prob.size(), Logger.LogLevel.DEBUG);
-		for (Pair<Geometry, Collection<PixelRange>> pair : prob) {
-			Pair<Geometry, Collection<PixelRange>> result = new Pair<>(pair.first, new ArrayList<>());
-			for (PixelRange range : pair.second) {
+		for (JoinResultItem item : prob) {
+			JoinResultItem result = new JoinResultItem(item.geometry, new ArrayList<>());
+			for (PixelRange range : item.pixelRanges) {
 				PrimitiveArrayWrapper values = AbstractK2Raster.getWindow(range.row - offset.y, range.row - offset.y,
 						range.x1 - offset.x, range.x2 - offset.x);
 				for (int i = 0; i < values.length(); i++) {
@@ -416,7 +407,7 @@ public class RavenJoin {
 						i++;
 					}
 					if (start != i) {
-						result.second.add(new PixelRange(range.row, start + range.x1, i - 1 + range.x1));
+						result.pixelRanges.add(new PixelRange(range.row, start + range.x1, i - 1 + range.x1));
 					}
 				}
 			}
