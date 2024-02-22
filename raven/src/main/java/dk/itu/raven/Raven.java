@@ -81,8 +81,13 @@ public class Raven {
         }
         AbstractJoinResult result = join.join(function);
 
-        // result.count();
-        result = result.asMemoryAllocatedResult();
+        if (jct.outputPath != null) {
+            result = result.asMemoryAllocatedResult(); // this allows the visualizer to draw the result while still
+                                                       // allowing us to consume the stream and time the join
+        } else {
+            result.count(); // count will still force the stream to be executed, so the timing of the
+                            // function will work
+        }
 
         long endJoinNano = System.nanoTime();
         Logger.log("Join time: " + (endJoinNano - startJoinNano) / 1000000 + "ms", LogLevel.INFO);
