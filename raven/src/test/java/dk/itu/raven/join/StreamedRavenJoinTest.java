@@ -85,7 +85,6 @@ public class StreamedRavenJoinTest {
             }
         }
 
-        System.err.println(inMemorySet.size());
         assertEquals(inMemorySet.size(), streamedSet.size());
         assertEquals(inMemorySet.size(), parallelSet.size());
     }
