@@ -4,21 +4,38 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
-import org.checkerframework.checker.units.qual.radians;
 import org.junit.jupiter.api.Test;
-
-import com.github.davidmoten.rtree2.geometry.Geometry;
 
 import dk.itu.raven.api.RavenApi;
 import dk.itu.raven.geometry.PixelRange;
 
 public class StreamedRavenJoinTest {
+    public class Point {
+        int x, y;
+
+        public Point(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Point))
+                return false;
+            Point other = (Point) obj;
+            return x == other.x && y == other.y;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x, y);
+        }
+    }
+
     @Test
     public void testAllApproaches() throws IOException {
         RavenApi ravenApi = new RavenApi();
@@ -32,31 +49,44 @@ public class StreamedRavenJoinTest {
         AbstractJoinResult streamedResult = streamedJoin.join().asMemoryAllocatedResult();
         AbstractJoinResult parallelResult = parallelJoin.join().asMemoryAllocatedResult();
 
-        Set<PixelRange> set = new HashSet<>();
-        int inMemoryCount = 0, streamedCount = 0, parallelCount = 0;
+        Set<Point> inMemorySet = new HashSet<>();
+        Set<Point> streamedSet = new HashSet<>();
+        Set<Point> parallelSet = new HashSet<>();
 
         for (JoinResultItem item : inMemoryResult) {
             for (PixelRange range : item.pixelRanges) {
-                set.add(range);
-                inMemoryCount++;
+                int y = range.row;
+                for (int x = range.x1; x <= range.x2; x++) {
+                    inMemorySet.add(new Point(x, range.row));
+                    assertTrue(x >= 0 && x < 1052 && y >= 0 && y < 784, "InMemory x: " + x + " y: " + y);
+                }
             }
         }
 
         for (JoinResultItem item : streamedResult) {
             for (PixelRange range : item.pixelRanges) {
-                assertTrue(set.contains(range));
-                streamedCount++;
+                int y = range.row;
+                for (int x = range.x1; x <= range.x2; x++) {
+                    assertTrue(inMemorySet.contains(new Point(x, range.row)));
+                    streamedSet.add(new Point(x, range.row));
+                    assertTrue(x >= 0 && x < 1052 && y >= 0 && y < 784, "Streamed x: " + x + " y: " + y);
+                }
             }
         }
 
         for (JoinResultItem item : parallelResult) {
             for (PixelRange range : item.pixelRanges) {
-                assertTrue(set.contains(range));
-                parallelCount++;
+                int y = range.row;
+                for (int x = range.x1; x <= range.x2; x++) {
+                    assertTrue(inMemorySet.contains(new Point(x, range.row)));
+                    parallelSet.add(new Point(x, range.row));
+                    assertTrue(x >= 0 && x < 1052 && y >= 0 && y < 784, "Parallel x: " + x + " y: " + y);
+                }
             }
         }
 
-        assertEquals(inMemoryCount, streamedCount);
-        assertEquals(inMemoryCount, parallelCount);
+        System.err.println(inMemorySet.size());
+        assertEquals(inMemorySet.size(), streamedSet.size());
+        assertEquals(inMemorySet.size(), parallelSet.size());
     }
 }

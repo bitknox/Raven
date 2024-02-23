@@ -56,7 +56,7 @@ public class ShapefileReader {
 		}
 	}
 
-	public Pair<Iterable<Polygon>, ShapeFileBounds> readShapefile() throws IOException {
+	public Pair<List<Polygon>, ShapeFileBounds> readShapefile() throws IOException {
 		FileDataStore myData = FileDataStoreFinder.getDataStore(file);
 		SimpleFeatureSource source = myData.getFeatureSource();
 		bounds.reset();

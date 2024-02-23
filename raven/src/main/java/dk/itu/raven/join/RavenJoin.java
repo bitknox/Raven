@@ -20,6 +20,7 @@ import dk.itu.raven.util.Tuple5;
 import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
+import dk.itu.raven.geometry.Size;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.util.BST;
 import dk.itu.raven.util.Pair;
@@ -39,20 +40,21 @@ public class RavenJoin extends AbstractRavenJoin {
 		NoOverlap;
 	}
 
-	private AbstractK2Raster AbstractK2Raster;
+	private AbstractK2Raster k2Raster;
 	private RTree<String, Geometry> tree;
 	private Offset<Integer> offset;
+	private Size imageSize;
 
-	public RavenJoin(AbstractK2Raster AbstractK2Raster, RTree<String, Geometry> tree, Offset<Integer> offset) {
-		this.AbstractK2Raster = AbstractK2Raster;
+	public RavenJoin(AbstractK2Raster k2Raster, RTree<String, Geometry> tree,
+			Offset<Integer> offset, Size imageSize) {
+		this.k2Raster = k2Raster;
 		this.tree = tree;
 		this.offset = offset;
+		this.imageSize = imageSize;
 	}
 
-	public RavenJoin(AbstractK2Raster AbstractK2Raster, RTree<String, Geometry> tree) {
-		this.AbstractK2Raster = AbstractK2Raster;
-		this.tree = tree;
-		this.offset = new Offset<>(0, 0);
+	public RavenJoin(AbstractK2Raster k2Raster, RTree<String, Geometry> tree, Size imageSize) {
+		this(k2Raster, tree, new Offset<>(0, 0), imageSize);
 	}
 
 	/**
@@ -64,64 +66,69 @@ public class RavenJoin extends AbstractRavenJoin {
 	 * @return A collection of pixels that are contained in the vector shape
 	 *         described by {@code polygon}
 	 */
-	protected Collection<PixelRange> extractCellsPolygon(Polygon polygon, int pk, Square rasterBounding, int maxX) {
+	protected Collection<PixelRange> extractCellsPolygon(Polygon polygon, int pk, java.awt.Rectangle rasterBounding,
+			int maxX) {
 		// 1 on index i * rasterBounding.geetSize() + j if an intersection between a
 		// line of the polygon and the line y=j happens at point (i,j)
 		// 1 on index i if the left-most pixel of row i intersects the polygon, 0
 		// otherwise
-		List<BST<Integer, Integer>> intersections = new ArrayList<BST<Integer, Integer>>(rasterBounding.getSize());
-		for (int i = 0; i < rasterBounding.getSize(); i++) {
+		List<BST<Integer, Integer>> intersections = new ArrayList<BST<Integer, Integer>>(rasterBounding.height);
+		for (int i = 0; i < rasterBounding.height; i++) {
 			intersections.add(i, new BST<>());
 		}
 
 		// a line is of the form a*x + b*y = c
 		Point old = polygon.getFirst();
-		for (Point next : polygon) {
+
+		// we run the loop to polygon.size() + 1 because we want to wrap around end at
+		// the first point
+		for (int i = 1; i < polygon.size() + 1; i++) {
+			Point next = polygon.getPoint(i);
 			// compute the standard form of the line segment between the points old and next
 			double a = (next.y() - old.y());
 			double b = (old.x() - next.x());
 			double c = a * old.x() + b * old.y();
 
-			int minY = (int) Math.min(rasterBounding.getTopY() + rasterBounding.getSize(),
-					Math.max(rasterBounding.getTopY(), Math.round(Math.min(old.y(), next.y()))));
-			int maxY = (int) Math.min(rasterBounding.getTopY() + rasterBounding.getSize(),
-					Math.max(rasterBounding.getTopY(), Math.round(Math.max(old.y(), next.y()))));
+			int minY = (int) Math.min(rasterBounding.y + rasterBounding.height,
+					Math.max(rasterBounding.y, Math.round(Math.min(old.y(), next.y()))));
+			int maxY = (int) Math.min(rasterBounding.y + rasterBounding.height,
+					Math.max(rasterBounding.y, Math.round(Math.max(old.y(), next.y()))));
 
 			// compute all intersections between the line segment and horizontal pixel lines
 			for (int y = minY; y < maxY; y++) {
 				double x = (c - b * (y + 0.5)) / a;
 				// assert x - rasterBounding.getTopX() >= 0;
-				int ix = (int) Math.floor(x - rasterBounding.getTopX());
-				ix = Math.min(rasterBounding.getSize(), Math.max(ix, 0));
+				int ix = (int) Math.floor(x - rasterBounding.x);
+				ix = Math.min(rasterBounding.width - 1, Math.max(ix, 0));
 				ix = Math.min(maxX, ix);
-				BST<Integer, Integer> bst = intersections.get(y - rasterBounding.getTopY());
+				BST<Integer, Integer> bst = intersections.get(y - rasterBounding.y);
 				incrementSet(bst, ix);
 			}
 			old = next;
 		}
 
 		Collection<PixelRange> ranges = new ArrayList<>();
-		for (int y = 0; y < rasterBounding.getSize(); y++) {
+		for (int y = 0; y < rasterBounding.height; y++) {
 			BST<Integer, Integer> bst = intersections.get(y);
 			boolean inRange = false;
 			int start = 0;
 			for (int x : bst.keys()) {
 				if ((bst.get(x) % 2) == 0) { // an even number of intersections happen at this point
-					if (!inRange && x != 0 && x != rasterBounding.getSize() && x != maxX) {
+					if (!inRange && x != 0 && x != rasterBounding.width && x != maxX) {
 						// if a range is ongoing, ignore these intersections, otherwise add this single
 						// pixel as a range. If there is an even number of intersections at the edge of
 						// the viewport, it should not be added as a single pixel, as that means a
 						// vector-shape has both started and ended outside the image.
-						ranges.add(new PixelRange(y + rasterBounding.getTopY(),
-								x + rasterBounding.getTopX(),
-								x + rasterBounding.getTopX()));
+						ranges.add(new PixelRange(y + rasterBounding.y,
+								x + rasterBounding.x,
+								x + rasterBounding.x));
 					}
 				} else {
 					if (inRange) {
 						inRange = false;
-						ranges.add(new PixelRange(y + rasterBounding.getTopY(),
-								start + rasterBounding.getTopX(),
-								x + rasterBounding.getTopX()));
+						ranges.add(new PixelRange(y + rasterBounding.y,
+								start + rasterBounding.x,
+								x + rasterBounding.x));
 					} else {
 						inRange = true;
 						start = x;
@@ -151,7 +158,7 @@ public class RavenJoin extends AbstractRavenJoin {
 
 	// based loosely on:
 	// https://bitbucket.org/bdlabucr/beast/src/master/raptor/src/main/java/edu/ucr/cs/bdlab/raptor/Intersections.java
-	private void extractCells(Leaf<String, Geometry> pr, int pk, Square rasterBounding,
+	private void extractCells(Leaf<String, Geometry> pr, int pk, java.awt.Rectangle rasterBounding,
 			JoinResult def, int maxX) {
 		for (Entry<String, Geometry> entry : ((Leaf<String, Geometry>) pr).entries()) {
 			// all geometries we store are polygons
@@ -169,7 +176,7 @@ public class RavenJoin extends AbstractRavenJoin {
 	 *                       node with index {@code pk} in the k2 raster tree
 	 * @param def            the list all the pixelranges should be added to
 	 */
-	private void addDescendantsLeaves(NonLeaf<String, Geometry> pr, int pk, Square rasterBounding,
+	private void addDescendantsLeaves(NonLeaf<String, Geometry> pr, int pk, java.awt.Rectangle rasterBounding,
 			JoinResult def, int maxX) {
 		for (Node<String, Geometry> n : pr.children()) {
 			if (TreeExtensions.isLeaf(n)) {
@@ -220,14 +227,14 @@ public class RavenJoin extends AbstractRavenJoin {
 		k2Nodes.push(new Tuple4<>(k2Index, rasterBounding, min, max));
 		while (!k2Nodes.empty()) {
 			Tuple4<Integer, Square, Long, Long> node = k2Nodes.pop();
-			int[] children = AbstractK2Raster.getChildren(node.a);
-			int childSize = node.b.getSize() / AbstractK2Raster.k;
+			int[] children = k2Raster.getChildren(node.a);
+			int childSize = node.b.getSize() / k2Raster.k;
 			for (int i = 0; i < children.length; i++) {
 				int child = children[i];
-				Square childRasterBounding = node.b.getChildSquare(childSize, i, AbstractK2Raster.k);
+				Square childRasterBounding = node.b.getChildSquare(childSize, i, k2Raster.k);
 				if (childRasterBounding.contains(bounding)) {
-					vMinMBR = AbstractK2Raster.computeVMin(node.d, node.c, child);
-					vMaxMBR = AbstractK2Raster.computeVMax(node.d, child);
+					vMinMBR = k2Raster.computeVMin(node.d, node.c, child);
+					vMaxMBR = k2Raster.computeVMax(node.d, child);
 
 					k2Nodes.push(new Tuple4<>(child, childRasterBounding, vMinMBR, vMaxMBR));
 					returnedK2Index = child;
@@ -274,21 +281,21 @@ public class RavenJoin extends AbstractRavenJoin {
 
 		while (!k2Nodes.empty()) {
 			Tuple4<Integer, Square, Long, Long> node = k2Nodes.pop();
-			int[] children = AbstractK2Raster.getChildren(node.a);
-			int childSize = node.b.getSize() / AbstractK2Raster.k;
+			int[] children = k2Raster.getChildren(node.a);
+			int childSize = node.b.getSize() / k2Raster.k;
 
 			if (children.length == 0 && rasterBounding.intersects(bounding)) {
-				vMinMBR = Math.min(AbstractK2Raster.computeVMax(node.d, node.a), vMinMBR);
-				vMaxMBR = Math.max(AbstractK2Raster.computeVMax(node.d, node.a), vMaxMBR);
+				vMinMBR = Math.min(k2Raster.computeVMax(node.d, node.a), vMinMBR);
+				vMaxMBR = Math.max(k2Raster.computeVMax(node.d, node.a), vMaxMBR);
 			}
 
 			for (int i = 0; i < children.length; i++) {
 				int child = children[i];
-				Square childRasterBounding = node.b.getChildSquare(childSize, i, AbstractK2Raster.k);
+				Square childRasterBounding = node.b.getChildSquare(childSize, i, k2Raster.k);
 
 				if (childRasterBounding.intersects(bounding)) {
-					long vminVal = AbstractK2Raster.computeVMin(node.d, node.c, child);
-					long vmaxVal = AbstractK2Raster.computeVMax(node.d, child);
+					long vminVal = k2Raster.computeVMin(node.d, node.c, child);
+					long vmaxVal = k2Raster.computeVMax(node.d, child);
 					if (childRasterBounding.isContained(bounding)) {
 						vMinMBR = Math.min(vminVal, vMinMBR);
 						vMaxMBR = Math.max(vmaxVal, vMaxMBR);
@@ -310,6 +317,12 @@ public class RavenJoin extends AbstractRavenJoin {
 		}
 	}
 
+	private java.awt.Rectangle getRectangle(Square rasterBounding) {
+		return new java.awt.Rectangle(rasterBounding.getTopX(), rasterBounding.getTopY(),
+				Math.min(rasterBounding.getSize(), Math.max(0, imageSize.width - rasterBounding.getTopX())),
+				Math.min(rasterBounding.getSize(), Math.max(0, imageSize.height - rasterBounding.getTopY())));
+	}
+
 	// based on:
 	// https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0226943&type=printable
 	/**
@@ -324,17 +337,17 @@ public class RavenJoin extends AbstractRavenJoin {
 		JoinResult def = new JoinResult(), prob = new JoinResult();
 		Stack<Tuple5<Node<String, Geometry>, Integer, Square, Long, Long>> S = new Stack<>();
 
-		Pair<Long, Long> minMax = AbstractK2Raster.getValueRange();
+		Pair<Long, Long> minMax = k2Raster.getValueRange();
 
 		for (Node<String, Geometry> node : TreeExtensions.getChildren(tree.root().get())) {
 			S.push(new Tuple5<>(node, 0,
-					new Square(offset.getOffsetX(), offset.getOffsetY(), AbstractK2Raster.getSize()), minMax.first,
+					new Square(offset.getOffsetX(), offset.getOffsetY(), k2Raster.getSize()), minMax.first,
 					minMax.second));
 		}
 
 		while (!S.empty()) {
 			Tuple5<Node<String, Geometry>, Integer, Square, Long, Long> p = S.pop();
-			if (!new Square(offset.getOffsetX(), offset.getOffsetY(), AbstractK2Raster.getSize())
+			if (!new Square(offset.getOffsetX(), offset.getOffsetY(), k2Raster.getSize())
 					.intersects(p.a.geometry().mbr()))
 				continue;
 			Tuple5<QuadOverlapType, Integer, Square, Long, Long> checked = checkQuadrant(p.b, p.c, p.a.geometry().mbr(),
@@ -343,11 +356,12 @@ public class RavenJoin extends AbstractRavenJoin {
 			switch (checked.a) {
 				case TotalOverlap:
 					if (TreeExtensions.isLeaf(p.a)) {
-						extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, def,
-								AbstractK2Raster.getSize() - 1);
+
+						extractCells((Leaf<String, Geometry>) p.a, checked.b, getRectangle(checked.c), def,
+								k2Raster.getSize() - 1);
 					} else {
-						addDescendantsLeaves((NonLeaf<String, Geometry>) p.a, checked.b, checked.c, def,
-								AbstractK2Raster.getSize() - 1);
+						addDescendantsLeaves((NonLeaf<String, Geometry>) p.a, checked.b, getRectangle(checked.c), def,
+								k2Raster.getSize() - 1);
 					}
 					break;
 				case PossibleOverlap:
@@ -362,12 +376,12 @@ public class RavenJoin extends AbstractRavenJoin {
 								checked.d, checked.e);
 						switch (overlap) {
 							case TotalOverlap:
-								extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, def,
-										AbstractK2Raster.getSize() - 1);
+								extractCells((Leaf<String, Geometry>) p.a, checked.b, getRectangle(checked.c), def,
+										k2Raster.getSize() - 1);
 								break;
 							case PartialOverlap:
-								extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, prob,
-										AbstractK2Raster.getSize() - 1);
+								extractCells((Leaf<String, Geometry>) p.a, checked.b, getRectangle(checked.c), prob,
+										k2Raster.getSize() - 1);
 								Logger.log(p.a.geometry().mbr(), Logger.LogLevel.DEBUG);
 								break;
 							case NoOverlap:
@@ -401,7 +415,7 @@ public class RavenJoin extends AbstractRavenJoin {
 		for (JoinResultItem item : prob) {
 			JoinResultItem result = new JoinResultItem(item.geometry, new ArrayList<>());
 			for (PixelRange range : item.pixelRanges) {
-				PrimitiveArrayWrapper values = AbstractK2Raster.getWindow(range.row - offset.getOffsetY(),
+				PrimitiveArrayWrapper values = k2Raster.getWindow(range.row - offset.getOffsetY(),
 						range.row - offset.getOffsetY(), range.x1 - offset.getOffsetX(),
 						range.x2 - offset.getOffsetX());
 				for (int i = 0; i < values.length(); i++) {
