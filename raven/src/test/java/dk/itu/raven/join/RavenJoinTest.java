@@ -41,8 +41,10 @@ public class RavenJoinTest {
         Polygon poly = new Polygon(points);
 
         java.awt.Rectangle rect = new java.awt.Rectangle(0, 0, 30, 30);
-        RavenJoin join = new RavenJoin(null, null, null);
-        Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, rect, 30);
+        Matrix matrix = new RandomMatrix(4, 4, 2);
+        AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
+        RavenJoin join = new RavenJoin(k2, null, null);
+        Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, rect);
         assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 0 && (pr.x2 == 2 || pr.x2 == 3)));
         assertFalse(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 2));
         assertTrue(ranges.stream().anyMatch(pr -> pr.row == 3 && pr.x1 == 0 && (pr.x2 == 3 || pr.x2 == 4)));
@@ -56,8 +58,10 @@ public class RavenJoinTest {
         points.add(Geometries.point(10, 10));
         Polygon poly = new Polygon(points);
         java.awt.Rectangle rect = new java.awt.Rectangle(0, 0, 11, 11);
-        RavenJoin join = new RavenJoin(null, null, null);
-        Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, rect, 10);
+        Matrix matrix = new RandomMatrix(4, 4, 2);
+        AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
+        RavenJoin join = new RavenJoin(k2, null, null);
+        Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, rect);
 
         assertEquals(9, ranges.size());
         assertTrue(ranges.stream().anyMatch(pr -> pr.row == 1));

@@ -1,4 +1,4 @@
-package dk.itu.raven;
+package dk.itu.raven.join;
 
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;

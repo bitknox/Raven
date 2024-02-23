@@ -1,5 +1,6 @@
 package dk.itu.raven.ksquared;
 
+import java.awt.Rectangle;
 import java.io.Serializable;
 import java.util.List;
 
@@ -17,12 +18,13 @@ public abstract class AbstractK2Raster implements Serializable {
     protected int[] prefixSum; // a prefix sum of the tree
     // TODO: use DACs
     protected PrimitiveArrayWrapper lMin;// stores the difference between the minimum value stored in a node and the
-                                        // minimum value of its parent node
+                                         // minimum value of its parent node
     protected PrimitiveArrayWrapper lMax;// stores the difference between the maximum value stored in a node and the
-                                        // maximum value of its parent node
+                                         // maximum value of its parent node
+    protected Rectangle rasterWindow;
 
     public AbstractK2Raster(int k, long minVal, long maxVal, BitMap tree, int n, int[] prefixSum,
-            PrimitiveArrayWrapper lMin, PrimitiveArrayWrapper lMax) {
+            PrimitiveArrayWrapper lMin, PrimitiveArrayWrapper lMax, Rectangle rasterWindow) {
         this.k = k;
         this.minVal = minVal;
         this.maxVal = maxVal;
@@ -31,6 +33,7 @@ public abstract class AbstractK2Raster implements Serializable {
         this.prefixSum = prefixSum;
         this.lMin = lMin;
         this.lMax = lMax;
+        this.rasterWindow = rasterWindow;
     }
 
     /**
@@ -322,4 +325,8 @@ public abstract class AbstractK2Raster implements Serializable {
      */
     public abstract PrimitiveArrayWrapper searchValuesInWindow(int r1, int r2, int c1, int c2, int thresholdLow,
             int thresholdHigh);
+
+    public Rectangle getRasterWindow() {
+        return this.rasterWindow;
+    }
 }

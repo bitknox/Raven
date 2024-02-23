@@ -1,5 +1,6 @@
 package dk.itu.raven.ksquared;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,14 +17,19 @@ public abstract class AbstractK2RasterBuilder {
     protected Matrix m;
     protected int n;
     protected int k;
-    
+
+    public AbstractK2Raster build(Matrix m, int k) {
+        Rectangle rect = new Rectangle(0, 0, 0, 0);
+        return build(m, k, rect);
+    }
+
     /**
      * bulds a K^2 Raster data-structure for an n*m matrix (meaning a 2-dimensional
      * array with {@code n} rows and {@code m} columns)
      * 
      * @param m the raw matrix data
      */
-    public AbstractK2Raster build(Matrix m, int k) {
+    public AbstractK2Raster build(Matrix m, int k, Rectangle rect) {
         this.k = k;
 
         int h = m.getHeight();
@@ -48,7 +54,7 @@ public abstract class AbstractK2RasterBuilder {
         }
         init(maxLevel);
 
-        Pair<Long,Long> res = new Pair<Long,Long>(0L,0L);
+        Pair<Long, Long> res = new Pair<Long, Long>(0L, 0L);
         buildK2(this.n, 1, 0, 0, res);
         m = null;
         long maxVal = res.first;
@@ -63,15 +69,15 @@ public abstract class AbstractK2RasterBuilder {
             size_min += pMin[i];
         }
 
-        Logger.log("size_max: " + size_max,Logger.LogLevel.DEBUG);
-        Logger.log("size_min: " + size_min,Logger.LogLevel.DEBUG);
+        Logger.log("size_max: " + size_max, Logger.LogLevel.DEBUG);
+        Logger.log("size_min: " + size_min, Logger.LogLevel.DEBUG);
 
         PrimitiveArrayWrapper LMaxList = getWrapper(size_max + 1);
         PrimitiveArrayWrapper LMinList = getWrapper(size_min + 1);
 
         BitMap tree = new BitMap(Math.max(1, size_max));
         int bitmapIndex = 0;
-        
+
         for (int i = 0; i < maxLevel - 1; i++) {
             for (int j = 0; j < pMax[i]; j++) {
                 if (t.get(i).isSet(j)) {
@@ -81,7 +87,7 @@ public abstract class AbstractK2RasterBuilder {
                 }
             }
         }
-        
+
         pMax[0] = 1;
         if (maxVal != minVal) { // the root of the k2 raster tree is not a leaf
             tree.set(0);
@@ -129,7 +135,7 @@ public abstract class AbstractK2RasterBuilder {
                 if (t.get(i).isSet(j)) {
                     int start = internalNodeCount * k * k;
                     for (int l = start; l < start + k * k; l++) {
-                        LMaxList.set(imax++, Math.abs(getVMax(i, j) - getVMax(i+1, l)));
+                        LMaxList.set(imax++, Math.abs(getVMax(i, j) - getVMax(i + 1, l)));
                     }
                     internalNodeCount++;
                 }
@@ -144,7 +150,7 @@ public abstract class AbstractK2RasterBuilder {
         PrimitiveArrayWrapper lMax = LMaxList;
         PrimitiveArrayWrapper lMin = LMinList;
 
-        return getK2Raster(maxVal, minVal, tree, lMax, lMin, prefixSum);
+        return getK2Raster(maxVal, minVal, tree, lMax, lMin, prefixSum, rect);
     }
 
     protected void buildK2(int n, int level, int row, int column, Pair<Long, Long> res) {
@@ -161,13 +167,13 @@ public abstract class AbstractK2RasterBuilder {
                     if (maxVal < matrixVal) {
                         maxVal = matrixVal;
                     }
-                    setVMax(level,pMax[level],matrixVal);
+                    setVMax(level, pMax[level], matrixVal);
                     pMax[level]++;
                 } else {
                     buildK2(n / k, level + 1, row + i * (n / k), column + j * (n / k), res);
-                    setVMax(level,pMax[level],res.first);
+                    setVMax(level, pMax[level], res.first);
                     if (!res.first.equals(res.second)) {
-                        setVMin(level,pMax[level],res.second);
+                        setVMin(level, pMax[level], res.second);
                         pMin[level]++;
                         t.get(level).set(pMax[level]);
                     } else {
@@ -193,13 +199,23 @@ public abstract class AbstractK2RasterBuilder {
     }
 
     protected abstract long getMatrixVal(int r, int c);
+
     protected abstract void setVMax(int level, int index, long val);
+
     protected abstract long getVMax(int level, int index);
+
     protected abstract void setVMin(int level, int index, long val);
+
     protected abstract long getVMin(int level, int index);
+
     protected abstract void init(int maxLevel);
+
     protected abstract PrimitiveArrayWrapper getWrapper(int size);
+
     protected abstract void killVMin();
+
     protected abstract void killVMax();
-    protected abstract AbstractK2Raster getK2Raster(long maxVal, long minVal, BitMap tree, PrimitiveArrayWrapper lMax, PrimitiveArrayWrapper lMin, int[] prefixSum);
+
+    protected abstract AbstractK2Raster getK2Raster(long maxVal, long minVal, BitMap tree, PrimitiveArrayWrapper lMax,
+            PrimitiveArrayWrapper lMin, int[] prefixSum, Rectangle rasterWindow);
 }

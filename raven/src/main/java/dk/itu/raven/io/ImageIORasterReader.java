@@ -12,7 +12,7 @@ import javax.imageio.stream.FileImageInputStream;
 
 import org.w3c.dom.Element;
 
-import com.github.davidmoten.rtree2.geometry.Rectangle;
+import java.awt.Rectangle;
 
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.matrix.AwtRasterMatrix;
@@ -29,10 +29,10 @@ public class ImageIORasterReader extends FileRasterReader {
         ImageReader reader = ImageIO.getImageReaders(new FileImageInputStream(tiff)).next();
         reader.setInput(new FileImageInputStream(tiff));
         ImageReadParam param = reader.getDefaultReadParam();
-        int minX = (int) Math.max(rect.x1(), 0.0);
-        int minY = (int) Math.max(rect.y1(), 0.0);
-        int maxX = (int) Math.ceil(Math.min(rect.x2(), reader.getWidth(0)));
-        int maxY = (int) Math.ceil(Math.min(rect.y2(), reader.getHeight(0)));
+        int minX = Math.max(rect.x, 0);
+        int minY = Math.max(rect.y, 0);
+        int maxX = Math.min(rect.x + rect.width, reader.getWidth(0));
+        int maxY = Math.min(rect.y + rect.height, reader.getHeight(0));
         param.setSourceRegion(new java.awt.Rectangle(minX, minY, maxX - minX, maxY - minY));
         BufferedImage img = reader.read(0, param);
         return new AwtRasterMatrix(img.getData());

@@ -1,4 +1,4 @@
-package dk.itu.raven;
+package dk.itu.raven.join;
 
 import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.Polygon;
@@ -9,6 +9,7 @@ import dk.itu.raven.util.matrix.Matrix;
 public class SpatialDataChunk {
     private Matrix matrix;
     private Pair<Iterable<Polygon>, ShapefileReader.ShapeFileBounds> geometries;
+
     private Offset<Integer> offset;
 
     public SpatialDataChunk() {
