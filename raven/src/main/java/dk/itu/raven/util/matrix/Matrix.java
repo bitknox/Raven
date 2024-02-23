@@ -20,27 +20,29 @@ public abstract class Matrix {
         this.sampleSize = new int[] { bitsUsed };
     }
 
+    public static final long filler = 0;
+
     public int get(int r, int c) {
         if (c < 0 || c >= width || r < 0 || r >= height)
-            return 0;
+            return (int) filler;
         try {
             return getWithinRange(r, c);
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(-1);
-            return 0;
+            return -1;
         }
     }
 
     public long getLong(int r, int c) {
         if (c < 0 || c >= width || r < 0 || r >= height)
-            return 0;
+            return filler;
         try {
             return getWithinRangeLong(r, c);
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(-1);
-            return 0;
+            return -1;
         }
     }
 
@@ -73,5 +75,9 @@ public abstract class Matrix {
 
     public int[] getSampleSize() {
         return this.sampleSize;
+    }
+
+    public boolean overlaps(int x, int y) {
+        return (x < width && y < height);
     }
 }
