@@ -92,8 +92,8 @@ public abstract class FileRasterReader implements IRasterReader {
 			try {
 				SpatialDataChunk chunk = new SpatialDataChunk();
 				chunk.setMatrix(readRasters(w));
-				Offset<Integer> offset = new Offset<>((int) (w.x1() - rect.x1()),
-						(int) (w.y1() - rect.y1()));
+				Offset<Integer> offset = new Offset<>((int) Math.min(w.x1(), (w.x1() - rect.x1())),
+						(int) Math.min(w.y1(), (w.y1() - rect.y1())));
 				chunk.setOffset(offset);
 				return chunk;
 			} catch (Exception e) {
