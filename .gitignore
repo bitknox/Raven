@@ -7,6 +7,7 @@ lib
 dependency-reduced-pom.xml
 *.tif
 *.tiff
+!**/src/test/java/dk/itu/raven/data/wildfires/wildfires.tiff
 *.png
 *.jpg
 *.jpeg

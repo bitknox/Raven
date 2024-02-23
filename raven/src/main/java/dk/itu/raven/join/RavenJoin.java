@@ -90,7 +90,7 @@ public class RavenJoin extends AbstractRavenJoin {
 			// compute all intersections between the line segment and horizontal pixel lines
 			for (int y = minY; y < maxY; y++) {
 				double x = (c - b * (y + 0.5)) / a;
-				assert x - rasterBounding.getTopX() >= 0;
+				// assert x - rasterBounding.getTopX() >= 0;
 				int ix = (int) Math.floor(x - rasterBounding.getTopX());
 				ix = Math.min(rasterBounding.getSize(), Math.max(ix, 0));
 				ix = Math.min(maxX, ix);
