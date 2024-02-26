@@ -2,8 +2,6 @@ package dk.itu.raven.join;
 
 import java.awt.Rectangle;
 
-import dk.itu.raven.geometry.Offset;
-
 public abstract class AbstractRavenJoin {
     protected Rectangle rasterWindow;
 

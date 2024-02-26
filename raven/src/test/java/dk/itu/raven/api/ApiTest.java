@@ -133,6 +133,63 @@ public class ApiTest {
         assertIncluded(10, 10, 0, 5, 4, 9, result);
     }
 
+    @ParameterizedTest
+    @ValueSource(ints = { 0, 1, 2 })
+    public void offsetOutsideRightPolygonTest(int streamed) throws IOException {
+        Polygon p = new Polygon(Arrays.asList(Geometries.point(10, 5), Geometries.point(15, 5),
+                Geometries.point(15, 10), Geometries.point(10, 10)));
+        Matrix m = new RandomMatrix(10, 10, 10, 10);
+
+        ShapefileReader vectorReader = new MockedShapefileReader(List.of(p));
+        RasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
+        JoinResult result = getResult(streamed, vectorReader, rasterReader);
+
+        int sum = 0;
+        for (var item : result) {
+            sum += item.pixelRanges.size();
+        }
+
+        assertEquals(0, sum);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { 0, 1, 2 })
+    public void offsetOutsideLeftPolygonTest(int streamed) throws IOException {
+        Polygon p = new Polygon(Arrays.asList(Geometries.point(-5, 5), Geometries.point(0, 5),
+                Geometries.point(0, 10), Geometries.point(-5, 10)));
+        Matrix m = new RandomMatrix(10, 10, 10, 10);
+
+        ShapefileReader vectorReader = new MockedShapefileReader(List.of(p));
+        RasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
+        JoinResult result = getResult(streamed, vectorReader, rasterReader);
+
+        int sum = 0;
+        for (var item : result) {
+            sum += item.pixelRanges.size();
+        }
+
+        assertEquals(0, sum);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { 0, 1, 2 })
+    public void offsetOutsideBottomPolygonTest(int streamed) throws IOException {
+        Polygon p = new Polygon(Arrays.asList(Geometries.point(5, 10), Geometries.point(10, 10),
+                Geometries.point(10, 15), Geometries.point(5, 15)));
+        Matrix m = new RandomMatrix(10, 10, 10, 10);
+
+        ShapefileReader vectorReader = new MockedShapefileReader(List.of(p));
+        RasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
+        JoinResult result = getResult(streamed, vectorReader, rasterReader);
+
+        int sum = 0;
+        for (var item : result) {
+            sum += item.pixelRanges.size();
+        }
+
+        assertEquals(0, sum);
+    }
+
     private void assertIncluded(int width, int height, int minX, int minY, int maxX, int maxY, JoinResult result) {
         int sum = 0;
         boolean[][] pixelIncluded = new boolean[width][height];

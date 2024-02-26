@@ -334,6 +334,13 @@ public class RavenJoin extends AbstractRavenJoin {
 				Math.min(rasterBounding.getSize(), Math.max(0, imageSize.height - rasterBounding.getTopY())));
 	}
 
+	private boolean intersects(java.awt.Rectangle movedRasterWindow, Rectangle mbr) {
+		return !(movedRasterWindow.x >= mbr.x2()
+				|| movedRasterWindow.y >= mbr.y2()
+				|| movedRasterWindow.x + movedRasterWindow.width <= mbr.x1()
+				|| movedRasterWindow.y + movedRasterWindow.height <= mbr.y1());
+	}
+
 	// based on:
 	// https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0226943&type=printable
 	/**
@@ -356,10 +363,14 @@ public class RavenJoin extends AbstractRavenJoin {
 					minMax.second));
 		}
 
+		// Used for early termination. If the vector data does not overlap with BOTH the
+		// image and the square k2Raster there will never be an intersection.
+		java.awt.Rectangle movedRasterWindow = new java.awt.Rectangle(offset.getOffsetX(), offset.getOffsetY(),
+				Math.min(rasterWindow.width, k2Raster.getSize()), Math.min(rasterWindow.height, k2Raster.getSize()));
+
 		while (!S.empty()) {
 			Tuple5<Node<String, Geometry>, Integer, Square, Long, Long> p = S.pop();
-			if (!new Square(offset.getOffsetX(), offset.getOffsetY(), k2Raster.getSize())
-					.intersects(p.a.geometry().mbr()))
+			if (!intersects(movedRasterWindow, p.a.geometry().mbr()))
 				continue;
 			Tuple5<QuadOverlapType, Integer, Square, Long, Long> checked = checkQuadrant(p.b, p.c, p.a.geometry().mbr(),
 					function, p.d,
