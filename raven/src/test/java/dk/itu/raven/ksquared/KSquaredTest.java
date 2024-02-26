@@ -34,7 +34,7 @@ public class KSquaredTest {
 	public void testGetWindowRow() {
 		Random r = new Random();
 		Matrix matrix = new RandomMatrix(100, 100, 1000000);
-		AbstractK2Raster k2Raster = new K2RasterBuilder().build(matrix,2);
+		AbstractK2Raster k2Raster = new K2RasterBuilder().build(matrix, 2);
 		int row = r.nextInt(100);
 		int col1 = r.nextInt(25);
 		int col2 = 75 + r.nextInt(25);
@@ -54,7 +54,7 @@ public class KSquaredTest {
 	@Test
 	public void testWithNonSquareMatrix() {
 		Matrix matrix = new RandomMatrix(2000, 500, 1000000);
-		AbstractK2Raster k2Raster = new K2RasterBuilder().build(matrix,2);
+		AbstractK2Raster k2Raster = new K2RasterBuilder().build(matrix, 2);
 		for (int i = 0; i < matrix.getHeight(); i++) {
 			PrimitiveArrayWrapper row = k2Raster.getWindow(i, i, 0, matrix.getWidth() - 1);
 			for (int j = 0; j < matrix.getWidth(); j++) {
@@ -65,7 +65,7 @@ public class KSquaredTest {
 
 	@Test
 	public void testGetChildren() {
-		AbstractK2Raster k2 = new K2RasterBuilder().build(new ArrayMatrix(M, 8, 8),2);
+		AbstractK2Raster k2 = new K2RasterBuilder().build(new ArrayMatrix(M, 8, 8), 2);
 		testElements(k2.getChildren(0), new int[] { 1, 2, 3, 4 });
 		testElements(k2.getChildren(1), new int[] { 5, 6, 7, 8 });
 		testElements(k2.getChildren(2), new int[] { 9, 10, 11, 12 });
@@ -76,32 +76,32 @@ public class KSquaredTest {
 
 	@Test
 	public void testVmin() {
-		AbstractK2Raster k2 = new K2RasterBuilder().build(new ArrayMatrix(M, 8, 8),2);
+		AbstractK2Raster k2 = new K2RasterBuilder().build(new ArrayMatrix(M, 8, 8), 2);
 		assertEquals(3, k2.computeVMin(5, 1, 1));
 		assertEquals(1, k2.computeVMin(5, 1, 2));
 		assertEquals(1, k2.computeVMin(5, 1, 3));
 		assertEquals(2, k2.computeVMin(5, 1, 4));
 		assertEquals(4, k2.computeVMin(5, 3, 5));
 		assertEquals(1, k2.computeVMin(4, 1, 10));
-		assertEquals(2, k2.computeVMin(4, 1, 14));
+		assertEquals(1, k2.computeVMin(4, 1, 14));
 	}
 
 	@Test
 	public void testVmax() {
-		AbstractK2Raster k2 = new K2RasterBuilder().build(new ArrayMatrix(M, 8, 8),2);
+		AbstractK2Raster k2 = new K2RasterBuilder().build(new ArrayMatrix(M, 8, 8), 2);
 		assertEquals(5, k2.computeVMax(5, 1));
 		assertEquals(4, k2.computeVMax(5, 2));
 		assertEquals(4, k2.computeVMax(5, 3));
 		assertEquals(2, k2.computeVMax(5, 4));
 		assertEquals(5, k2.computeVMax(5, 5));
 		assertEquals(1, k2.computeVMax(4, 10));
-		assertEquals(3, k2.computeVMax(4, 14));
+		assertEquals(2, k2.computeVMax(4, 14));
 	}
 
 	@RepeatedTest(100)
 	public void testHasChildren() {
 		Matrix matrix = new RandomMatrix(200, 200, 1);
-		AbstractK2Raster k2 = new K2RasterBuilder().build(matrix,2);
+		AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
 		Stack<Square> squares = new Stack<>();
 		Stack<Integer> indices = new Stack<>();
 		indices.push(0);
@@ -136,7 +136,7 @@ public class KSquaredTest {
 	@Test
 	public void testVMinVMax() {
 		Matrix matrix = new RandomMatrix(2000, 2000, 100);
-		AbstractK2Raster k2 = new K2RasterBuilder().build(matrix,2);
+		AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
 		Stack<Square> squares = new Stack<>();
 		Stack<Integer> indices = new Stack<>();
 		Stack<Integer> parentMin = new Stack<>();
@@ -178,31 +178,27 @@ public class KSquaredTest {
 	}
 
 	@Test
-	public void whenSerializingAndDeserializing_ThenObjectIsTheSame() 
-	throws IOException, ClassNotFoundException {
+	public void whenSerializingAndDeserializing_ThenObjectIsTheSame()
+			throws IOException, ClassNotFoundException {
 		Matrix matrix = new RandomMatrix(1000, 1000, 100);
-		AbstractK2Raster k2 = new K2RasterBuilder().build(matrix,2);
+		AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
 
-		FileOutputStream fileOutputStream
-		= new FileOutputStream("serializeTest.txt");
-		ObjectOutputStream objectOutputStream 
-		= new ObjectOutputStream(fileOutputStream);
+		FileOutputStream fileOutputStream = new FileOutputStream("serializeTest.txt");
+		ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
 		objectOutputStream.writeObject(k2);
 		objectOutputStream.flush();
 		objectOutputStream.close();
 
-		FileInputStream fileInputStream 
-		= new FileInputStream("serializeTest.txt");
-		ObjectInputStream objectInputStream 
-		= new ObjectInputStream(fileInputStream);
+		FileInputStream fileInputStream = new FileInputStream("serializeTest.txt");
+		ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 		AbstractK2Raster k2_after = (K2Raster) objectInputStream.readObject();
 		objectInputStream.close();
 
-		assertEquals(k2.k,k2_after.k);
-		assertEquals(k2.getSize(),k2_after.getSize());
+		assertEquals(k2.k, k2_after.k);
+		assertEquals(k2.getSize(), k2_after.getSize());
 
-		PrimitiveArrayWrapper expected = k2.getWindow(0, k2.getSize()-1, 0, k2.getSize()-1);
-		PrimitiveArrayWrapper actual = k2_after.getWindow(0, k2.getSize()-1, 0, k2.getSize()-1);
+		PrimitiveArrayWrapper expected = k2.getWindow(0, k2.getSize() - 1, 0, k2.getSize() - 1);
+		PrimitiveArrayWrapper actual = k2_after.getWindow(0, k2.getSize() - 1, 0, k2.getSize() - 1);
 
 		for (int i = 0; i < expected.length(); i++) {
 			assertEquals(expected.get(i), actual.get(i));

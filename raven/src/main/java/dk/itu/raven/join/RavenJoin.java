@@ -71,8 +71,11 @@ public class RavenJoin extends AbstractRavenJoin {
 		// line of the polygon and the line y=j happens at point (i,j)
 		// 1 on index i if the left-most pixel of row i intersects the polygon, 0
 		// otherwise
+		java.awt.Rectangle rasterWindow = k2Raster.getRasterWindow();
+
+		boolean[] inRanges = new boolean[rasterBounding.height];
 		List<BST<Integer, Integer>> intersections = new ArrayList<BST<Integer, Integer>>(rasterBounding.height);
-		for (int i = 0; i < rasterBounding.height; i++) {
+		for (int i = 0; i <= rasterBounding.height; i++) {
 			intersections.add(i, new BST<>());
 		}
 
@@ -98,22 +101,24 @@ public class RavenJoin extends AbstractRavenJoin {
 				double x = (c - b * (y + 0.5)) / a;
 				// assert x - rasterBounding.getTopX() >= 0;
 				int ix = (int) Math.floor(x - rasterBounding.x);
-				ix = Math.min(rasterBounding.width - 1, Math.max(ix, 0));
-				BST<Integer, Integer> bst = intersections.get(y - rasterBounding.y);
-				incrementSet(bst, ix);
+				if (ix <= 0) {
+					inRanges[y - rasterBounding.y] = !inRanges[y - rasterBounding.y];
+				} else if (ix < rasterBounding.width && ix + rasterBounding.x < rasterWindow.width) {
+					BST<Integer, Integer> bst = intersections.get(y - rasterBounding.y);
+					incrementSet(bst, ix);
+				}
 			}
 			old = next;
 		}
 
-		java.awt.Rectangle rasterWindow = k2Raster.getRasterWindow();
 		Collection<PixelRange> ranges = new ArrayList<>();
-		for (int y = 0; y < rasterBounding.height; y++) {
+		for (int y = 0; y < Math.min(rasterBounding.height, rasterWindow.height - rasterBounding.y); y++) {
 			BST<Integer, Integer> bst = intersections.get(y);
-			boolean inRange = false;
+			boolean inRange = inRanges[y];
 			int start = 0;
 			for (int x : bst.keys()) {
 				if ((bst.get(x) % 2) == 0) { // an even number of intersections happen at this point
-					if (!inRange && x != 0 && x != rasterBounding.width && x != rasterBounding.width - 1) {
+					if (!inRange) {
 						// if a range is ongoing, ignore these intersections, otherwise add this single
 						// pixel as a range. If there is an even number of intersections at the edge of
 						// the viewport, it should not be added as a single pixel, as that means a
@@ -133,6 +138,12 @@ public class RavenJoin extends AbstractRavenJoin {
 						start = x;
 					}
 				}
+			}
+			if (inRange) {
+				ranges.add(new PixelRange(y + rasterBounding.y + rasterWindow.y,
+						start + rasterBounding.x + rasterWindow.x,
+						Math.min(rasterBounding.width - 1 + rasterBounding.x + rasterWindow.x,
+								rasterWindow.x + rasterWindow.width - 1)));
 			}
 		}
 

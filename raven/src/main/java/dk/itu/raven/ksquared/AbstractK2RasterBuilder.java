@@ -19,7 +19,7 @@ public abstract class AbstractK2RasterBuilder {
     protected int k;
 
     public AbstractK2Raster build(Matrix m, int k) {
-        Rectangle rect = new Rectangle(0, 0, 0, 0);
+        Rectangle rect = new Rectangle(0, 0, m.getWidth(), m.getHeight());
         return build(m, k, rect);
     }
 
@@ -55,7 +55,12 @@ public abstract class AbstractK2RasterBuilder {
         init(maxLevel);
 
         Pair<Long, Long> res = new Pair<Long, Long>(0L, 0L);
-        buildK2(this.n, 1, 0, 0, res);
+        if (this.n == 1) {
+            res.first = getMatrixVal(0, 0);
+            res.second = getMatrixVal(0, 0);
+        } else {
+            buildK2(this.n, 1, 0, 0, res);
+        }
         m = null;
         long maxVal = res.first;
         long minVal = res.second;

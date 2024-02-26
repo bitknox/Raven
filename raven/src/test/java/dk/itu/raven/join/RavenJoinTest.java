@@ -41,14 +41,15 @@ public class RavenJoinTest {
         Polygon poly = new Polygon(points);
 
         java.awt.Rectangle rect = new java.awt.Rectangle(0, 0, 30, 30);
-        Matrix matrix = new RandomMatrix(4, 4, 2);
+        Matrix matrix = new RandomMatrix(20, 30, 2);
         AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
         RavenJoin join = new RavenJoin(k2, null, null);
         Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, rect);
+
         assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 0 && (pr.x2 == 2 || pr.x2 == 3)));
         assertFalse(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 2));
         assertTrue(ranges.stream().anyMatch(pr -> pr.row == 3 && pr.x1 == 0 && (pr.x2 == 3 || pr.x2 == 4)));
-        assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && (pr.x1 == 18 || pr.x1 == 17) && pr.x2 == 20));
+        assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && (pr.x1 == 18 || pr.x1 == 17) && pr.x2 == 19));
     }
 
     @Test
@@ -58,7 +59,7 @@ public class RavenJoinTest {
         points.add(Geometries.point(10, 10));
         Polygon poly = new Polygon(points);
         java.awt.Rectangle rect = new java.awt.Rectangle(0, 0, 11, 11);
-        Matrix matrix = new RandomMatrix(4, 4, 2);
+        Matrix matrix = new RandomMatrix(10, 10, 2);
         AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
         RavenJoin join = new RavenJoin(k2, null, null);
         Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, rect);
@@ -170,8 +171,9 @@ public class RavenJoinTest {
 
         assertEquals(res.get(0).geometry, p);
         int idx = 0;
-        assertEquals(res.get(0).pixelRanges.size(), expected.length);
-        assertEquals(res.get(1).pixelRanges.size(), expected2.length);
+
+        assertEquals(expected.length, res.get(0).pixelRanges.size());
+        assertEquals(expected2.length, res.get(1).pixelRanges.size());
         for (PixelRange range : res.get(0).pixelRanges) {
             assertEquals(expected[idx++], range);
         }
