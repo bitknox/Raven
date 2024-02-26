@@ -155,11 +155,12 @@ public abstract class AbstractK2RasterBuilder {
     protected void buildK2(int n, int level, int row, int column, Pair<Long, Long> res) {
         long minVal = Integer.MAX_VALUE;
         long maxVal = 0;
+        int nKths = n / k;
 
-        for (int i = 0; i < k; i++) {
-            for (int j = 0; j < k; j++) {
+        for (int newRow = row; newRow < row + n; newRow += nKths) {
+            for (int newColumn = column; newColumn < column + n; newColumn += nKths) {
                 if (n == k) { // last level
-                    long matrixVal = getMatrixVal(row + i, column + j);
+                    long matrixVal = getMatrixVal(newRow, newColumn);
                     if (minVal > matrixVal) {
                         minVal = matrixVal;
                     }
@@ -169,7 +170,12 @@ public abstract class AbstractK2RasterBuilder {
                     setVMax(level, pMax[level], matrixVal);
                     pMax[level]++;
                 } else {
-                    buildK2(n / k, level + 1, row + i * (n / k), column + j * (n / k), res);
+                    if (!m.overlaps(newColumn, newRow)) {
+                        res.first = Matrix.filler;
+                        res.second = Matrix.filler;
+                    } else {
+                        buildK2(nKths, level + 1, newRow, newColumn, res);
+                    }
                     setVMax(level, pMax[level], res.first);
                     if (!res.first.equals(res.second)) {
                         setVMin(level, pMax[level], res.second);
