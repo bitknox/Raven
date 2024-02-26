@@ -121,7 +121,6 @@ public class InternalApi {
      * @return the R* tree
      */
     static RTree<String, Geometry> generateRTree(Pair<List<Polygon>, ShapefileReader.ShapeFileBounds> geometries) {
-        // create a R* tree with
         RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
 
         // offset geometries such that they are aligned to the corner
