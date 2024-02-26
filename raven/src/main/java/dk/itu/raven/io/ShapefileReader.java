@@ -111,4 +111,8 @@ public class ShapefileReader {
 			}
 		}
 	}
+
+	public ShapeFileBounds getBounds() {
+		return this.bounds;
+	}
 }

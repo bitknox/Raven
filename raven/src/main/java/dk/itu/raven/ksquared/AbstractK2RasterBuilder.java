@@ -1,6 +1,5 @@
 package dk.itu.raven.ksquared;
 
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,18 +17,13 @@ public abstract class AbstractK2RasterBuilder {
     protected int n;
     protected int k;
 
-    public AbstractK2Raster build(Matrix m, int k) {
-        Rectangle rect = new Rectangle(0, 0, m.getWidth(), m.getHeight());
-        return build(m, k, rect);
-    }
-
     /**
      * bulds a K^2 Raster data-structure for an n*m matrix (meaning a 2-dimensional
      * array with {@code n} rows and {@code m} columns)
      * 
      * @param m the raw matrix data
      */
-    public AbstractK2Raster build(Matrix m, int k, Rectangle rect) {
+    public AbstractK2Raster build(Matrix m, int k) {
         this.k = k;
 
         int h = m.getHeight();
@@ -155,7 +149,7 @@ public abstract class AbstractK2RasterBuilder {
         PrimitiveArrayWrapper lMax = LMaxList;
         PrimitiveArrayWrapper lMin = LMinList;
 
-        return getK2Raster(maxVal, minVal, tree, lMax, lMin, prefixSum, rect);
+        return getK2Raster(maxVal, minVal, tree, lMax, lMin, prefixSum);
     }
 
     protected void buildK2(int n, int level, int row, int column, Pair<Long, Long> res) {
@@ -222,5 +216,5 @@ public abstract class AbstractK2RasterBuilder {
     protected abstract void killVMax();
 
     protected abstract AbstractK2Raster getK2Raster(long maxVal, long minVal, BitMap tree, PrimitiveArrayWrapper lMax,
-            PrimitiveArrayWrapper lMin, int[] prefixSum, Rectangle rasterWindow);
+            PrimitiveArrayWrapper lMin, int[] prefixSum);
 }

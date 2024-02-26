@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -40,10 +41,10 @@ public class RavenJoinTest {
         points.add(Geometries.point(0, 30));
         Polygon poly = new Polygon(points);
 
-        java.awt.Rectangle rect = new java.awt.Rectangle(0, 0, 30, 30);
+        java.awt.Rectangle rect = new java.awt.Rectangle(0, 0, 20, 30);
         Matrix matrix = new RandomMatrix(20, 30, 2);
         AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
-        RavenJoin join = new RavenJoin(k2, null, null);
+        RavenJoin join = new RavenJoin(k2, null, null, rect);
         Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, rect);
 
         assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 0 && (pr.x2 == 2 || pr.x2 == 3)));
@@ -61,7 +62,7 @@ public class RavenJoinTest {
         java.awt.Rectangle rect = new java.awt.Rectangle(0, 0, 11, 11);
         Matrix matrix = new RandomMatrix(10, 10, 2);
         AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
-        RavenJoin join = new RavenJoin(k2, null, null);
+        RavenJoin join = new RavenJoin(k2, null, null, rect);
         Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, rect);
 
         assertEquals(9, ranges.size());
@@ -87,7 +88,7 @@ public class RavenJoinTest {
         int lo = 25;
         int hi = 75;
         AbstractK2Raster k2Raster = new K2RasterBuilder().build(matrix, 2);
-        RavenJoin join = new RavenJoin(k2Raster, null, new Size(100, 100));
+        RavenJoin join = new RavenJoin(k2Raster, null, new Size(100, 100), new java.awt.Rectangle(0, 0, 100, 100));
         JoinResult def = new JoinResult();
         JoinResult prob = new JoinResult();
         List<PixelRange> initialDef = new ArrayList<>();
@@ -166,8 +167,8 @@ public class RavenJoinTest {
         rtree = rtree.add(null, p);
         rtree = rtree.add(null, p2);
 
-        RavenJoin join = new RavenJoin(k2, rtree, new Size(16, 16));
-        JoinResult res = join.join(JoinFilterFunctions.rangeFilter(42, 42));
+        RavenJoin join = new RavenJoin(k2, rtree, new Size(16, 16), new Rectangle(0, 0, 16, 16));
+        JoinResult res = join.join(JoinFilterFunctions.rangeFilter(42, 42)).asMemoryAllocatedResult();
 
         assertEquals(res.get(0).geometry, p);
         int idx = 0;
@@ -187,7 +188,7 @@ public class RavenJoinTest {
     public void testCombineListExtremePixelRanges() {
         Matrix matrix = new RandomMatrix(64, 64, 100);
         AbstractK2Raster k2Raster = new K2RasterBuilder().build(matrix, 2);
-        RavenJoin join = new RavenJoin(k2Raster, null, new Size(64, 64));
+        RavenJoin join = new RavenJoin(k2Raster, null, new Size(64, 64), new Rectangle(0, 0, 64, 64));
         JoinResult def = new JoinResult();
         JoinResult prob = new JoinResult();
         List<PixelRange> initialDef = new ArrayList<>();

@@ -1,7 +1,5 @@
 package dk.itu.raven.ksquared;
 
-import java.awt.Rectangle;
-
 import dk.itu.raven.util.BitMap;
 import dk.itu.raven.util.LongArrayWrapper;
 import dk.itu.raven.util.PrimitiveArrayWrapper;
@@ -11,8 +9,8 @@ import dk.itu.raven.util.PrimitiveArrayWrapper;
  */
 public class K2Raster extends AbstractK2Raster {
     public K2Raster(int k, long maxVal, long minVal, BitMap tree, LongArrayWrapper lMax, LongArrayWrapper lMin, int n,
-            int[] prefixSum, Rectangle rasterWindow) {
-        super(k, minVal, maxVal, tree, n, prefixSum, lMin, lMax, rasterWindow);
+            int[] prefixSum) {
+        super(k, minVal, maxVal, tree, n, prefixSum, lMin, lMax);
     }
 
     @Override

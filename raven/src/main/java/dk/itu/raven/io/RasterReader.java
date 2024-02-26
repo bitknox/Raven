@@ -4,11 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
-import com.github.davidmoten.rtree2.geometry.Geometries;
 import java.awt.Rectangle;
 
 import dk.itu.raven.geometry.Offset;
-import dk.itu.raven.geometry.Size;
 import dk.itu.raven.join.SpatialDataChunk;
 import dk.itu.raven.util.matrix.Matrix;
 

@@ -27,6 +27,7 @@ import dk.itu.raven.ksquared.K2RasterIntBuilder;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.util.Pair;
+import dk.itu.raven.util.Tuple3;
 import dk.itu.raven.util.matrix.Matrix;
 
 public class InternalApi {
@@ -50,7 +51,8 @@ public class InternalApi {
      * @return a pair of the k2-raster and the rtree
      * @throws IOException
      */
-    static Pair<AbstractK2Raster, RTree<String, Geometry>> buildStructures(ShapefileReader featureReader,
+    static Tuple3<AbstractK2Raster, RTree<String, Geometry>, java.awt.Rectangle> buildStructures(
+            ShapefileReader featureReader,
             RasterReader rasterReader)
             throws IOException {
         // load geometries from shapefile
@@ -62,9 +64,9 @@ public class InternalApi {
 
         Matrix rasterData = rasterReader.readRasters(rect);
 
-        AbstractK2Raster k2Raster = generateRasterStructure(rasterData, rect);
+        AbstractK2Raster k2Raster = generateRasterStructure(rasterData);
         RTree<String, Geometry> rtree = generateRTree(geometries);
-        return new Pair<>(k2Raster, rtree);
+        return new Tuple3<>(k2Raster, rtree, rect);
     }
 
     /**
@@ -75,7 +77,8 @@ public class InternalApi {
      * @return a stream of the join chunks
      * @throws IOException
      */
-    static Stream<JoinChunk> streamStructures(ShapefileReader featureReader, RasterReader rasterReader, int widthStep,
+    static Pair<Stream<JoinChunk>, java.awt.Rectangle> streamStructures(ShapefileReader featureReader,
+            RasterReader rasterReader, int widthStep,
             int heightStep)
             throws IOException {
         // load geometries from shapefile
@@ -88,10 +91,10 @@ public class InternalApi {
         Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(rect, widthStep, heightStep);
         // TODO: check if it is faster to just use the original rtree
         RTree<String, Geometry> rtree = generateRTree(geometries);
-        return rasterStream.map(chunk -> {
+        return new Pair<>(rasterStream.map(chunk -> {
             Logger.log("matrix[0,0]: " + chunk.getMatrix().get(0, 0), LogLevel.DEBUG);
-            return new JoinChunk(generateRasterStructure(chunk.getMatrix(), rect), chunk.getOffset(), rtree);
-        });
+            return new JoinChunk(generateRasterStructure(chunk.getMatrix()), chunk.getOffset(), rtree);
+        }), rect);
 
     }
 
@@ -101,12 +104,12 @@ public class InternalApi {
      * @param rasterData
      * @return the k2-raster
      */
-    static AbstractK2Raster generateRasterStructure(Matrix rasterData, java.awt.Rectangle rect) {
+    static AbstractK2Raster generateRasterStructure(Matrix rasterData) {
         AbstractK2Raster k2Raster;
         if (rasterData.getBitsUsed() > 32) {
-            k2Raster = new K2RasterBuilder().build(rasterData, 2, rect);
+            k2Raster = new K2RasterBuilder().build(rasterData, 2);
         } else {
-            k2Raster = new K2RasterIntBuilder().build(rasterData, 2, rect);
+            k2Raster = new K2RasterIntBuilder().build(rasterData, 2);
         }
         return k2Raster;
     }
@@ -134,9 +137,9 @@ public class InternalApi {
     static RavenJoin getJoin(RasterReader rasterReader, ShapefileReader vectorReader) throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
         Size imageSize = new Size(metadata.getWidth(), metadata.getHeight());
-        Pair<AbstractK2Raster, RTree<String, Geometry>> structures = buildStructures(vectorReader,
+        Tuple3<AbstractK2Raster, RTree<String, Geometry>, java.awt.Rectangle> structures = buildStructures(vectorReader,
                 rasterReader);
-        return new RavenJoin(structures.first, structures.second, imageSize);
+        return new RavenJoin(structures.a, structures.b, imageSize, structures.c);
     }
 
     static StreamedRavenJoin getStreamedJoin(RasterReader rasterReader, ShapefileReader vectorReader, int widthStep,
@@ -144,16 +147,16 @@ public class InternalApi {
             throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
         Size imageSize = new Size(metadata.getWidth(), metadata.getHeight());
-
-        var stream = streamStructures(vectorReader, rasterReader, widthStep, heightStep).filter(chunk -> {
+        var structures = streamStructures(vectorReader, rasterReader, widthStep, heightStep);
+        Stream<RavenJoin> stream = structures.first.filter(chunk -> {
             return chunk.getRtree().root().isPresent();
         }).map(chunk -> {
-            return new RavenJoin(chunk.getRaster(), chunk.getRtree(), chunk.getOffset(), imageSize);
+            return new RavenJoin(chunk.getRaster(), chunk.getRtree(), chunk.getOffset(), imageSize, structures.second);
         });
         if (parallel) {
-            return new ParallelStreamedRavenJoin(stream);
+            return new ParallelStreamedRavenJoin(stream, structures.second);
         } else {
-            return new StreamedRavenJoin(stream);
+            return new StreamedRavenJoin(stream, structures.second);
         }
 
     }

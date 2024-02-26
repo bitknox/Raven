@@ -46,15 +46,17 @@ public class RavenJoin extends AbstractRavenJoin {
 	private Size imageSize;
 
 	public RavenJoin(AbstractK2Raster k2Raster, RTree<String, Geometry> tree,
-			Offset<Integer> offset, Size imageSize) {
+			Offset<Integer> offset, Size imageSize, java.awt.Rectangle rasterWindow) {
+		super(rasterWindow);
 		this.k2Raster = k2Raster;
 		this.tree = tree;
 		this.offset = offset;
 		this.imageSize = imageSize;
 	}
 
-	public RavenJoin(AbstractK2Raster k2Raster, RTree<String, Geometry> tree, Size imageSize) {
-		this(k2Raster, tree, new Offset<>(0, 0), imageSize);
+	public RavenJoin(AbstractK2Raster k2Raster, RTree<String, Geometry> tree, Size imageSize,
+			java.awt.Rectangle rasterWindow) {
+		this(k2Raster, tree, new Offset<>(0, 0), imageSize, rasterWindow);
 	}
 
 	/**
@@ -71,7 +73,6 @@ public class RavenJoin extends AbstractRavenJoin {
 		// line of the polygon and the line y=j happens at point (i,j)
 		// 1 on index i if the left-most pixel of row i intersects the polygon, 0
 		// otherwise
-		java.awt.Rectangle rasterWindow = k2Raster.getRasterWindow();
 
 		boolean[] inRanges = new boolean[rasterBounding.height];
 		List<BST<Integer, Integer>> intersections = new ArrayList<BST<Integer, Integer>>(rasterBounding.height);
@@ -343,8 +344,8 @@ public class RavenJoin extends AbstractRavenJoin {
 	 *         whose values fall within the given range, that it contains
 	 */
 	@Override
-	public JoinResult join(IRasterFilterFunction function) {
-		JoinResult def = new JoinResult(), prob = new JoinResult();
+	protected JoinResult joinImplementation(IRasterFilterFunction function) {
+		JoinResult def = new JoinResult(offset), prob = new JoinResult(offset);
 		Stack<Tuple5<Node<String, Geometry>, Integer, Square, Long, Long>> S = new Stack<>();
 
 		Pair<Long, Long> minMax = k2Raster.getValueRange();
@@ -419,7 +420,6 @@ public class RavenJoin extends AbstractRavenJoin {
 	protected void combineLists(JoinResult def,
 			JoinResult prob, IRasterFilterFunction function) {
 		Logger.log("def: " + def.size() + ", prob: " + prob.size(), Logger.LogLevel.DEBUG);
-		java.awt.Rectangle rasterWindow = k2Raster.getRasterWindow();
 		for (JoinResultItem item : prob) {
 			JoinResultItem result = new JoinResultItem(item.geometry, new ArrayList<>());
 			for (PixelRange range : item.pixelRanges) {

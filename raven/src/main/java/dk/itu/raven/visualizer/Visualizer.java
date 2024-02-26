@@ -66,16 +66,20 @@ public class Visualizer {
 		Graphics2D rasterGraphics = image.createGraphics();
 		rasterGraphics.setColor(Color.white);
 		rasterGraphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
-		results.forEach(item -> {
+		final Offset<Integer> offset = results.getOffset();
+
+		for (var item : results) {
 			if (options.useRandomColor) {
 				rasterGraphics.setColor(new Color(r.nextInt(256), r.nextInt(256), r.nextInt(256)));
 			} else {
 				rasterGraphics.setColor(options.color);
 			}
 			for (PixelRange range : item.pixelRanges) {
-				rasterGraphics.drawLine(range.x1, range.row, range.x2, range.row);
+				rasterGraphics.drawLine(range.x1 - offset.getOffsetX(), range.row - offset.getOffsetY(),
+						range.x2 - offset.getOffsetX(),
+						range.row - offset.getOffsetY());
 			}
-		});
+		}
 		rasterGraphics.setColor(Color.RED);
 		for (Polygon poly : features) {
 			Point old = poly.getFirst();
