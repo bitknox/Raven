@@ -1,7 +1,20 @@
 package dk.itu.raven.join;
 
+import java.awt.Rectangle;
+
 public abstract class AbstractRavenJoin {
-    public abstract AbstractJoinResult join(IRasterFilterFunction function);
+    protected Rectangle rasterWindow;
+
+    public AbstractRavenJoin(Rectangle rasterWindow) {
+        this.rasterWindow = rasterWindow;
+    }
+
+    protected abstract AbstractJoinResult joinImplementation(IRasterFilterFunction function);
+
+    public AbstractJoinResult join(IRasterFilterFunction function) {
+        AbstractJoinResult result = joinImplementation(function);
+        return result;
+    }
 
     public AbstractJoinResult join() {
         return join(JoinFilterFunctions.acceptAll());

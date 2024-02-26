@@ -46,11 +46,6 @@ public class Raven {
 
         ImageMetadata metadata = rasterReader.getImageMetadata();
 
-        int totalBits = 0;
-        for (int bits : metadata.getBitsPerSample()) {
-            totalBits += bits;
-        }
-
         IRasterFilterFunction function = JoinFilterFunctions.acceptAll();
 
         if (jct.ranges.size() == 2) {
@@ -64,7 +59,7 @@ public class Raven {
         } else if (jct.ranges.size() == metadata.getBitsPerSample().length * 2) {
             Logger.log("using multiSampleRangeFilter", LogLevel.DEBUG);
             function = JoinFilterFunctions.multiSampleRangeFilter(jct.ranges, metadata.getBitsPerSample(),
-                    totalBits);
+                    metadata.getTotalBitsPerPixel());
         } else if (jct.ranges.size() == 0) {
             function = JoinFilterFunctions.rangeFilter(Integer.MIN_VALUE, Integer.MAX_VALUE);
         } else {
