@@ -125,4 +125,15 @@ public class Polygon implements Geometry, Iterator<Point>, Iterable<Point> {
     public Point getFirst() {
         return points.get(0);
     }
+
+    public int size() {
+        return this.points.size();
+    }
+
+    public Point getPoint(int index) {
+        if (index > this.points.size())
+            throw new IndexOutOfBoundsException(index);
+        return this.points.get(index % this.points.size()); // when accessing the point one past the last, give the
+                                                            // first point instead
+    }
 }

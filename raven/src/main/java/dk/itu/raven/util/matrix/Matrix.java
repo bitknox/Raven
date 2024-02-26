@@ -2,6 +2,8 @@ package dk.itu.raven.util.matrix;
 
 import java.io.IOException;
 
+import dk.itu.raven.geometry.Size;
+
 /*
 This class helps by wrapping different forms of matrix data
 and provides the added utility that values outside the range of the matrix will have value 0.
@@ -52,6 +54,10 @@ public abstract class Matrix {
 
     public int getHeight() {
         return this.height;
+    }
+
+    public Size getSize() {
+        return new Size(this.width, this.height);
     }
 
     public void print() {

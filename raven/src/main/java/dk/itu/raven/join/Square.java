@@ -31,13 +31,13 @@ public class Square {
 	}
 
 	public boolean intersects(Rectangle rect) {
-		if (topLeft.x > rect.x2())
+		if (topLeft.x >= rect.x2())
 			return false;
-		if (topLeft.y > rect.y2())
+		if (topLeft.y >= rect.y2())
 			return false;
-		if (topLeft.x + size < rect.x1())
+		if (topLeft.x + size <= rect.x1())
 			return false;
-		if (topLeft.y + size < rect.y1())
+		if (topLeft.y + size <= rect.y1())
 			return false;
 		return true;
 	}

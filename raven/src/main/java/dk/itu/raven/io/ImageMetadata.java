@@ -32,4 +32,12 @@ public class ImageMetadata {
     public int[] getBitsPerSample() {
         return bitsPerSample;
     }
+
+    public int getTotalBitsPerPixel() {
+        int totalBits = 0;
+        for (int bits : bitsPerSample) {
+            totalBits += bits;
+        }
+        return totalBits;
+    }
 }

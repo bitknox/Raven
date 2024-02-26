@@ -25,7 +25,7 @@ import dk.itu.raven.util.Pair;
 public class ShapefileReader {
 
 	private TFWFormat transform;
-	private ShapeFileBounds bounds;
+	protected ShapeFileBounds bounds;
 	private File file;
 
 	public ShapefileReader(String path, TFWFormat transform) {
@@ -56,7 +56,7 @@ public class ShapefileReader {
 		}
 	}
 
-	public Pair<Iterable<Polygon>, ShapeFileBounds> readShapefile() throws IOException {
+	public Pair<List<Polygon>, ShapeFileBounds> readShapefile() throws IOException {
 		FileDataStore myData = FileDataStoreFinder.getDataStore(file);
 		SimpleFeatureSource source = myData.getFeatureSource();
 		bounds.reset();
@@ -110,5 +110,9 @@ public class ShapefileReader {
 				points.add(p);
 			}
 		}
+	}
+
+	public ShapeFileBounds getBounds() {
+		return this.bounds;
 	}
 }

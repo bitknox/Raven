@@ -13,7 +13,6 @@ public class K2RasterBuilder extends AbstractK2RasterBuilder {
     protected List<GoodLongArrayList> vMax;
     protected List<GoodLongArrayList> vMin;
 
-    
     @Override
     protected void init(int maxLevel) {
         vMax = new ArrayList<GoodLongArrayList>(maxLevel);
@@ -65,7 +64,8 @@ public class K2RasterBuilder extends AbstractK2RasterBuilder {
     }
 
     @Override
-    protected K2Raster getK2Raster(long maxVal, long minVal, BitMap tree, PrimitiveArrayWrapper lMax, PrimitiveArrayWrapper lMin, int[] prefixSum) {
+    protected K2Raster getK2Raster(long maxVal, long minVal, BitMap tree, PrimitiveArrayWrapper lMax,
+            PrimitiveArrayWrapper lMin, int[] prefixSum) {
         return new K2Raster(k, maxVal, minVal, tree, (LongArrayWrapper) lMax, (LongArrayWrapper) lMin, n, prefixSum);
     }
 

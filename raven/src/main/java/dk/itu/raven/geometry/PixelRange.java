@@ -1,5 +1,7 @@
 package dk.itu.raven.geometry;
 
+import java.util.Objects;
+
 /**
  * Stores a range of continuous pixels in a compressed format
  */
@@ -24,5 +26,10 @@ public class PixelRange {
             return false;
         PixelRange pixelRange = (PixelRange) other;
         return this.row == pixelRange.row && this.x1 == pixelRange.x1 && this.x2 == pixelRange.x2;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(row, x1, x2);
     }
 }

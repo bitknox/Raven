@@ -49,7 +49,12 @@ public abstract class AbstractK2RasterBuilder {
         init(maxLevel);
 
         Pair<Long, Long> res = new Pair<Long, Long>(0L, 0L);
-        buildK2(this.n, 1, 0, 0, res);
+        if (this.n == 1) {
+            res.first = getMatrixVal(0, 0);
+            res.second = getMatrixVal(0, 0);
+        } else {
+            buildK2(this.n, 1, 0, 0, res);
+        }
         m = null;
         long maxVal = res.first;
         long minVal = res.second;
