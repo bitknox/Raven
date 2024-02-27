@@ -7,12 +7,12 @@ public class ArrayMatrix extends Matrix {
     private int[][] m;
 
     public ArrayMatrix(int[][] m, int width, int height) {
-        super(width, height,32);
+        super(width, height, 32);
         this.m = m;
     }
 
     @Override
     public int getWithinRange(int r, int c) {
-        return m[r][c];
+        return m[c][r];
     }
 }

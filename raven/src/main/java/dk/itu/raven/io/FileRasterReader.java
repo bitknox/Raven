@@ -3,8 +3,12 @@ package dk.itu.raven.io;
 import java.io.File;
 import java.io.IOException;
 
-// TODO: Support inline tfw.
-public abstract class FileRasterReader implements RasterReader {
+import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder;
+import org.geotools.coverage.grid.io.imageio.geotiff.PixelScale;
+import org.geotools.coverage.grid.io.imageio.geotiff.TiePoint;
+import org.geotools.gce.geotiff.GeoTiffReader;
+
+public abstract class FileRasterReader extends RasterReader {
 	File tiff;
 	File tfw;
 
@@ -27,10 +31,27 @@ public abstract class FileRasterReader implements RasterReader {
 
 		if (tfw != null) {
 			transform = TFWFormat.read(tfw);
+		} else {
+			GeoTiffReader reader = new GeoTiffReader(tiff);
+			GeoTiffIIOMetadataDecoder metadata = reader.getMetadata();
+			PixelScale pixelScale = metadata.getModelPixelScales();
+			TiePoint[] tiePoint = metadata.getModelTiePoints();
+
+			if (pixelScale == null || tiePoint == null || tiePoint.length < 1) {
+				throw new UnsupportedOperationException("no side-car or inline TFW data found");
+			}
+
+			if (tiePoint[0].getValueAt(0) != 0 || tiePoint[0].getValueAt(1) != 0) {
+				throw new UnsupportedOperationException("first tie point is not the top left coordinates");
+			}
+
+			transform = new TFWFormat(pixelScale.getScaleX(), 0, 0, -pixelScale.getScaleY(), tiePoint[0].getValueAt(3),
+					tiePoint[0].getValueAt(4));
 		}
 	}
 
-	public TFWFormat getTransform() throws IOException {
+	public TFWFormat getTransform() {
 		return transform;
 	}
+
 }

@@ -6,7 +6,7 @@
 
 	<groupId>dk.itu.raven</groupId>
 	<artifactId>raven</artifactId>
-	<version>0.1.0</version>
+	<version>1.0.0</version>
 
 	<name>Raven</name>
 	<url></url>
@@ -61,6 +61,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
+			<version>5.9.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.github.davidmoten</groupId>
 			<artifactId>rtree2</artifactId>
 			<version>0.9.3</version>
@@ -76,7 +82,8 @@
 			<artifactId>gt-epsg-hsql</artifactId>
 			<version>${geotools.version}</version>
 		</dependency>
-		<!--Parse commandline arguments-->
+		<!--Parse
+		commandline arguments-->
 		<dependency>
 			<groupId>org.jcommander</groupId>
 			<artifactId>jcommander</artifactId>
@@ -129,7 +136,7 @@
 												<Extension-Name>com.sun.media.imageio</Extension-Name>
 											</manifestEntries>
 										</transformer>
-										<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+										<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 									</transformers>
 								</configuration>
 							</execution>
@@ -184,7 +191,7 @@
 												<Extension-Name>com.sun.media.imageio</Extension-Name>
 											</manifestEntries>
 										</transformer>
-										<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+										<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 									</transformers>
 								</configuration>
 							</execution>

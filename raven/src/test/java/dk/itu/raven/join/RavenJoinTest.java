@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -21,9 +22,9 @@ import com.github.davidmoten.rtree2.geometry.Point;
 
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
+import dk.itu.raven.geometry.Size;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.ksquared.K2RasterBuilder;
-import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RandomMatrix;
@@ -40,35 +41,40 @@ public class RavenJoinTest {
         points.add(Geometries.point(0, 30));
         Polygon poly = new Polygon(points);
 
-        Square square = new Square(0, 0, 30);
-        RavenJoin join = new RavenJoin(null, null);
-        Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, square, 30);
+        java.awt.Rectangle rect = new java.awt.Rectangle(0, 0, 20, 30);
+        Matrix matrix = new RandomMatrix(20, 30, 2);
+        AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
+        RavenJoin join = new RavenJoin(k2, null, null, rect);
+        Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, rect);
+
         assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 0 && (pr.x2 == 2 || pr.x2 == 3)));
         assertFalse(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 2));
         assertTrue(ranges.stream().anyMatch(pr -> pr.row == 3 && pr.x1 == 0 && (pr.x2 == 3 || pr.x2 == 4)));
-        assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && (pr.x1 == 18 || pr.x1 == 17) && pr.x2 == 20));
+        assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && (pr.x1 == 18 || pr.x1 == 17) && pr.x2 == 19));
     }
 
     @Test
     public void testExtractCellsPolygonWithLine() {
         List<Point> points = new ArrayList<>();
-        points.add(Geometries.point(0, 0));
+        points.add(Geometries.point(1, 1));
         points.add(Geometries.point(10, 10));
         Polygon poly = new Polygon(points);
-        Square square = new Square(0, 0, 11);
-        RavenJoin join = new RavenJoin(null, null);
-        Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, square, 10);
+        java.awt.Rectangle rect = new java.awt.Rectangle(0, 0, 11, 11);
+        Matrix matrix = new RandomMatrix(10, 10, 2);
+        AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
+        RavenJoin join = new RavenJoin(k2, null, null, rect);
+        Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, rect);
 
-        assertEquals(ranges.size(), 10);
+        assertEquals(9, ranges.size());
         assertTrue(ranges.stream().anyMatch(pr -> pr.row == 1));
 
-        int i = 0;
+        int i = 1;
         for (PixelRange range : ranges) {
             assertEquals(new PixelRange(i, i, i), range);
             i++;
         }
 
-        for (i = 0; i < ranges.size(); i++) {
+        for (i = 1; i < ranges.size(); i++) {
             final int j = i;
             assertTrue(ranges.stream().anyMatch(pr -> pr.row == j && pr.x1 == j && pr.x2 == j));
         }
@@ -82,35 +88,36 @@ public class RavenJoinTest {
         int lo = 25;
         int hi = 75;
         AbstractK2Raster k2Raster = new K2RasterBuilder().build(matrix, 2);
-        RavenJoin join = new RavenJoin(k2Raster, null);
-        List<Pair<Geometry, Collection<PixelRange>>> def = new ArrayList<>();
-        List<Pair<Geometry, Collection<PixelRange>>> prob = new ArrayList<>();
+        RavenJoin join = new RavenJoin(k2Raster, null, new Size(100, 100), new java.awt.Rectangle(0, 0, 100, 100));
+        JoinResult def = new JoinResult();
+        JoinResult prob = new JoinResult();
         List<PixelRange> initialDef = new ArrayList<>();
-        def.add(new Pair<Geometry, Collection<PixelRange>>(null, new ArrayList<>()));
-        prob.add(new Pair<Geometry, Collection<PixelRange>>(null, new ArrayList<>()));
+        def.add(new JoinResultItem(null, new ArrayList<>()));
+        prob.add(new JoinResultItem(null, new ArrayList<>()));
         for (int i = 0; i < matrix.getHeight(); i++) {
             int start = r.nextInt(25);
             int end = 75 + r.nextInt(25);
             PixelRange range = new PixelRange(i, start, end);
 
             if (i % 2 == 0) {
-                def.get(0).second.add(range);
+                def.get(0).pixelRanges.add(range);
                 initialDef.add(range);
             } else {
-                prob.get(0).second.add(range);
+                prob.get(0).pixelRanges.add(range);
             }
         }
 
         join.combineLists(def, prob, JoinFilterFunctions.rangeFilter(lo, hi));
 
         for (PixelRange range : initialDef) {
-            assertTrue(def.get(0).second.contains(range));
+            assertTrue(def.get(0).pixelRanges.contains(range));
         }
 
         HashSet<Long> seen = new HashSet<>();
         // check that all ranges in def are within the range of lo and hi
-        for (Pair<Geometry, Collection<PixelRange>> pair : def.subList(1, def.size())) {
-            for (PixelRange range : pair.second) {
+        for (int j = 1; j < def.size(); j++) {
+            JoinResultItem item = def.get(j);
+            for (PixelRange range : item.pixelRanges) {
                 for (int i = range.x1; i <= range.x2; i++) {
                     long hash = range.row;
                     hash <<= 32;
@@ -123,7 +130,7 @@ public class RavenJoinTest {
         }
 
         // check that all pixels in prob with a value in the range are present in def
-        for (PixelRange range : prob.get(0).second) {
+        for (PixelRange range : prob.get(0).pixelRanges) {
             for (int i = range.x1; i <= range.x2; i++) {
                 int val = matrix.get(range.row, i);
                 if (val <= hi && val >= lo) {
@@ -160,18 +167,19 @@ public class RavenJoinTest {
         rtree = rtree.add(null, p);
         rtree = rtree.add(null, p2);
 
-        RavenJoin join = new RavenJoin(k2, rtree);
-        List<Pair<Geometry, Collection<PixelRange>>> res = join.join(42, 42);
+        RavenJoin join = new RavenJoin(k2, rtree, new Size(16, 16), new Rectangle(0, 0, 16, 16));
+        JoinResult res = join.join(JoinFilterFunctions.rangeFilter(42, 42)).asMemoryAllocatedResult();
 
-        assertEquals(res.get(0).first, p);
+        assertEquals(res.get(0).geometry, p);
         int idx = 0;
-        assertEquals(res.get(0).second.size(), expected.length);
-        assertEquals(res.get(1).second.size(), expected2.length);
-        for (PixelRange range : res.get(0).second) {
+
+        assertEquals(expected.length, res.get(0).pixelRanges.size());
+        assertEquals(expected2.length, res.get(1).pixelRanges.size());
+        for (PixelRange range : res.get(0).pixelRanges) {
             assertEquals(expected[idx++], range);
         }
         idx = 0;
-        for (PixelRange range : res.get(1).second) {
+        for (PixelRange range : res.get(1).pixelRanges) {
             assertEquals(expected2[idx++], range);
         }
     }
@@ -180,33 +188,40 @@ public class RavenJoinTest {
     public void testCombineListExtremePixelRanges() {
         Matrix matrix = new RandomMatrix(64, 64, 100);
         AbstractK2Raster k2Raster = new K2RasterBuilder().build(matrix, 2);
-        RavenJoin join = new RavenJoin(k2Raster, null);
-        List<Pair<Geometry, Collection<PixelRange>>> def = new ArrayList<>();
-        List<Pair<Geometry, Collection<PixelRange>>> prob = new ArrayList<>();
+        RavenJoin join = new RavenJoin(k2Raster, null, new Size(64, 64), new Rectangle(0, 0, 64, 64));
+        JoinResult def = new JoinResult();
+        JoinResult prob = new JoinResult();
         List<PixelRange> initialDef = new ArrayList<>();
-        def.add(new Pair<Geometry, Collection<PixelRange>>(null, new ArrayList<>()));
-        prob.add(new Pair<Geometry, Collection<PixelRange>>(null, new ArrayList<>()));
+        def.add(new JoinResultItem(null, new ArrayList<>()));
+        prob.add(new JoinResultItem(null, new ArrayList<>()));
         for (int i = 0; i < matrix.getHeight(); i++) {
             int start = 0;
             int end = 63;
             PixelRange range = new PixelRange(i, start, end);
 
             if (i % 2 == 0) {
-                def.get(0).second.add(range);
+                def.get(0).pixelRanges.add(range);
                 initialDef.add(range);
             } else {
-                prob.get(0).second.add(range);
+                prob.get(0).pixelRanges.add(range);
             }
         }
 
         join.combineLists(def, prob, JoinFilterFunctions.rangeFilter(0, 100));
 
         for (PixelRange range : initialDef) {
-            assertTrue(def.get(0).second.contains(range));
+            assertTrue(def.get(0).pixelRanges.contains(range));
         }
 
-        for (PixelRange range : prob.get(0).second) {
-            assertTrue(def.stream().anyMatch(pr -> pr.second.contains(range)));
+        for (PixelRange range : prob.get(0).pixelRanges) {
+            boolean contained = false;
+            for (JoinResultItem item : def) {
+                if (item.pixelRanges.contains(range)) {
+                    contained = true;
+                    break;
+                }
+            }
+            assertTrue(contained);
         }
     }
 

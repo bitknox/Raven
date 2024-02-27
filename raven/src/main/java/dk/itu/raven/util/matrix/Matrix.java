@@ -2,6 +2,8 @@ package dk.itu.raven.util.matrix;
 
 import java.io.IOException;
 
+import dk.itu.raven.geometry.Size;
+
 /*
 This class helps by wrapping different forms of matrix data
 and provides the added utility that values outside the range of the matrix will have value 0.
@@ -20,27 +22,29 @@ public abstract class Matrix {
         this.sampleSize = new int[] { bitsUsed };
     }
 
+    public static final long filler = 0;
+
     public int get(int r, int c) {
         if (c < 0 || c >= width || r < 0 || r >= height)
-            return 0;
+            return (int) filler;
         try {
             return getWithinRange(r, c);
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(-1);
-            return 0;
+            return -1;
         }
     }
 
     public long getLong(int r, int c) {
         if (c < 0 || c >= width || r < 0 || r >= height)
-            return 0;
+            return filler;
         try {
             return getWithinRangeLong(r, c);
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(-1);
-            return 0;
+            return -1;
         }
     }
 
@@ -50,6 +54,10 @@ public abstract class Matrix {
 
     public int getHeight() {
         return this.height;
+    }
+
+    public Size getSize() {
+        return new Size(this.width, this.height);
     }
 
     public void print() {
@@ -73,5 +81,9 @@ public abstract class Matrix {
 
     public int[] getSampleSize() {
         return this.sampleSize;
+    }
+
+    public boolean overlaps(int x, int y) {
+        return (x < width && y < height);
     }
 }

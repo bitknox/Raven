@@ -17,9 +17,9 @@ public abstract class AbstractK2Raster implements Serializable {
     protected int[] prefixSum; // a prefix sum of the tree
     // TODO: use DACs
     protected PrimitiveArrayWrapper lMin;// stores the difference between the minimum value stored in a node and the
-                                        // minimum value of its parent node
+                                         // minimum value of its parent node
     protected PrimitiveArrayWrapper lMax;// stores the difference between the maximum value stored in a node and the
-                                        // maximum value of its parent node
+                                         // maximum value of its parent node
 
     public AbstractK2Raster(int k, long minVal, long maxVal, BitMap tree, int n, int[] prefixSum,
             PrimitiveArrayWrapper lMin, PrimitiveArrayWrapper lMax) {
