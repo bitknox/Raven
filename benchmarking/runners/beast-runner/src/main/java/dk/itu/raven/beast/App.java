@@ -4,6 +4,8 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.SparkSession;
 
+import com.google.gson.Gson;
+
 import edu.ucr.cs.bdlab.beast.JavaSpatialRDDHelper;
 import edu.ucr.cs.bdlab.beast.JavaSpatialSparkContext;
 import edu.ucr.cs.bdlab.beast.common.BeastOptions;
@@ -40,8 +42,10 @@ public class App {
                     new BeastOptions());
             join.count();
             long end = System.currentTimeMillis();
-            System.out.println(end - start);
+            benchResult.addEntry(end - start);
         }
+        Gson gson = new Gson();
+        System.out.println(gson.toJson(benchResult));
         sparkContext.close();
     }
 }

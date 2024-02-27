@@ -1,17 +1,16 @@
 [
 	{
 		"name": "Benchmark2",
-		"iterations": 1,
+		"iterations": 8,
 		"command": {
 			"path": "java",
 			"args": [
 				"-jar",
 				"/home/raven-runner-1.0-SNAPSHOT.jar",
-				"BenchmarkName",
 				"/home/cb_2018_us_state_500k/cb_2018_us_state_500k.shp",
 				"/home/wildfires",
-				"1",
-				"parallel"
+				"parallel",
+				"256"
 			]
 		},
 		"environment_options": {

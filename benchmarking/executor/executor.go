@@ -2,8 +2,6 @@ package executor
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/bitknox/Raven/benchmarking/environments"
 	"github.com/bitknox/Raven/benchmarking/model"
@@ -13,24 +11,26 @@ import (
 func ExecuteBenchmark(benchmark *model.Benchmark) (*model.BenchmarkResult, error) {
 	env := environments.NewEnvironment(benchmark.EnvironmentOptions)
 
+	//append iterations to command arguments
+	benchmark.Command.Args = append(benchmark.Command.Args, fmt.Sprintf("%d", benchmark.Iterations))
+
 	env.Runner.Setup()
 	r, err := env.Runner.RunCommand(benchmark.Command)
 
 	if err != nil {
+		fmt.Printf("Failed to run command: %s\n", benchmark.Command)
 		return nil, err
 	}
 
-	s, err := strconv.Unquote(strings.TrimSpace(r))
-
-	if err != nil {
-		return nil, err
-	}
-
-	env.Runner.Teardown()
+	defer env.Runner.Teardown()
 	//generate result
-	result, err := parsing.ParseResult(s)
+	result, err := parsing.ParseResult(r)
+
+	result.Name = benchmark.Name
+	result.Iterations = benchmark.Iterations
 
 	if err != nil {
+		fmt.Println("Failed to parse result")
 		return nil, err
 	}
 

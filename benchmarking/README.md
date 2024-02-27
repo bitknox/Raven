@@ -37,7 +37,8 @@ go run main.go
   },
   "environment_options": {
    "environment_type": "docker",
-   "docker_file_path": "./test/Dockerfile" //only required if using docker
+   "docker_file_path": "./test/Dockerfile", //only required if using docker
+   "docker_mount_path": "./dir"
   }
  }
 ]
@@ -53,7 +54,7 @@ Programs executed by the benchmarking tool should use the following input/output
 * Input arguments
 */
 
-args := []string{"inputVectorPath", "inputRasterPath", "iterations"}
+args := []string{"inputVectorPath", "inputRasterPath", "...args", "iterations"}
 
 
 /**
@@ -63,7 +64,7 @@ type BenchmarkResult struct {
  // The name of the benchmark
  Name string `json:"name"`
  // The time it took to run the benchmark (milliseconds)
- Time float64 `json:"time"`
+ Times []float64 `json:"times"`
  // The number of iterations
  Iterations int `json:"iterations"`
  // The number of bytes processed

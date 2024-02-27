@@ -14,14 +14,13 @@ import dk.itu.raven.join.AbstractRavenJoin;
 public class App {
     public static void main(String[] args) throws IOException {
         RavenApi api = new RavenApi();
-        String name = args[0];
-        String vectorPath = args[1];
-        String rasterPath = args[2];
-        int numIterations = Integer.parseInt(args[3]);
-        String type = args[4];
-        int partitionSize = Integer.parseInt(args[5]);
+        String vectorPath = args[0];
+        String rasterPath = args[1];
+        String type = args[2];
+        int partitionSize = Integer.parseInt(args[3]);
+        int numIterations = Integer.parseInt(args[4]);
         long[] times = new long[numIterations];
-        BenchResult benchResult = new BenchResult(name);
+        BenchResult benchResult = new BenchResult("Raven Benchmark");
         for (int i = 0; i < numIterations; i++) {
             long start = System.currentTimeMillis();
             AbstractRavenJoin join;
