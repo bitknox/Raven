@@ -17,5 +17,6 @@ func ParseResult(jsonInput string) (*model.BenchmarkResult, error) {
 }
 
 func ResultIsValid(result *model.BenchmarkResult) bool {
-	return result.Name != "" && result.Time > 0 && result.Iterations > 0
+
+	return result.Name != "" && len(result.Times) == result.Iterations && result.Iterations > 0
 }

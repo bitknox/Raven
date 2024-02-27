@@ -22,6 +22,7 @@ import dk.itu.raven.ksquared.K2RasterBuilder;
 import dk.itu.raven.ksquared.K2RasterIntBuilder;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.Matrix;
+import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.join.RasterFilterFunction;
 
 /**
@@ -43,7 +44,7 @@ public class RavenApi {
 	 * @return a list of pairs of geometries and pixel ranges
 	 */
 	public List<Pair<Geometry, Collection<PixelRange>>> join(AbstractK2Raster k2Raster, RTree<String, Geometry> rtree,
-			Iterable<Polygon> features, RasterFilterFunction filter) {
+			RasterFilterFunction filter) {
 		return new RavenJoin(k2Raster, rtree).join(filter);
 	}
 

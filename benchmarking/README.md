@@ -2,7 +2,7 @@
 
 Benchmark framework for running evaluating geospatial systems
 
-## Prequsites
+## Prerequisite
 
 - golang
 - docker
@@ -62,7 +62,7 @@ args := []string{"inputVectorPath", "inputRasterPath", "iterations"}
 type BenchmarkResult struct {
  // The name of the benchmark
  Name string `json:"name"`
- // The time it took to run the benchmark
+ // The time it took to run the benchmark (milliseconds)
  Time float64 `json:"time"`
  // The number of iterations
  Iterations int `json:"iterations"`

@@ -49,7 +49,6 @@ public class Raven {
 
         Pair<Pair<Iterable<Polygon>, ShapfileReader.ShapeFileBounds>, Matrix> data = api
                 .createReaders(jct.inputVector, jct.inputRaster);
-
         // Build k2-raster structure
         long startBuildNano = System.nanoTime();
         AbstractK2Raster k2Raster = api.generateRasterStructure(data.second);
