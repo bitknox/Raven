@@ -5,8 +5,7 @@ import "github.com/bitknox/Raven/benchmarking/environments"
 type BenchmarkResult struct {
 	// The name of the benchmark
 	Name string `json:"name"`
-	// The time it took to run the benchmark
-
+	// The time it took to run the benchmark in milliseconds
 	Times []float64 `json:"times"`
 	// The number of iterations
 	Iterations int `json:"iterations"`

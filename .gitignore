@@ -13,4 +13,5 @@ dependency-reduced-pom.xml
 *.jpeg
 *.exe
 *.txt
-mount
+results.json
+**/test/mount

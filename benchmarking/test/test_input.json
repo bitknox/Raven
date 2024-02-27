@@ -1,25 +1,23 @@
 [
 	{
-		"name": "Benchmark1",
-		"iterations": 1,
-		"command": {
-			"path": "cmd",
-			"args": ["/c", "dir"]
-		},
-		"environment_options": {
-			"environment_type": "local"
-		}
-	},
-	{
 		"name": "Benchmark2",
 		"iterations": 1,
 		"command": {
-			"path": "ls",
-			"args": ["-la"]
+			"path": "java",
+			"args": [
+				"-jar",
+				"/home/raven-runner-1.0-SNAPSHOT.jar",
+				"BenchmarkName",
+				"/home/cb_2018_us_state_500k/cb_2018_us_state_500k.shp",
+				"/home/wildfires",
+				"1",
+				"parallel"
+			]
 		},
 		"environment_options": {
 			"environment_type": "docker",
-			"docker_file_path": "./test/Dockerfile"
+			"docker_file_path": "./runners/raven-runner/Dockerfile",
+			"docker_mount_path": "C:\\Users\\Johan\\Documents\\Research Project\\research-project\\benchmarking\\test\\mount"
 		}
 	}
 ]

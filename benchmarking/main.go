@@ -7,6 +7,7 @@ import (
 
 	"github.com/bitknox/Raven/benchmarking/executor"
 	"github.com/bitknox/Raven/benchmarking/parsing"
+	"github.com/bitknox/Raven/benchmarking/plotter"
 	"github.com/urfave/cli/v2"
 )
 
@@ -19,24 +20,38 @@ func main() {
 				Usage:   "benchmark definition file",
 				Value:   "./test/input.json",
 			},
+			&cli.StringFlag{
+				Name:    "output",
+				Aliases: []string{"o"},
+				Usage:   "benchmark destination",
+				Value:   "./test/results.json",
+			},
 		},
 		Name:  "raven-benchmarking",
 		Usage: "benchmarking tool for raven project",
 		Action: func(c *cli.Context) error {
-
-			model, err := parsing.ParseInput(c.String("input"))
+			plotter.VerifyEnvironment()
+			benchmarks, err := parsing.ParseInput(c.String("input"))
 
 			if err != nil {
 				fmt.Println(err)
 				return err
 			}
 			//use executor to run the benchmars
-			results := executor.ExecuteBenchmarks(model)
+			results := executor.ExecuteBenchmarks(benchmarks)
 
-			//print results
-			for _, result := range results {
-				fmt.Printf("%+v\n", result)
+			resultOutputDirectory := c.String("output")
+
+			//write results to file
+			err = parsing.WriteResults(results, resultOutputDirectory)
+
+			if err != nil {
+				fmt.Println(err)
+				return err
 			}
+
+			//plot results
+			plotter.PlotResults(resultOutputDirectory, "./test/output.png")
 
 			return nil
 		},

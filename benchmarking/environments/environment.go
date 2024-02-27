@@ -37,6 +37,7 @@ func NewEnvironment(options EnvironmentOptions) *Environment {
 	case Docker:
 		runner = &DockerEnvironment{
 			DockerFilePath: options.DockerFilePath,
+			MountPath:      options.DockerMountPath,
 		}
 	}
 	return &Environment{

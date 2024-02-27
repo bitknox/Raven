@@ -2,6 +2,8 @@ package executor
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/bitknox/Raven/benchmarking/environments"
 	"github.com/bitknox/Raven/benchmarking/model"
@@ -10,16 +12,23 @@ import (
 
 func ExecuteBenchmark(benchmark *model.Benchmark) (*model.BenchmarkResult, error) {
 	env := environments.NewEnvironment(benchmark.EnvironmentOptions)
+
 	env.Runner.Setup()
 	r, err := env.Runner.RunCommand(benchmark.Command)
 
-	fmt.Println(r)
 	if err != nil {
 		return nil, err
 	}
+
+	s, err := strconv.Unquote(strings.TrimSpace(r))
+
+	if err != nil {
+		return nil, err
+	}
+
 	env.Runner.Teardown()
 	//generate result
-	result, err := parsing.ParseResult(r)
+	result, err := parsing.ParseResult(s)
 
 	if err != nil {
 		return nil, err
@@ -28,7 +37,7 @@ func ExecuteBenchmark(benchmark *model.Benchmark) (*model.BenchmarkResult, error
 	isValid := parsing.ResultIsValid(result)
 
 	if !isValid {
-		return nil, fmt.Errorf("benchmar result was not valid: %s", benchmark.Name)
+		return nil, fmt.Errorf("benchmark result was not valid: %s", benchmark.Name)
 	}
 
 	return result, nil

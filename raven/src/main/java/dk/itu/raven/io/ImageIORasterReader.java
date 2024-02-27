@@ -26,8 +26,10 @@ public class ImageIORasterReader extends FileRasterReader {
 
     @Override
     public Matrix readRasters(Rectangle rect) throws IOException {
-        ImageReader reader = ImageIO.getImageReaders(new FileImageInputStream(tiff)).next();
-        reader.setInput(new FileImageInputStream(tiff));
+        FileImageInputStream stream = new FileImageInputStream(tiff);
+        ImageReader reader = ImageIO.getImageReaders(stream).next();
+        reader.setInput(stream);
+
         ImageReadParam param = reader.getDefaultReadParam();
         int minX = Math.max(rect.x, 0);
         int minY = Math.max(rect.y, 0);
@@ -42,8 +44,9 @@ public class ImageIORasterReader extends FileRasterReader {
     public ImageMetadata readImageMetadata() throws IOException {
         long start = System.currentTimeMillis();
 
-        ImageReader reader = ImageIO.getImageReaders(new FileImageInputStream(tiff)).next();
-        reader.setInput(new FileImageInputStream(tiff));
+        FileImageInputStream stream = new FileImageInputStream(tiff);
+        ImageReader reader = ImageIO.getImageReaders(stream).next();
+        reader.setInput(stream);
 
         IIOMetadata metadata = reader.getImageMetadata(0);
         Element metadataNode = (Element) metadata.getAsTree("javax_imageio_1.0");

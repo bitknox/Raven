@@ -3,10 +3,13 @@ package dk.itu.raven.io;
 import java.io.File;
 import java.io.IOException;
 
-import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder;
-import org.geotools.coverage.grid.io.imageio.geotiff.PixelScale;
-import org.geotools.coverage.grid.io.imageio.geotiff.TiePoint;
-import org.geotools.gce.geotiff.GeoTiffReader;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.FileImageInputStream;
+
+import dk.itu.raven.geotools.GeoTiffIIOMetadataDecoder;
+import dk.itu.raven.geotools.PixelScale;
+import dk.itu.raven.geotools.TiePoint;
 
 public abstract class FileRasterReader extends RasterReader {
 	File tiff;
@@ -32,8 +35,10 @@ public abstract class FileRasterReader extends RasterReader {
 		if (tfw != null) {
 			transform = TFWFormat.read(tfw);
 		} else {
-			GeoTiffReader reader = new GeoTiffReader(tiff);
-			GeoTiffIIOMetadataDecoder metadata = reader.getMetadata();
+			FileImageInputStream stream = new FileImageInputStream(tiff);
+			ImageReader reader = ImageIO.getImageReaders(stream).next();
+			reader.setInput(stream);
+			GeoTiffIIOMetadataDecoder metadata = new GeoTiffIIOMetadataDecoder(reader.getImageMetadata(0));
 			PixelScale pixelScale = metadata.getModelPixelScales();
 			TiePoint[] tiePoint = metadata.getModelTiePoints();
 
