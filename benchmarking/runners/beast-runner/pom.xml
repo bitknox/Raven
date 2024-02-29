@@ -83,12 +83,13 @@
               <include>org.mortbay.jetty:servlet-api</include>
               <!-- /org.mortbay.jetty:jetty + dependencies -->
               <!-- org.geotools:gt-epsg-hsql + dependencies -->
-              <include>org.geotools:gt-epsg-hsql</include>
-              <include>org.geotools:gt-referencing</include>
-              <include>org.geotools:gt-metadata</include>
-              <include>org.geotools:gt-opengis</include>
-              <include>org.geotools.ogc:net.opengis.ows</include>
-              <include>org.geotools.ogc:org.w3.xlink</include>
+              <include>org.geotools:gt-epsg-hsql:23</include>
+              <include>org.geotools:gt-referencing:23</include>
+              <include>org.geotools:gt-extensions:23</include>
+              <include>org.geotools:gt-metadata:23</include>
+              <include>org.geotools:gt-opengis:23</include>
+              <include>org.geotools.ogc:net.opengis.ows:23</include>
+              <include>org.geotools.ogc:org.w3.xlink:23</include>
               <include>org.hsqldb:hsqldb</include>
               <include>org.eclipse.emf:org.eclipse.emf.common</include>
               <include>org.eclipse.emf:org.eclipse.emf.ecore</include>
