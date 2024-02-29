@@ -1,6 +1,7 @@
 package environments
 
 import (
+	"bytes"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -43,6 +44,8 @@ func (d *DockerEnvironment) Setup() error {
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 	ticks := 0
+	fmt.Println("Waiting for container to start")
+	time.Sleep(10 * time.Second)
 	//wait for the container to be up and running
 	for range ticker.C {
 		if ticks > MAX_TICKS {
@@ -83,9 +86,16 @@ func (d *DockerEnvironment) buildImage() (string, error) {
 	tag := "benchmark_image_" + time.Now().Format("20060102")
 	fmt.Println(d.DockerFilePath)
 	//build the docker image from the dockerfile, giving it a unique tag that can be used to run the container
-	err := exec.Command("docker", "build", ".", "-t", tag, "-f", d.DockerFilePath).Run()
+	command := exec.Command("docker", "build", d.DockerFilePath, "-t", tag, "-f", d.DockerFilePath+"Dockerfile")
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	command.Stdout = &out
+	command.Stderr = &stderr
+	err := command.Run()
 
 	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		fmt.Println("Failed to build docker image")
 		return "", err
 	}
 	return tag, nil

@@ -63,11 +63,14 @@ args := []string{"inputVectorPath", "inputRasterPath", "...args", "iterations"}
 type BenchmarkResult struct {
  // The name of the benchmark
  Name string `json:"name"`
- // The time it took to run the benchmark (milliseconds)
+ // The time it took to run the benchmark in milliseconds
  Times []float64 `json:"times"`
  // The number of iterations
  Iterations int `json:"iterations"`
- // The number of bytes processed
+ // The datasets used for the benchmark
+ Datsets []string `json:"datasets"`
+ // Labels to add to the plot
+ Labels []string `json:"labels"`
 }
 
 ```

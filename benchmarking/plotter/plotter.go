@@ -35,8 +35,8 @@ func VerifyEnvironment() {
 
 }
 
-func PlotResults(resultsPath string, outputPath string) {
-	cmd := exec.Command("python", "./plotter/plotter.py", resultsPath, outputPath)
+func PlotResults(resultsPath string, outputPath string, timestamp string) {
+	cmd := exec.Command("python", "./plotter/plotter.py", resultsPath, outputPath, timestamp)
 	err := cmd.Run()
 	if err != nil {
 		fmt.Println(err)

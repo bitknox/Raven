@@ -9,7 +9,8 @@ type BenchmarkResult struct {
 	Times []float64 `json:"times"`
 	// The number of iterations
 	Iterations int `json:"iterations"`
-	// The number of bytes processed
+	// Labels to add to the plot
+	Labels []string `json:"labels"`
 }
 
 type Benchmark struct {

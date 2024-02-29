@@ -1,0 +1,20 @@
+[
+	{
+		"name": "Beast ",
+		"iterations": 5,
+		"command": {
+			"path": "bash",
+			"args": [
+				"/opt/bitnami/spark/beast-0.10.0-RC1/bin/beast",
+				"--class",
+				"dk.itu.raven.runner.App",
+				"/home/beast-runner-1.0-SNAPSHOT-shaded.jar"
+			]
+		},
+		"environment_options": {
+			"environment_type": "docker",
+			"docker_file_path": "./runners/beast-runner/",
+			"docker_mount_path": "C:\\Users\\Johan\\Documents\\Research Project\\research-project\\benchmarking\\test\\mount"
+		}
+	}
+]

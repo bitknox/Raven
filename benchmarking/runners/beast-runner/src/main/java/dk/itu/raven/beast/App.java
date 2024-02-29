@@ -20,11 +20,12 @@ import edu.ucr.cs.bdlab.raptor.RaptorJoinFeature;
 public class App {
     public static void main(String[] args) {
         SparkConf conf = new SparkConf().setAppName("Beast Example");
-        String name = args[0];
-        String vectorPath = args[1];
-        String rasterPath = args[2];
-        int numIterations = Integer.parseInt(args[3]);
-        BenchResult benchResult = new BenchResult(name);
+        String vectorPath = args[0];
+        String rasterPath = args[1];
+        int numIterations = Integer.parseInt(args[2]);
+        BenchResult benchResult = new BenchResult("Beast Join");
+        benchResult.addLabel("Vector: "+ benchResult.formatPath(vectorPath));
+        benchResult.addLabel("Raster: "+ benchResult.formatPath(rasterPath));
         // Set Spark master to local if not already set
         if (!conf.contains("spark.master"))
             conf.setMaster("local[*]");
@@ -37,7 +38,6 @@ public class App {
 
         for (int i = 0; i < numIterations; i++) {
             long start = System.currentTimeMillis();
-
             JavaRDD<RaptorJoinFeature<Integer>> join = JavaSpatialRDDHelper.<Integer>raptorJoin(countries, treecover,
                     new BeastOptions());
             join.count();

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/bitknox/Raven/benchmarking/executor"
 	"github.com/bitknox/Raven/benchmarking/parsing"
@@ -24,7 +25,7 @@ func main() {
 				Name:    "output",
 				Aliases: []string{"o"},
 				Usage:   "benchmark destination",
-				Value:   "./test/results.json",
+				Value:   "./test/results",
 			},
 		},
 		Name:  "raven-benchmarking",
@@ -42,8 +43,17 @@ func main() {
 
 			resultOutputDirectory := c.String("output")
 
+			//create output directory if it does not exist
+			if _, err := os.Stat(resultOutputDirectory); os.IsNotExist(err) {
+				os.MkdirAll(resultOutputDirectory, 0755)
+			}
+
+			timestamp := time.Now().Format("2006_01_02_15-04-05")
+
+			resultsPath := fmt.Sprintf("%s/results %s.json", resultOutputDirectory, timestamp)
+
 			//write results to file
-			err = parsing.WriteResults(results, resultOutputDirectory)
+			err = parsing.WriteResults(results, resultsPath)
 
 			if err != nil {
 				fmt.Println(err)
@@ -51,7 +61,7 @@ func main() {
 			}
 
 			//plot results
-			plotter.PlotResults(resultOutputDirectory, "./test/output.png")
+			plotter.PlotResults(resultsPath, resultOutputDirectory, timestamp)
 
 			return nil
 		},
