@@ -30,6 +30,8 @@ func ExecuteBenchmark(benchmark *model.Benchmark) (*model.BenchmarkResult, error
 	}
 
 	split := strings.Split(r, "\n")
+	// the output always ends with an empty line,
+	// therefore the line we are interested in is the second to last one
 	r = split[len(split)-2]
 
 	fmt.Println(r)
