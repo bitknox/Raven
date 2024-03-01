@@ -7,6 +7,7 @@ public class VisualizerOptionsBuilder {
 	private String outputFormat = "tif";
 	private boolean useRandomColor = false;
 	private boolean useOutput = false;
+	private boolean cropToVector = true;
 	private Color color = Color.black;
 
 	public VisualizerOptionsBuilder setOutputPath(String outputPath) {
@@ -34,7 +35,12 @@ public class VisualizerOptionsBuilder {
 		return this;
 	}
 
+	public VisualizerOptionsBuilder setCropToVector(boolean cropToVector) {
+		this.cropToVector = cropToVector;
+		return this;
+	}
+
 	public VisualizerOptions build() {
-		return new VisualizerOptions(color, outputPath, outputFormat, useRandomColor, useOutput);
+		return new VisualizerOptions(color, outputPath, outputFormat, useRandomColor, useOutput, cropToVector);
 	}
 }

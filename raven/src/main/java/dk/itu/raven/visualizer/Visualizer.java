@@ -20,6 +20,7 @@ import dk.itu.raven.geometry.GeometryUtil;
 import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
+import dk.itu.raven.geometry.Size;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.ShapefileReader.ShapeFileBounds;
 import dk.itu.raven.join.AbstractJoinResult;
@@ -36,19 +37,29 @@ public class Visualizer {
 	int width, height;
 	Random r = new Random();
 
+	/**
+	 * 
+	 * @param width  the ORIGINAL width of the image (that is, the width before it
+	 *               was cropped to fit the vector data)
+	 * @param height the ORIGINAL height of the image (that is, the height before it
+	 *               was cropped to fit the vector data)
+	 */
 	public Visualizer(int width, int height) {
 		this.width = width;
 		this.height = height;
 		this.r = new Random();
 	}
 
-	private List<Polygon> getFeatures(ShapefileReader shapeFileReader) throws IOException {
+	private Pair<List<Polygon>, ShapeFileBounds> getFeatures(ShapefileReader shapeFileReader)
+			throws IOException {
 		Pair<List<Polygon>, ShapeFileBounds> geometries = shapeFileReader.readShapefile();
-		Offset<Double> offset = GeometryUtil.getGeometryOffset(geometries.second);
-		for (Polygon geom : geometries.first) {
+		return geometries;
+	}
+
+	private void offsetFeatures(List<Polygon> features, Offset<Double> offset) {
+		for (Polygon geom : features) {
 			geom.offset(offset.getOffsetX(), offset.getOffsetY());
 		}
-		return geometries.first;
 	}
 
 	/**
@@ -59,14 +70,34 @@ public class Visualizer {
 	 * @param options  visualizer options
 	 * @return The imagebuffer
 	 */
-	public BufferedImage drawResult(AbstractJoinResult results,
-			ShapefileReader shapeFileReader, VisualizerOptions options) throws IOException {
-		List<Polygon> features = getFeatures(shapeFileReader);
-		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_BYTE_INDEXED);
+	public BufferedImage drawResult(AbstractJoinResult results, ShapefileReader shapeFileReader,
+			VisualizerOptions options) throws IOException {
+		var pair = getFeatures(shapeFileReader);
+		List<Polygon> features = pair.first;
+		ShapeFileBounds bounds = pair.second;
+
+		if (options.cropToVector) {
+			offsetFeatures(features, GeometryUtil.getGeometryOffset(bounds));
+		}
+		int width = this.width;
+		int height = this.height;
+		if (options.cropToVector) {
+			java.awt.Rectangle rect = GeometryUtil.getWindowRectangle(new Size(width, height), bounds);
+			width = rect.width;
+			height = rect.height;
+
+		}
+		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_INDEXED);
 		Graphics2D rasterGraphics = image.createGraphics();
 		rasterGraphics.setColor(Color.white);
 		rasterGraphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
-		final Offset<Integer> offset = results.getOffset();
+
+		final Offset<Integer> offset;
+		if (options.cropToVector) {
+			offset = results.getOffset();
+		} else {
+			offset = new Offset<Integer>(0, 0);
+		}
 
 		for (var item : results) {
 			if (options.useRandomColor) {
@@ -103,7 +134,7 @@ public class Visualizer {
 	 *         {@code features}
 	 */
 	public BufferedImage drawShapefile(ShapefileReader shapeFileReader, VisualizerOptions options) throws IOException {
-		Iterable<Polygon> features = getFeatures(shapeFileReader);
+		Iterable<Polygon> features = getFeatures(shapeFileReader).first;
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D vectorGraphics = image.createGraphics();
 		vectorGraphics.setColor(Color.white);
@@ -214,7 +245,7 @@ public class Visualizer {
 	 */
 	public BufferedImage drawVectorRasterOverlap(ShapefileReader shapeFileReader, RTree<String, Geometry> tree,
 			K2Raster k2Raster, int k2RecursionDepth, VisualizerOptions options) throws IOException {
-		Iterable<Polygon> features = getFeatures(shapeFileReader);
+		Iterable<Polygon> features = getFeatures(shapeFileReader).first;
 
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics = image.createGraphics();
