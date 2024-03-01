@@ -35,7 +35,7 @@
     <dependency>
       <groupId>com.github.bitknox.Raven</groupId>
       <artifactId>raven</artifactId>
-      <version>feature~benchmarking-pipeline-SNAPSHOT</version>
+      <version>main-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
