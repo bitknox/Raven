@@ -63,16 +63,7 @@ public abstract class Matrix {
     public void print() {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                System.out.print(getLong(i, j) == 10 ? "A " : getLong(i, j) + " ");
-            }
-            System.out.println();
-        }
-    }
-
-    public void printTranspose() {
-        for (int j = 0; j < width; j++) {
-            for (int i = 0; i < height; i++) {
-                System.out.print(getLong(i, j) == 10 ? "A " : getLong(i, j) + " ");
+                System.out.print(getLong(i, j) + " ");
             }
             System.out.println();
         }
