@@ -7,6 +7,7 @@ import dk.itu.raven.io.FileRasterReader;
 import dk.itu.raven.io.ImageIORasterReader;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.TFWFormat;
+import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.RavenJoin;
 import dk.itu.raven.join.StreamedRavenJoin;
 
@@ -26,7 +27,7 @@ public class RavenApi {
 	 * @return
 	 * @throws IOException
 	 */
-	public RavenJoin getJoin(String rasterPath, String vectorPath) throws IOException {
+	public AbstractRavenJoin getJoin(String rasterPath, String vectorPath) throws IOException {
 		FileRasterReader rasterReader = createRasterReader(rasterPath);
 		ShapefileReader vectorReader = createShapefileReader(vectorPath, rasterReader.getTransform());
 

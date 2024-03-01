@@ -2,6 +2,7 @@ package dk.itu.raven.api;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.github.davidmoten.rtree2.RTree;
@@ -16,9 +17,11 @@ import dk.itu.raven.geometry.Size;
 import dk.itu.raven.io.ImageMetadata;
 import dk.itu.raven.io.RasterReader;
 import dk.itu.raven.io.ShapefileReader;
+import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.JoinChunk;
 import dk.itu.raven.join.ParallelStreamedRavenJoin;
 import dk.itu.raven.join.RavenJoin;
+import dk.itu.raven.join.EmptyRavenJoin;
 import dk.itu.raven.join.SpatialDataChunk;
 import dk.itu.raven.join.StreamedRavenJoin;
 import dk.itu.raven.ksquared.AbstractK2Raster;
@@ -27,7 +30,6 @@ import dk.itu.raven.ksquared.K2RasterIntBuilder;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.util.Pair;
-import dk.itu.raven.util.Tuple3;
 import dk.itu.raven.util.matrix.Matrix;
 
 public class InternalApi {
@@ -41,32 +43,6 @@ public class InternalApi {
         int endX = (int) Math.ceil(Math.min(imageSize.getWidth(), rect.x2()));
         int endY = (int) Math.ceil(Math.min(imageSize.getHeight(), rect.y2()));
         return new java.awt.Rectangle(startX, startY, endX - startX, endY - startY);
-    }
-
-    /**
-     * Builds the data structures needed for join operation
-     * 
-     * @param vectorPath path to the vector data
-     * @param rasterPath path to the raster data
-     * @return a pair of the k2-raster and the rtree
-     * @throws IOException
-     */
-    static Tuple3<AbstractK2Raster, RTree<String, Geometry>, java.awt.Rectangle> buildStructures(
-            ShapefileReader featureReader,
-            RasterReader rasterReader)
-            throws IOException {
-        // load geometries from shapefile
-        Pair<List<Polygon>, ShapefileReader.ShapeFileBounds> geometries = featureReader
-                .readShapefile();
-
-        // rectangle representing the bounds of the shapefile data
-        java.awt.Rectangle rect = getWindowRectangle(rasterReader, geometries.second);
-
-        Matrix rasterData = rasterReader.readRasters(rect);
-
-        AbstractK2Raster k2Raster = generateRasterStructure(rasterData);
-        RTree<String, Geometry> rtree = generateRTree(geometries);
-        return new Tuple3<>(k2Raster, rtree, rect);
     }
 
     /**
@@ -133,12 +109,16 @@ public class InternalApi {
         return rtree;
     }
 
-    static RavenJoin getJoin(RasterReader rasterReader, ShapefileReader vectorReader) throws IOException {
+    static AbstractRavenJoin getJoin(RasterReader rasterReader, ShapefileReader vectorReader) throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
-        Size imageSize = new Size(metadata.getWidth(), metadata.getHeight());
-        Tuple3<AbstractK2Raster, RTree<String, Geometry>, java.awt.Rectangle> structures = buildStructures(vectorReader,
-                rasterReader);
-        return new RavenJoin(structures.a, structures.b, imageSize, structures.c);
+        Optional<RavenJoin> streamedJoin = getStreamedJoin(rasterReader, vectorReader, metadata.getWidth(),
+                metadata.getHeight(), false)
+                .getRavenJoins().findFirst();
+        if (streamedJoin.isPresent()) {
+            return streamedJoin.get();
+        } else {
+            return new EmptyRavenJoin();
+        }
     }
 
     static StreamedRavenJoin getStreamedJoin(RasterReader rasterReader, ShapefileReader vectorReader, int widthStep,
