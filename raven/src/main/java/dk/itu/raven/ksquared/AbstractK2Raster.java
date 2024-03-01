@@ -5,7 +5,6 @@ import java.util.List;
 
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.join.IRasterFilterFunction;
-import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.util.BitMap;
 import dk.itu.raven.util.GoodArrayList;
 import dk.itu.raven.util.Pair;
@@ -289,7 +288,6 @@ public abstract class AbstractK2Raster implements Serializable {
                         /* all cells meet the condition in this branch */
                     }
                 } else {
-                    // minValp = minVal + lMin.get(treeRank(zp));
                     minValp = computeVMin(maxVal, minVal, zp + 1);
                     if (!function.containsOutside(minValp, maxValp)) {
                         addCells = true;

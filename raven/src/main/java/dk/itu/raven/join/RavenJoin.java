@@ -24,7 +24,6 @@ import dk.itu.raven.geometry.Size;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.util.BST;
 import dk.itu.raven.util.Pair;
-import dk.itu.raven.util.PrimitiveArrayWrapper;
 import dk.itu.raven.util.Logger;
 
 public class RavenJoin extends AbstractRavenJoin {
@@ -434,11 +433,6 @@ public class RavenJoin extends AbstractRavenJoin {
 		for (JoinResultItem item : prob) {
 			JoinResultItem result = new JoinResultItem(item.geometry, new ArrayList<>());
 			for (PixelRange range : item.pixelRanges) {
-				// PrimitiveArrayWrapper values = k2Raster.getWindow(range.row -
-				// offset.getOffsetY() - rasterWindow.y,
-				// range.row - offset.getOffsetY() - rasterWindow.y,
-				// range.x1 - offset.getOffsetX() - rasterWindow.x,
-				// range.x2 - offset.getOffsetX() - rasterWindow.x);
 				PixelRange[] values = k2Raster.searchValuesInWindow(range.row - offset.getOffsetY() - rasterWindow.y,
 						range.row - offset.getOffsetY() - rasterWindow.y,
 						range.x1 - offset.getOffsetX() - rasterWindow.x,
