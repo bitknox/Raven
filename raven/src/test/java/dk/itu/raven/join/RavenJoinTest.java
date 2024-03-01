@@ -160,8 +160,8 @@ public class RavenJoinTest {
                 new Coordinate(1, 3) });
         Polygon p2 = new Polygon(new Coordinate[] { new Coordinate(5, 5), new Coordinate(10, 5), new Coordinate(10, 10),
                 new Coordinate(5, 10) });
-        PixelRange[] expected = new PixelRange[] { new PixelRange(1, 1, 3), new PixelRange(2, 1, 3) };
-        PixelRange[] expected2 = new PixelRange[] { new PixelRange(5, 5, 10), new PixelRange(6, 5, 5),
+        PixelRange[] expectedRanges = new PixelRange[] { new PixelRange(1, 1, 3), new PixelRange(2, 1, 3) };
+        PixelRange[] expectedRanges2 = new PixelRange[] { new PixelRange(5, 5, 10), new PixelRange(6, 5, 5),
                 new PixelRange(6, 7, 10), new PixelRange(7, 5, 10), new PixelRange(8, 5, 10),
                 new PixelRange(9, 5, 10) };
         rtree = rtree.add(null, p);
@@ -171,16 +171,46 @@ public class RavenJoinTest {
         JoinResult res = join.join(JoinFilterFunctions.rangeFilter(42, 42)).asMemoryAllocatedResult();
 
         assertEquals(res.get(0).geometry, p);
-        int idx = 0;
+        assertEquals(res.get(1).geometry, p2);
 
-        assertEquals(expected.length, res.get(0).pixelRanges.size());
-        assertEquals(expected2.length, res.get(1).pixelRanges.size());
-        for (PixelRange range : res.get(0).pixelRanges) {
-            assertEquals(expected[idx++], range);
+        boolean[][] expected = new boolean[16][16];
+        for (PixelRange range : expectedRanges) {
+            for (int x = range.x1; x <= range.x2; x++) {
+                expected[x][range.row] = true;
+            }
         }
-        idx = 0;
+
+        boolean[][] expected2 = new boolean[16][16];
+        for (PixelRange range : expectedRanges2) {
+            for (int x = range.x1; x <= range.x2; x++) {
+                expected2[x][range.row] = true;
+            }
+        }
+
+        boolean[][] actual = new boolean[16][16];
+        for (PixelRange range : res.get(0).pixelRanges) {
+            for (int x = range.x1; x <= range.x2; x++) {
+                actual[x][range.row] = true;
+            }
+        }
+
+        for (int i = 0; i < 16; i++) {
+            for (int j = 0; j < 16; j++) {
+                assertEquals(expected[i][j], actual[i][j], "index: " + i + ", " + j);
+            }
+        }
+
+        boolean[][] actual2 = new boolean[16][16];
         for (PixelRange range : res.get(1).pixelRanges) {
-            assertEquals(expected2[idx++], range);
+            for (int x = range.x1; x <= range.x2; x++) {
+                actual2[x][range.row] = true;
+            }
+        }
+
+        for (int i = 0; i < 16; i++) {
+            for (int j = 0; j < 16; j++) {
+                assertEquals(expected2[i][j], actual2[i][j], "index: " + i + ", " + j);
+            }
         }
     }
 
@@ -207,22 +237,29 @@ public class RavenJoinTest {
             }
         }
 
-        join.combineLists(def, prob, JoinFilterFunctions.rangeFilter(0, 100));
+        IRasterFilterFunction function = JoinFilterFunctions.rangeFilter(0, 50);
+
+        join.combineLists(def, prob, function);
 
         for (PixelRange range : initialDef) {
             assertTrue(def.get(0).pixelRanges.contains(range));
         }
 
-        for (PixelRange range : prob.get(0).pixelRanges) {
-            boolean contained = false;
-            for (JoinResultItem item : def) {
-                if (item.pixelRanges.contains(range)) {
-                    contained = true;
-                    break;
+        boolean[][] actual = new boolean[64][64];
+        for (JoinResultItem item : def) {
+            for (PixelRange range : item.pixelRanges) {
+                for (int x = range.x1; x <= range.x2; x++) {
+                    actual[x][range.row] = function.containsWithin(matrix.get(range.row, x), matrix.get(range.row, x));
                 }
             }
-            assertTrue(contained);
+        }
+
+        for (PixelRange range : prob.get(0).pixelRanges) {
+            for (int x = range.x1; x <= range.x2; x++) {
+                if (function.containsWithin(matrix.get(range.row, x), matrix.get(range.row, x))) {
+                    assertTrue(actual[x][range.row], "index: " + x + ", " + range.row);
+                }
+            }
         }
     }
-
 }
