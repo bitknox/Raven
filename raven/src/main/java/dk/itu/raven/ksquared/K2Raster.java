@@ -19,12 +19,4 @@ public class K2Raster extends AbstractK2Raster {
         getWindow(r1, r2, c1, c2, out);
         return out;
     }
-
-    @Override
-    public PrimitiveArrayWrapper searchValuesInWindow(int r1, int r2, int c1, int c2, int thresholdLow,
-            int thresholdHigh) {
-        PrimitiveArrayWrapper out = new LongArrayWrapper(new long[getSize(r1, r2, c1, c2)]);
-        searchValuesInWindow(r1, r2, c1, c2, thresholdLow, thresholdHigh, out);
-        return out;
-    }
 }

@@ -434,18 +434,20 @@ public class RavenJoin extends AbstractRavenJoin {
 		for (JoinResultItem item : prob) {
 			JoinResultItem result = new JoinResultItem(item.geometry, new ArrayList<>());
 			for (PixelRange range : item.pixelRanges) {
-				PrimitiveArrayWrapper values = k2Raster.getWindow(range.row - offset.getOffsetY() - rasterWindow.y,
+				// PrimitiveArrayWrapper values = k2Raster.getWindow(range.row -
+				// offset.getOffsetY() - rasterWindow.y,
+				// range.row - offset.getOffsetY() - rasterWindow.y,
+				// range.x1 - offset.getOffsetX() - rasterWindow.x,
+				// range.x2 - offset.getOffsetX() - rasterWindow.x);
+				PixelRange[] values = k2Raster.searchValuesInWindow(range.row - offset.getOffsetY() - rasterWindow.y,
 						range.row - offset.getOffsetY() - rasterWindow.y,
 						range.x1 - offset.getOffsetX() - rasterWindow.x,
-						range.x2 - offset.getOffsetX() - rasterWindow.x);
-				for (int i = 0; i < values.length(); i++) {
-					int start = i;
-					while (i < values.length() && function.containsWithin(values.get(i), values.get(i))) {
-						i++;
-					}
-					if (start != i) {
-						result.pixelRanges.add(new PixelRange(range.row, start + range.x1, i - 1 + range.x1));
-					}
+						range.x2 - offset.getOffsetX() - rasterWindow.x, function);
+				for (PixelRange filteredRange : values) {
+					result.pixelRanges
+							.add(new PixelRange(filteredRange.row + offset.getOffsetY() + rasterWindow.y,
+									filteredRange.x1 + offset.getOffsetX() + rasterWindow.x,
+									filteredRange.x2 + offset.getOffsetX() + rasterWindow.x));
 				}
 			}
 			def.add(result);

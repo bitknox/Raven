@@ -13,6 +13,8 @@ import java.util.Stack;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
+import dk.itu.raven.geometry.PixelRange;
+import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.join.Square;
 import dk.itu.raven.util.PrimitiveArrayWrapper;
 import dk.itu.raven.util.matrix.ArrayMatrix;
@@ -29,6 +31,17 @@ public class KSquaredTest {
 			{ 4, 3, 3, 2, 2, 2, 2, 2 }, //
 			{ 1, 1, 1, 3, 2, 2, 2, 2 }, //
 			{ 1, 1, 1, 2, 2, 2, 2, 2 } }; //
+
+	@Test
+	public void testGetCell() {
+		Matrix matrix = new RandomMatrix(1000, 1000, 1000000);
+		AbstractK2Raster k2Raster = new K2RasterBuilder().build(matrix, 2);
+		for (int i = 0; i < matrix.getHeight(); i++) {
+			for (int j = 0; j < matrix.getWidth(); j++) {
+				assertEquals(matrix.get(i, j), k2Raster.getCell(i, j));
+			}
+		}
+	}
 
 	@RepeatedTest(10)
 	public void testGetWindowRow() {
@@ -135,7 +148,7 @@ public class KSquaredTest {
 
 	@Test
 	public void testVMinVMax() {
-		Matrix matrix = new RandomMatrix(2000, 2000, 100);
+		Matrix matrix = new RandomMatrix(42, 2000, 2000, 100);
 		AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
 		Stack<Square> squares = new Stack<>();
 		Stack<Integer> indices = new Stack<>();
@@ -153,9 +166,8 @@ public class KSquaredTest {
 
 			int min = Integer.MAX_VALUE;
 			int max = 0;
-			boolean isLeaf = true;
 
-			for (int i = 0; i < square.getSize() && isLeaf; i++) {
+			for (int i = 0; i < square.getSize(); i++) {
 				for (int j = 0; j < square.getSize(); j++) {
 					int val = matrix.get(square.getTopY() + i, square.getTopX() + j);
 					min = Math.min(min, val);
@@ -202,6 +214,38 @@ public class KSquaredTest {
 
 		for (int i = 0; i < expected.length(); i++) {
 			assertEquals(expected.get(i), actual.get(i));
+		}
+	}
+
+	@Test
+	public void searchValuesInWindowTest() {
+		int width = 2000;
+		int height = 2000;
+		int filterLow = 3;
+		int filterHigh = 7;
+		int buffer = 0;
+		Matrix mat = new RandomMatrix(42, width, height, 10);
+		AbstractK2Raster k2Raster = new K2RasterBuilder().build(mat, 2);
+		boolean[][] expected = new boolean[width][height];
+		for (int i = buffer; i < height - buffer; i++) {
+			for (int j = buffer; j < width - buffer; j++) {
+				expected[j][i] = mat.get(i, j) >= filterLow && mat.get(i, j) <= filterHigh;
+			}
+		}
+		boolean[][] actual = new boolean[width][height];
+		PixelRange[] filteredValues = k2Raster.searchValuesInWindow(buffer, height - 1 - buffer, buffer,
+				width - 1 - buffer,
+				JoinFilterFunctions.rangeFilter(filterLow, filterHigh));
+		for (PixelRange range : filteredValues) {
+			for (int x = range.x1; x <= range.x2; x++) {
+				actual[x][range.row] = true;
+			}
+		}
+
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < height; j++) {
+				assertEquals(expected[i][j], actual[i][j], "seed: " + 2 + ", index: " + i + ", " + j);
+			}
 		}
 	}
 }

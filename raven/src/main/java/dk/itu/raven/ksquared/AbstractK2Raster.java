@@ -3,6 +3,9 @@ package dk.itu.raven.ksquared;
 import java.io.Serializable;
 import java.util.List;
 
+import dk.itu.raven.geometry.PixelRange;
+import dk.itu.raven.join.IRasterFilterFunction;
+import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.util.BitMap;
 import dk.itu.raven.util.GoodArrayList;
 import dk.itu.raven.util.Pair;
@@ -31,6 +34,10 @@ public abstract class AbstractK2Raster implements Serializable {
         this.prefixSum = prefixSum;
         this.lMin = lMin;
         this.lMax = lMax;
+    }
+
+    private int treeRank(int idx) {
+        return prefixSum[idx + 1];
     }
 
     /**
@@ -64,6 +71,7 @@ public abstract class AbstractK2Raster implements Serializable {
     public long computeVMax(long parentMax, int index) {
         if (index == 0)
             return maxVal;
+        // the -1 is caused by lMax being 0-indexed and not including the root
         return parentMax - lMax.get(index - 1);
     }
 
@@ -83,8 +91,9 @@ public abstract class AbstractK2Raster implements Serializable {
         if (!hasChildren(index)) {
             return computeVMax(parentMax, index);
         }
-        int pref = prefixSum[index - 1];
-        return parentMin + lMin.get(pref);
+
+        int rank = treeRank(index - 1);
+        return parentMin + lMin.get(rank - 1);
     }
 
     /**
@@ -128,7 +137,7 @@ public abstract class AbstractK2Raster implements Serializable {
      */
     protected long getCell(int n, int r, int c, int z, long maxVal) {
         int nKths = (n / k);
-        z = this.tree.rank(z) * k * k;
+        z = treeRank(z) * k * k;
         z = z + (r / nKths) * k + (c / nKths);
         long val = lMax.get(z); // LMax is 0-indexed
         maxVal = maxVal - val;
@@ -151,7 +160,7 @@ public abstract class AbstractK2Raster implements Serializable {
             int level, List<Pair<Integer, Integer>> indexRanks) {
         int nKths = (n / k);
         Pair<Integer, Integer> indexRank = indexRanks.get(level);
-        int rank = prefixSum[z + 1];
+        int rank = treeRank(z);
         indexRank.first = z;
         indexRank.second = rank;
 
@@ -162,7 +171,7 @@ public abstract class AbstractK2Raster implements Serializable {
         int lastJ = c2 / nKths;
 
         int r1p, r2p, c1p, c2p, zp;
-        long maxvalp;
+        long maxValp;
 
         for (int i = initialI; i <= lastI; i++) {
             if (i == initialI)
@@ -188,15 +197,15 @@ public abstract class AbstractK2Raster implements Serializable {
 
                 zp = z + i * k + j;
 
-                maxvalp = maxVal - lMax.get(zp);
+                maxValp = computeVMax(maxVal, zp + 1);
 
                 if (!hasChildren(zp + 1)) {
                     int times = ((r2p - r1p) + 1) * ((c2p - c1p) + 1);
                     for (int l = 0; l < times; l++) {
-                        out.set(index.val++, maxvalp);
+                        out.set(index.val++, maxValp);
                     }
                 } else {
-                    getWindow(nKths, r1p, r2p, c1p, c2p, zp, maxvalp, out, index, level + 1, indexRanks);
+                    getWindow(nKths, r1p, r2p, c1p, c2p, zp, maxValp, out, index, level + 1, indexRanks);
                 }
 
             }
@@ -234,79 +243,85 @@ public abstract class AbstractK2Raster implements Serializable {
      */
     public abstract PrimitiveArrayWrapper getWindow(int r1, int r2, int c1, int c2);
 
-    protected void searchValuesInWindow(int n, int r1, int r2, int c1, int c2, int baseX, int baseY, int z, long maxVal,
-            long minVal, int vb,
-            int ve, PrimitiveArrayWrapper out,
-            IntPointer index,
-            int level) {
-
-        int cBaseX, cBaseY;
-
+    protected void searchValuesInWindow(int n, int r1, int r2, int c1, int c2, IRasterFilterFunction function,
+            long maxVal, long minVal, int z, PixelRange[] out, IntPointer index, int baseX, int baseY) {
         int nKths = (n / k); // childsize
-        int rank = prefixSum[z + 1];
+        int rank = treeRank(z);
         z = rank * k * k;
-        int initialI = (r1 - baseY) / nKths;
-        int lastI = (r2 - baseY) / nKths;
-        int initialJ = (c1 - baseX) / nKths;
-        int lastJ = (c2 - baseX) / nKths;
+        int initialI = r1 / nKths;
+        int lastI = r2 / nKths;
+        int initialJ = c1 / nKths;
+        int lastJ = c2 / nKths;
 
         int r1p, r2p, c1p, c2p, zp;
         long maxValp, minValp;
 
         for (int i = initialI; i <= lastI; i++) {
-            cBaseY = baseY + i * nKths;
+            if (i == initialI)
+                r1p = r1 % nKths;
+            else
+                r1p = 0;
 
+            if (i == lastI)
+                r2p = r2 % nKths;
+            else
+                r2p = nKths - 1;
             for (int j = initialJ; j <= lastJ; j++) {
-                zp = z + i * k + j;
-                cBaseX = baseX + j * nKths;
-                maxValp = maxVal - lMax.get(zp);
+                if (j == initialJ)
+                    c1p = c1 % nKths;
+                else
+                    c1p = 0;
 
-                if (maxValp < ve) {
-                    continue;
-                }
+                if (j == lastJ)
+                    c2p = c2 % nKths;
+                else
+                    c2p = nKths - 1;
+                zp = z + i * k + j;
+                maxValp = computeVMax(maxVal, zp + 1);
 
                 boolean addCells = false;
+                int baseXp = baseX + j * nKths;
+                int baseYp = baseY + i * nKths;
                 if (!hasChildren(zp + 1)) {
                     minValp = maxValp;
-                    if (minValp >= vb && maxValp <= ve) {
+                    if (!function.containsOutside(minValp, maxValp)) {
                         addCells = true;
                         /* all cells meet the condition in this branch */
                     }
                 } else {
-                    // TODO: make the following work: minvalp = computeVMin(maxval, minval, zp);
-                    minValp = minVal + lMin.get(prefixSum[zp + 1]);
-                }
-                if (minValp > ve) {
-                    continue;
-                }
-
-                r1p = Math.max(c1, cBaseX);
-                r2p = Math.min(c2, cBaseX + nKths - 1);
-                c1p = Math.max(r1, cBaseY);
-                c2p = Math.min(r2, cBaseY + nKths - 1);
-
-                if (minValp >= vb && maxValp <= ve) {
-                    addCells = true;
-                    /* all cells meet the condition in this branch */
-                } else {
-                    searchValuesInWindow(nKths, r1p, r2p, c1p, c2p, cBaseX, cBaseY, zp, maxValp, minValp, vb, ve,
-                            out, index,
-                            level + 1);
+                    // minValp = minVal + lMin.get(treeRank(zp));
+                    minValp = computeVMin(maxVal, minVal, zp + 1);
+                    if (!function.containsOutside(minValp, maxValp)) {
+                        addCells = true;
+                        /* all cells meet the condition in this branch */
+                    } else {
+                        if (!function.containsWithin(minValp, maxValp)) {
+                            continue;
+                        } else {
+                            searchValuesInWindow(nKths, r1p, r2p, c1p, c2p, function, maxValp, minValp, zp,
+                                    out, index, baseXp, baseYp);
+                        }
+                    }
                 }
 
                 if (addCells) {
-                    System.out.println("x1: " + c1 + ", x2: " + c2 + ", y1: " + r1 + ", y2: " + r2);
+                    for (int r = r1p + baseYp; r <= r2p + baseYp; r++) {
+                        out[index.val++] = new PixelRange(r, c1p + baseXp, c2p + baseXp);
+                    }
                 }
             }
         }
     }
 
-    protected PrimitiveArrayWrapper searchValuesInWindow(int r1, int r2, int c1, int c2, int thresholdLow,
-            int thresholdHigh, PrimitiveArrayWrapper out) {
-        searchValuesInWindow(this.n, r1, r2, c1, c2, 0, 0, -1, this.maxVal, this.minVal, thresholdLow, thresholdHigh,
-                out,
-                new IntPointer(), 0);
-        return out;
+    protected PixelRange[] searchValuesInWindow(int r1, int r2, int c1, int c2, IRasterFilterFunction function,
+            PixelRange[] out) {
+        IntPointer index = new IntPointer();
+        searchValuesInWindow(this.n, r1, r2, c1, c2, function,
+                this.maxVal, this.minVal, -1, out,
+                index, 0, 0);
+        PixelRange[] resized = new PixelRange[index.val];
+        System.arraycopy(out, 0, resized, 0, index.val);
+        return resized;
     }
 
     /**
@@ -320,6 +335,8 @@ public abstract class AbstractK2Raster implements Serializable {
      * @return a window of the matrix with only the values {@code v} that satisfy
      *         {@code vb <= v <= ve}
      */
-    public abstract PrimitiveArrayWrapper searchValuesInWindow(int r1, int r2, int c1, int c2, int thresholdLow,
-            int thresholdHigh);
+    public PixelRange[] searchValuesInWindow(int r1, int r2, int c1, int c2, IRasterFilterFunction function) {
+        PixelRange[] out = new PixelRange[getSize(r1, r2, c1, c2)];
+        return searchValuesInWindow(r1, r2, c1, c2, function, out);
+    }
 }

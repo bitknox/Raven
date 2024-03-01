@@ -190,6 +190,20 @@ public class ApiTest {
         assertEquals(0, sum);
     }
 
+    @ParameterizedTest
+    @ValueSource(ints = { 0, 1, 2 })
+    public void perfectMatchPolygonTest(int streamed) throws IOException {
+        Polygon p = new Polygon(Arrays.asList(Geometries.point(0, 0), Geometries.point(10, 0), Geometries.point(10, 10),
+                Geometries.point(0, 10)));
+        Matrix m = new RandomMatrix(10, 10, 10, 10);
+
+        ShapefileReader vectorReader = new MockedShapefileReader(List.of(p));
+        RasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
+        JoinResult result = getResult(streamed, vectorReader, rasterReader);
+
+        assertIncluded(10, 10, 0, 0, 9, 9, result);
+    }
+
     private void assertIncluded(int width, int height, int minX, int minY, int maxX, int maxY, JoinResult result) {
         int sum = 0;
         boolean[][] pixelIncluded = new boolean[width][height];
