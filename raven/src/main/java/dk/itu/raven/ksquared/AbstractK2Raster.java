@@ -36,6 +36,9 @@ public abstract class AbstractK2Raster implements Serializable {
     }
 
     private int treeRank(int idx) {
+        // the +1 is to accomodate asking for the rank at index -1. To do this, we moved
+        // the entire prefix sum array one position up and therefore need the +1 to sync
+        // the indices back up.
         return prefixSum[idx + 1];
     }
 
