@@ -1,7 +1,7 @@
 package environments
 
 import (
-	"bytes"
+	"bufio"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -24,11 +24,27 @@ const MAX_TICKS = 10
 func (d *DockerEnvironment) RunCommand(cmd Command) (string, error) {
 	//run the command in the container
 	args := append([]string{"exec", d.ContainerTag, cmd.Path}, cmd.Args...)
-	out, err := exec.Command("docker", args...).Output()
-	fmt.Println(string(out))
+	command := exec.Command("docker", args...)
+	stderr, err := command.StderrPipe()
+
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get stdout pipe: %s", err)
 	}
+
+	errScanner := bufio.NewScanner(stderr)
+
+	go func() {
+		for errScanner.Scan() {
+			fmt.Println(errScanner.Text())
+		}
+	}()
+
+	out, err := command.Output()
+
+	if err != nil {
+		return "", fmt.Errorf("failed to get command output: %s", err)
+	}
+
 	return string(out), nil
 }
 
@@ -40,12 +56,11 @@ func (d *DockerEnvironment) Setup() error {
 	tag := "benchmark_container_" + time.Now().Format("20060102")
 
 	//run the docker container as a daemon
-	err = exec.Command("docker", "run", "--rm", "-v", fmt.Sprintf("%s:/home", d.MountPath), "--name", tag, "-d", imageTag).Run()
+	err = exec.Command("docker", "run", "--rm", "-v", fmt.Sprintf("%s:/home", d.MountPath), "-v", fmt.Sprintf("%s:/root/.ivy2/cache", d.MountPath+"/cache"), "--name", tag, "-d", imageTag).Run()
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 	ticks := 0
-	fmt.Println("Waiting for container to start")
-	time.Sleep(10 * time.Second)
+
 	//wait for the container to be up and running
 	for range ticker.C {
 		if ticks > MAX_TICKS {
@@ -87,16 +102,11 @@ func (d *DockerEnvironment) buildImage() (string, error) {
 	fmt.Println(d.DockerFilePath)
 	//build the docker image from the dockerfile, giving it a unique tag that can be used to run the container
 	command := exec.Command("docker", "build", d.DockerFilePath, "-t", tag, "-f", d.DockerFilePath+"Dockerfile")
-	var out bytes.Buffer
-	var stderr bytes.Buffer
-	command.Stdout = &out
-	command.Stderr = &stderr
+
 	err := command.Run()
 
 	if err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		fmt.Println("Failed to build docker image")
-		return "", err
+		return "", fmt.Errorf("failed to build docker image: %s", err)
 	}
 	return tag, nil
 }

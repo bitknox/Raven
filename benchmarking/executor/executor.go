@@ -2,6 +2,7 @@ package executor
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/bitknox/Raven/benchmarking/environments"
 	"github.com/bitknox/Raven/benchmarking/model"
@@ -17,33 +18,40 @@ func ExecuteBenchmark(benchmark *model.Benchmark) (*model.BenchmarkResult, error
 	setupErr := env.Runner.Setup()
 
 	if setupErr != nil {
-		fmt.Println(setupErr)
+		fmt.Println("Failed to setup environment, exiting")
 		return nil, setupErr
 	}
 
 	r, err := env.Runner.RunCommand(benchmark.Command)
 
 	if err != nil {
-		fmt.Printf("Failed to run command: %s\n", benchmark.Command)
+		fmt.Printf("Failed to run command: %s exiting... \n", benchmark.Command)
 		return nil, err
 	}
+
+	split := strings.Split(r, "\n")
+	r = split[len(split)-2]
+
+	fmt.Println(r)
+	//get last line of output
 
 	defer env.Runner.Teardown()
 	//generate result
 	result, err := parsing.ParseResult(r)
 
-	result.Name = benchmark.Name
-	result.Iterations = benchmark.Iterations
-
 	if err != nil {
-		fmt.Println("Failed to parse result")
+		fmt.Println("Failed to parse result, exiting...")
 		return nil, err
 	}
+
+	result.Name = benchmark.Name
+	result.Iterations = benchmark.Iterations
 
 	isValid := parsing.ResultIsValid(result)
 
 	if !isValid {
-		return nil, fmt.Errorf("benchmark result was not valid: %s", benchmark.Name)
+
+		return nil, fmt.Errorf("benchmark result was not valid: %s... Exiting", benchmark.Name)
 	}
 
 	return result, nil
