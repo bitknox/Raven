@@ -37,7 +37,7 @@ go run main.go
   },
   "environment_options": {
    "environment_type": "docker",
-   "docker_file_path": "./test/Dockerfile", //only required if using docker
+   "docker_file_path": "./test/", //The directory containing a file named Dockerfile
    "docker_mount_path": "./dir"
   }
  }
@@ -67,8 +67,6 @@ type BenchmarkResult struct {
  Times []float64 `json:"times"`
  // The number of iterations
  Iterations int `json:"iterations"`
- // The datasets used for the benchmark
- Datsets []string `json:"datasets"`
  // Labels to add to the plot
  Labels []string `json:"labels"`
 }
