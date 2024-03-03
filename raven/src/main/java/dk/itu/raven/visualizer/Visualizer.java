@@ -125,8 +125,8 @@ public class Visualizer {
 	}
 
 	private void setColor(Graphics2D graphics, Color color) {
-		// when using a random color, setting the color to white first is needed to make
-		// it recalculate the color.
+		// when using a random colour, setting the colour to a different one first is
+		// needed to make it use a new random colour.
 		graphics.setColor(Color.WHITE);
 		graphics.setColor(color);
 	}
