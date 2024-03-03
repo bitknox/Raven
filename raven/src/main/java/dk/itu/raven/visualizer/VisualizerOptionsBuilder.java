@@ -8,7 +8,11 @@ public class VisualizerOptionsBuilder {
 	private boolean useRandomColor = false;
 	private boolean useOutput = false;
 	private boolean cropToVector = true;
-	private Color color = Color.black;
+	private boolean drawFeatures = true;
+	private Color background = Color.WHITE;
+	private Color primaryColor = Color.black;
+	private Color secondaryColor = Color.RED;
+	private Color ternaryColor = Color.GREEN;
 
 	public VisualizerOptionsBuilder setOutputPath(String outputPath) {
 		this.outputPath = outputPath;
@@ -30,8 +34,13 @@ public class VisualizerOptionsBuilder {
 		return this;
 	}
 
-	public VisualizerOptionsBuilder setColor(Color color) {
-		this.color = color;
+	public VisualizerOptionsBuilder setPrimaryColor(Color color) {
+		this.primaryColor = color;
+		return this;
+	}
+
+	public VisualizerOptionsBuilder setBackground(Color color) {
+		this.background = color;
 		return this;
 	}
 
@@ -40,7 +49,23 @@ public class VisualizerOptionsBuilder {
 		return this;
 	}
 
+	public VisualizerOptionsBuilder setDrawFeatures(boolean drawFeatures) {
+		this.drawFeatures = drawFeatures;
+		return this;
+	}
+
+	public VisualizerOptionsBuilder setSecondaryColor(Color secondaryColor) {
+		this.secondaryColor = secondaryColor;
+		return this;
+	}
+
+	public VisualizerOptionsBuilder setTernaryColor(Color ternaryColor) {
+		this.ternaryColor = ternaryColor;
+		return this;
+	}
+
 	public VisualizerOptions build() {
-		return new VisualizerOptions(color, outputPath, outputFormat, useRandomColor, useOutput, cropToVector);
+		return new VisualizerOptions(primaryColor, outputPath, outputFormat, useRandomColor, useOutput, cropToVector,
+				background, drawFeatures, secondaryColor, ternaryColor);
 	}
 }

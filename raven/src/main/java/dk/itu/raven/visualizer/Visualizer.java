@@ -65,6 +65,9 @@ public class Visualizer {
 	/**
 	 * Draws a join result with with geometries laid on top of the raster result.
 	 * 
+	 * Uses the primary color for the pixels in the join result and the secondary
+	 * color for the features
+	 * 
 	 * @param results  join result
 	 * @param features vector data features
 	 * @param options  visualizer options
@@ -85,11 +88,16 @@ public class Visualizer {
 			java.awt.Rectangle rect = GeometryUtil.getWindowRectangle(new Size(width, height), bounds);
 			width = rect.width;
 			height = rect.height;
-
 		}
-		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_INDEXED);
+		int format;
+		if (options.primaryColor.getAlpha() == 255 && options.background.getAlpha() == 255) {
+			format = BufferedImage.TYPE_BYTE_INDEXED;
+		} else {
+			format = BufferedImage.TYPE_INT_ARGB;
+		}
+		BufferedImage image = new BufferedImage(width, height, format);
 		Graphics2D rasterGraphics = image.createGraphics();
-		rasterGraphics.setColor(Color.white);
+		setColor(rasterGraphics, options.background);
 		rasterGraphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
 
 		final Offset<Integer> offset;
@@ -100,29 +108,39 @@ public class Visualizer {
 		}
 
 		for (var item : results) {
-			if (options.useRandomColor) {
-				rasterGraphics.setColor(new Color(r.nextInt(256), r.nextInt(256), r.nextInt(256)));
-			} else {
-				rasterGraphics.setColor(options.color);
-			}
 			for (PixelRange range : item.pixelRanges) {
+				setColor(rasterGraphics, options.primaryColor);
 				rasterGraphics.drawLine(range.x1 - offset.getOffsetX(), range.row - offset.getOffsetY(),
 						range.x2 - offset.getOffsetX(),
 						range.row - offset.getOffsetY());
 			}
 		}
-		rasterGraphics.setColor(Color.RED);
-		for (Polygon poly : features) {
-			Point old = poly.getFirst();
-			for (Point next : poly) {
-				rasterGraphics.drawLine((int) old.x(), (int) old.y(), (int) next.x(), (int) next.y());
-				old = next;
-			}
+		if (options.drawFeatures) {
+			drawFeatures(rasterGraphics, features, options.secondaryColor);
 		}
 		if (options.useOutput) {
 			writeImage(image, options.outputPath, options.outputFormat);
 		}
 		return image;
+	}
+
+	private void setColor(Graphics2D graphics, Color color) {
+		// when using a random color, setting the color to white first is needed to make
+		// it recalculate the color.
+		graphics.setColor(Color.WHITE);
+		graphics.setColor(color);
+	}
+
+	private void drawFeatures(Graphics2D graphics, Iterable<Polygon> features, Color color) {
+
+		for (Polygon poly : features) {
+			setColor(graphics, color);
+			Point old = poly.getFirst();
+			for (Point next : poly) {
+				graphics.drawLine((int) old.x(), (int) old.y(), (int) next.x(), (int) next.y());
+				old = next;
+			}
+		}
 	}
 
 	/**
@@ -134,27 +152,16 @@ public class Visualizer {
 	 *         {@code features}
 	 */
 	public BufferedImage drawShapefile(ShapefileReader shapeFileReader, VisualizerOptions options) throws IOException {
-		Iterable<Polygon> features = getFeatures(shapeFileReader).first;
+		List<Polygon> features = getFeatures(shapeFileReader).first;
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D vectorGraphics = image.createGraphics();
-		vectorGraphics.setColor(Color.white);
-		vectorGraphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
 
-		for (Polygon poly : features) {
-			if (options.useRandomColor) {
-				vectorGraphics.setColor(new Color(r.nextInt(256), r.nextInt(256), r.nextInt(256)));
-			} else {
-				vectorGraphics.setColor(options.color);
-			}
-			Point old = poly.getFirst();
-			for (Point next : poly) {
-				vectorGraphics.drawLine((int) old.x(), (int) old.y(), (int) next.x(), (int) next.y());
-				old = next;
-			}
-		}
-		if (options.useOutput)
+		setColor(vectorGraphics, options.background);
+		vectorGraphics.fillRect(0, 0, this.width, this.height);
 
-		{
+		drawFeatures(vectorGraphics, features, options.primaryColor);
+
+		if (options.useOutput) {
 			writeImage(image, options.outputPath, options.outputFormat);
 		}
 		return image;
@@ -176,16 +183,16 @@ public class Visualizer {
 	 * @param node     The R*-tree node
 	 * @param graphics The graphics object we are drawing on top of
 	 */
-	private void drawMbr(Node<String, Geometry> node, Graphics2D graphics) {
+	private void drawMbr(Node<String, Geometry> node, Graphics2D graphics, Color color) {
 		graphics.setStroke(new BasicStroke(1));
-		graphics.setColor(new Color(0, 0, 255));
 		for (Node<String, Geometry> child : TreeExtensions.getChildren(node)) {
+			setColor(graphics, color);
 			int width = (int) (child.geometry().mbr().x2() - child.geometry().mbr().x1());
 			int height = (int) (child.geometry().mbr().y2() - child.geometry().mbr().y1());
 			graphics.drawRect((int) child.geometry().mbr().x1(), (int) child.geometry().mbr().y1(),
 					width, height);
 			if (!TreeExtensions.isLeaf(child)) {
-				drawMbr(child, graphics);
+				drawMbr(child, graphics, color);
 			}
 		}
 	}
@@ -199,10 +206,11 @@ public class Visualizer {
 	 * @param level          The number of lower levels yet to be drawn
 	 * @param graphics       The graphics object we are drawing on top of
 	 */
-	private void drawK2Squares(K2Raster k2Raster, int k2Index, Square rasterBounding, int level, Graphics2D graphics) {
+	private void drawK2Squares(K2Raster k2Raster, int k2Index, Square rasterBounding, int level, Graphics2D graphics,
+			Color color) {
 		if (level == 0)
 			return;
-		graphics.setColor(new Color(0, 255, 0));
+		setColor(graphics, color);
 		int[] children = k2Raster.getChildren(k2Index);
 		int childSize = rasterBounding.getSize() / k2Raster.k;
 		for (int i = 0; i < children.length; i++) {
@@ -211,7 +219,7 @@ public class Visualizer {
 			graphics.drawRect(childRasterBounding.getTopX(), childRasterBounding.getTopY(),
 					childRasterBounding.getSize(),
 					childRasterBounding.getSize());
-			drawK2Squares(k2Raster, child, childRasterBounding, level - 1, graphics);
+			drawK2Squares(k2Raster, child, childRasterBounding, level - 1, graphics, color);
 		}
 	}
 
@@ -223,9 +231,9 @@ public class Visualizer {
 	public BufferedImage drawK2SquareImage(K2Raster k2Raster, VisualizerOptions options) throws IOException {
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics = image.createGraphics();
-		graphics.setColor(Color.white);
+		setColor(graphics, Color.white);
 		graphics.fillRect(0, 0, this.width, this.height);
-		drawK2Squares(k2Raster, 0, new Square(0, 0, k2Raster.getSize()), 0, graphics);
+		drawK2Squares(k2Raster, 0, new Square(0, 0, k2Raster.getSize()), 0, graphics, options.primaryColor);
 
 		writeImage(image, options.outputPath, options.outputFormat);
 
@@ -235,6 +243,9 @@ public class Visualizer {
 	/**
 	 * draws vector shapes, K2Raster tree nodes and R*-tree nodes on top of
 	 * eachother
+	 * 
+	 * Uses the primary color for the K2Raster nodes, the secondary color for the
+	 * R*-tree nodes, and the ternary color for the features
 	 * 
 	 * @param features the polygons to be drawn
 	 * @param tree     the R*-tree, this will be drawn as MBRs for all nodes in the
@@ -250,23 +261,19 @@ public class Visualizer {
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics = image.createGraphics();
 
-		graphics.setColor(Color.white);
+		setColor(graphics, options.background);
 		graphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
 
-		drawK2Squares(k2Raster, 0, new Square(0, 0, k2Raster.getSize()), k2RecursionDepth, graphics);
+		drawK2Squares(k2Raster, 0, new Square(0, 0, k2Raster.getSize()), k2RecursionDepth, graphics,
+				options.primaryColor);
 
 		graphics.setStroke(new BasicStroke(1));
-		graphics.setColor(new Color(255, 0, 0));
-
-		for (Polygon poly : features) {
-			Point old = poly.getFirst();
-			for (Point next : poly) {
-				graphics.drawLine((int) old.x(), (int) old.y(), (int) next.x(), (int) next.y());
-				old = next;
-			}
+		if (options.drawFeatures) {
+			drawFeatures(graphics, features, options.ternaryColor);
 		}
 
-		drawMbr(tree.root().get(), graphics);
+		drawMbr(tree.root().get(), graphics, options.secondaryColor);
+
 		if (options.useOutput) {
 			writeImage(image, options.outputPath, options.outputFormat);
 		}
