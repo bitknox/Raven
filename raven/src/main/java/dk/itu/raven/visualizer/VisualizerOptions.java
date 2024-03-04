@@ -7,16 +7,21 @@ import java.awt.Color;
  */
 public class VisualizerOptions {
 	public String outputPath, outputFormat;
-	public boolean useRandomColor, useOutput;
-	public Color color;
+	public boolean useOutput, cropToVector, drawFeatures;
+	public Color primaryColor, secondaryColor, trinaryColor, background;
 
-	public VisualizerOptions(Color color, String outputPath, String outputFormat, boolean useRandomColor,
-			boolean useOutput) {
-		this.color = color;
+	public VisualizerOptions(Color primaryColor, String outputPath, String outputFormat,
+			boolean useOutput, boolean cropToVector, Color background, boolean drawFeatures, Color secondaryColor,
+			Color trinaryColor) {
+		this.primaryColor = primaryColor;
 		this.outputPath = outputPath;
 		this.outputFormat = outputFormat;
-		this.useRandomColor = useRandomColor;
 		this.useOutput = useOutput;
+		this.cropToVector = cropToVector;
+		this.background = background;
+		this.drawFeatures = drawFeatures;
+		this.secondaryColor = secondaryColor;
+		this.trinaryColor = trinaryColor;
 	}
 
 }
