@@ -35,10 +35,15 @@ public class CommandLineArgs {
 	@Parameter(names = { "-t", "--tile-size" }, description = "Size of the raster image tiles")
 	public int tileSize = 2048;
 
-	@Parameter(names = { "-p", "--parallel" }, description = "Run the join in parallel (requires running as a stream)")
+	@Parameter(names = { "-p",
+			"--parallel" }, description = "Run the join in parallel (requires running as a stream)", arity = 1)
 	public boolean parallel = true;
 
 	@Parameter(names = { "-s",
 			"--stream" }, description = "Run the join as a stream. This improves the memory usage of the program")
 	public boolean streamed = true;
+
+	@Parameter(names = { "-c",
+			"--cache" }, description = "Use cached raster structures", arity = 1)
+	public boolean isCaching = true;
 }

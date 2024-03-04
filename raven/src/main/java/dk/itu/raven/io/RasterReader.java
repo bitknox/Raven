@@ -2,16 +2,20 @@ package dk.itu.raven.io;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import java.awt.Rectangle;
 
 import dk.itu.raven.geometry.Offset;
+import dk.itu.raven.io.cache.CachedRasterStructure;
+import dk.itu.raven.io.cache.RasterCache;
 import dk.itu.raven.join.SpatialDataChunk;
 import dk.itu.raven.util.matrix.Matrix;
 
 public abstract class RasterReader {
 	ImageMetadata metadata;
+	private Optional<String> cacheKey = Optional.empty();
 
 	public abstract Matrix readRasters(Rectangle rect) throws IOException;
 
@@ -25,7 +29,16 @@ public abstract class RasterReader {
 		return this.metadata;
 	};
 
-	public Stream<SpatialDataChunk> rasterPartitionStream(Rectangle rect, int widthStep, int heightStep)
+	public void setCacheKey(String cacheKey) {
+		this.cacheKey = Optional.of(cacheKey);
+	}
+
+	public Optional<String> getCacheKey() {
+		return cacheKey;
+	}
+
+	public Stream<SpatialDataChunk> rasterPartitionStream(Rectangle rect, int widthStep, int heightStep,
+			Optional<RasterCache<CachedRasterStructure>> cache)
 			throws IOException {
 
 		// Limit to image size.
@@ -44,10 +57,17 @@ public abstract class RasterReader {
 
 		return windows.stream().map(w -> {
 			try {
-				SpatialDataChunk chunk = new SpatialDataChunk();
-				chunk.setMatrix(readRasters(w));
 				Offset<Integer> offset = new Offset<>(w.x - rect.x, w.y - rect.y);
+
+				SpatialDataChunk chunk = new SpatialDataChunk();
 				chunk.setOffset(offset);
+				String key = chunk.getCacheKeyName();
+				if (cache.isPresent() && cache.get().contains(key)) {
+					chunk.setCacheKey(key);
+					return chunk;
+				}
+
+				chunk.setMatrix(readRasters(w));
 				return chunk;
 			} catch (Exception e) {
 				e.printStackTrace();

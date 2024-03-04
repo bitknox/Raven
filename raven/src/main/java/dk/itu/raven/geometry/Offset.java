@@ -1,6 +1,8 @@
 package dk.itu.raven.geometry;
 
-public class Offset<T extends Number> {
+import java.io.Serializable;
+
+public class Offset<T extends Number> implements Serializable {
     private T offsetX, offsetY;
 
     public Offset(T offsetX, T offsetY) {
@@ -14,5 +16,14 @@ public class Offset<T extends Number> {
 
     public T getOffsetY() {
         return offsetY;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Offset))
+            return false;
+        Offset other = (Offset) obj;
+        return offsetX.equals(other.offsetX) && offsetY.equals(other.offsetY);
+
     }
 }

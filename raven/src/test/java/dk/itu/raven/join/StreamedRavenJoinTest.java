@@ -41,9 +41,9 @@ public class StreamedRavenJoinTest {
         RavenApi ravenApi = new RavenApi();
         String rasterPath = "src/test/java/dk/itu/raven/data/wildfires";
         String vectorPath = "src/test/java/dk/itu/raven/data/cb_2018_us_state_500k/cb_2018_us_state_500k.shp";
-        AbstractRavenJoin inMemoryJoin = ravenApi.getJoin(rasterPath, vectorPath);
-        AbstractRavenJoin streamedJoin = ravenApi.getStreamedJoin(rasterPath, vectorPath, 200, 200, false);
-        AbstractRavenJoin parallelJoin = ravenApi.getStreamedJoin(rasterPath, vectorPath, 200, 200, true);
+        AbstractRavenJoin inMemoryJoin = ravenApi.getJoin(rasterPath, vectorPath, false);
+        AbstractRavenJoin streamedJoin = ravenApi.getStreamedJoin(rasterPath, vectorPath, 200, 200, false, false);
+        AbstractRavenJoin parallelJoin = ravenApi.getStreamedJoin(rasterPath, vectorPath, 200, 200, true, false);
 
         AbstractJoinResult inMemoryResult = inMemoryJoin.join().asMemoryAllocatedResult();
         AbstractJoinResult streamedResult = streamedJoin.join().asMemoryAllocatedResult();

@@ -70,9 +70,10 @@ public class Raven {
         long startJoinNano = System.nanoTime();
         AbstractRavenJoin join;
         if (jct.streamed) {
-            join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, jct.parallel);
+            join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, jct.parallel,
+                    jct.isCaching);
         } else {
-            join = api.getJoin(jct.inputRaster, jct.inputVector);
+            join = api.getJoin(jct.inputRaster, jct.inputVector, jct.isCaching);
         }
         AbstractJoinResult result = join.join(function);
 

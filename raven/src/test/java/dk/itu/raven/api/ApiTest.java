@@ -229,11 +229,11 @@ public class ApiTest {
             throws IOException {
         AbstractRavenJoin join;
         if (streamed == 0) {
-            join = getStreamedJoin(rasterReader, vectorReader, 4, 4, false);
+            join = getStreamedJoin(rasterReader, vectorReader, 4, 4, false, false);
         } else if (streamed == 1) {
-            join = getStreamedJoin(rasterReader, vectorReader, 4, 4, true);
+            join = getStreamedJoin(rasterReader, vectorReader, 4, 4, true, false);
         } else {
-            join = getJoin(rasterReader, vectorReader);
+            join = getJoin(rasterReader, vectorReader, false);
         }
         JoinResult result = join.join().asMemoryAllocatedResult();
         return result;
