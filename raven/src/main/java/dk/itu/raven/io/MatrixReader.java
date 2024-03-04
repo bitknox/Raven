@@ -22,7 +22,7 @@ public class MatrixReader extends RasterReader {
 		int[][] values = new int[rect.width][rect.height];
 		for (int i = rect.x; i < rect.x + rect.width; i++) {
 			for (int j = rect.y; j < rect.y + rect.height; j++) {
-				values[i - rect.x][j - rect.y] = matrix.get(i, j);
+				values[i - rect.x][j - rect.y] = matrix.get(j, i);
 			}
 		}
 		Matrix arrayMatrix = new ArrayMatrix(values, rect.width, rect.height);
