@@ -16,6 +16,8 @@ public abstract class AbstractK2RasterBuilder {
     protected Matrix m;
     protected int n;
     protected int k;
+    private int k2;
+    private int[] nKths;
 
     /**
      * bulds a K^2 Raster data-structure for an n*m matrix (meaning a 2-dimensional
@@ -25,6 +27,7 @@ public abstract class AbstractK2RasterBuilder {
      */
     public AbstractK2Raster build(Matrix m, int k) {
         this.k = k;
+        this.k2 = k * k;
 
         int h = m.getHeight();
         int w = m.getWidth();
@@ -43,7 +46,12 @@ public abstract class AbstractK2RasterBuilder {
         t = new ArrayList<>(maxLevel);
         pMax = new int[maxLevel];
         pMin = new int[maxLevel];
+        nKths = new int[maxLevel];
+        int tempN = n;
         for (int i = 0; i < maxLevel; i++) {
+            int nk = tempN / k;
+            nKths[i] = nk;
+            tempN = nk;
             t.add(new BitMap(40));
         }
         init(maxLevel);
@@ -76,13 +84,16 @@ public abstract class AbstractK2RasterBuilder {
 
         BitMap tree = new BitMap(Math.max(1, size_max));
         int bitmapIndex = 0;
-
+        int[] prefixSum = new int[size_max + 1];
+        prefixSum[0] = 0;
         for (int i = 0; i < maxLevel - 1; i++) {
             for (int j = 0; j < pMax[i]; j++) {
                 if (t.get(i).isSet(j)) {
                     tree.set(++bitmapIndex);
+                    prefixSum[bitmapIndex] = prefixSum[bitmapIndex - 1] + 1;
                 } else {
                     tree.unset(++bitmapIndex);
+                    prefixSum[bitmapIndex] = prefixSum[bitmapIndex - 1];
                 }
             }
         }
@@ -98,22 +109,17 @@ public abstract class AbstractK2RasterBuilder {
             pMin[0] = 0;
         }
 
-        int[] prefixSum = new int[size_max + 1];
-        prefixSum[0] = 0;
-        for (int i = 1; i < size_max + 1; i++) {
-            prefixSum[i] = prefixSum[i - 1] + tree.getOrZero(i);
-        }
-
-        int imax = 0, imin = 0;
-
         // compute LMin using the VMin computed in Build
-        for (int i = 0; i < maxLevel - 2; i++) {
+        int imax = 0, imin = 0;
+        for (int i = 0; i < maxLevel - 1; i++) {
             int internalNodeCount = 0;
             int innerInternalNodeCount = 0;
             for (int j = 0; j < pMax[i]; j++) {
                 if (t.get(i).isSet(j)) {
-                    int start = internalNodeCount * k * k;
-                    for (int l = start; l < start + k * k; l++) {
+                    int start = internalNodeCount * k2;
+                    for (int l = start; l < start + k2; l++) {
+                        LMaxList.set(imax++, Math.abs(getVMax(i, j) - getVMax(i + 1, l)));
+                        // i < maxlevel 2 can be inserted here;
                         if (t.get(i + 1).isSet(l)) {
                             LMinList.set(imin++, Math.abs(
                                     getVMin(i + 1, innerInternalNodeCount) - getVMin(i, internalNodeCount)));
@@ -124,26 +130,12 @@ public abstract class AbstractK2RasterBuilder {
                 }
             }
         }
+
         killVMin();
-        pMin = null;
-
-        // compute LMax using the VMax computed in Build
-        for (int i = 0; i < maxLevel - 1; i++) {
-            int internalNodeCount = 0;
-            for (int j = 0; j < pMax[i]; j++) {
-                if (t.get(i).isSet(j)) {
-                    int start = internalNodeCount * k * k;
-                    for (int l = start; l < start + k * k; l++) {
-                        LMaxList.set(imax++, Math.abs(getVMax(i, j) - getVMax(i + 1, l)));
-                    }
-                    internalNodeCount++;
-                }
-            }
-        }
-
         killVMax();
-        t = null;
+        pMin = null;
         pMax = null;
+        t = null;
 
         // TODO: use DAC
         PrimitiveArrayWrapper lMax = LMaxList;
@@ -155,21 +147,21 @@ public abstract class AbstractK2RasterBuilder {
     protected void buildK2(int n, int level, int row, int column, Pair<Long, Long> res) {
         long minVal = Integer.MAX_VALUE;
         long maxVal = 0;
-        int nKths = n / k;
+        int nKths = this.nKths[level - 1];
 
-        for (int newRow = row; newRow < row + n; newRow += nKths) {
-            for (int newColumn = column; newColumn < column + n; newColumn += nKths) {
-                if (n == k) { // last level
+        if (n == k) { // last level
+            for (int newRow = row; newRow < row + n; newRow += nKths) {
+                for (int newColumn = column; newColumn < column + n; newColumn += nKths) {
                     long matrixVal = getMatrixVal(newRow, newColumn);
-                    if (minVal > matrixVal) {
-                        minVal = matrixVal;
-                    }
-                    if (maxVal < matrixVal) {
-                        maxVal = matrixVal;
-                    }
+                    minVal = minVal > matrixVal ? matrixVal : minVal;
+                    maxVal = maxVal < matrixVal ? matrixVal : maxVal;
                     setVMax(level, pMax[level], matrixVal);
                     pMax[level]++;
-                } else {
+                }
+            }
+        } else {
+            for (int newRow = row; newRow < row + n; newRow += nKths) {
+                for (int newColumn = column; newColumn < column + n; newColumn += nKths) {
                     if (!m.overlaps(newColumn, newRow)) {
                         res.first = Matrix.filler;
                         res.second = Matrix.filler;
@@ -186,18 +178,13 @@ public abstract class AbstractK2RasterBuilder {
                     }
 
                     pMax[level]++;
-                    if (minVal > res.second) {
-                        minVal = res.second;
-                    }
-                    if (maxVal < res.first) {
-                        maxVal = res.first;
-                    }
+                    minVal = minVal > res.second ? res.second : minVal;
+                    maxVal = maxVal < res.first ? res.first : maxVal;
                 }
             }
         }
-        if (minVal == maxVal) {
-            pMax[level] -= k * k;
-        }
+
+        pMax[level] -= minVal == maxVal ? k2 : 0;
 
         res.first = maxVal;
         res.second = minVal;
