@@ -6,9 +6,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.github.davidmoten.rtree2.RTree;
-import com.github.davidmoten.rtree2.geometry.Geometries;
 import com.github.davidmoten.rtree2.geometry.Geometry;
-import com.github.davidmoten.rtree2.geometry.Rectangle;
 
 import dk.itu.raven.geometry.GeometryUtil;
 import dk.itu.raven.geometry.Offset;
@@ -38,13 +36,8 @@ public class InternalApi {
 
     static java.awt.Rectangle getWindowRectangle(RasterReader rasterReader, ShapefileReader.ShapeFileBounds bounds)
             throws IOException {
-        Rectangle rect = Geometries.rectangle(bounds.minX, bounds.minY, bounds.maxX, bounds.maxY);
         ImageMetadata imageSize = rasterReader.getImageMetadata();
-        int startX = (int) Math.max(rect.x1(), 0);
-        int startY = (int) Math.max(rect.y1(), 0);
-        int endX = (int) Math.ceil(Math.min(imageSize.getWidth(), rect.x2()));
-        int endY = (int) Math.ceil(Math.min(imageSize.getHeight(), rect.y2()));
-        return new java.awt.Rectangle(startX, startY, endX - startX, endY - startY);
+        return GeometryUtil.getWindowRectangle(new Size(imageSize.getWidth(), imageSize.getHeight()), bounds);
     }
 
     /**

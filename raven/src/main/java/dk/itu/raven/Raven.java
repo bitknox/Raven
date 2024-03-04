@@ -96,6 +96,7 @@ public class Raven {
 
             builder.setOutputPath(jct.outputPath);
             builder.setUseOutput(true);
+            builder.setCropToVector(jct.cropToVector);
 
             VisualizerOptions options = builder.build();
 
