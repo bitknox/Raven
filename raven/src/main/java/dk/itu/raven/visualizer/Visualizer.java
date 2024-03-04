@@ -115,12 +115,14 @@ public class Visualizer {
 						range.row - offset.getOffsetY());
 			}
 		}
+
 		if (options.drawFeatures) {
 			drawFeatures(rasterGraphics, features, options.secondaryColor);
 		}
 		if (options.useOutput) {
 			writeImage(image, options.outputPath, options.outputFormat);
 		}
+
 		return image;
 	}
 

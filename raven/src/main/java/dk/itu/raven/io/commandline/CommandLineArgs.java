@@ -35,14 +35,15 @@ public class CommandLineArgs {
 	@Parameter(names = { "-t", "--tile-size" }, description = "Size of the raster image tiles")
 	public int tileSize = 2048;
 
-	@Parameter(names = { "-p", "--parallel" }, description = "Run the join in parallel (requires running as a stream)")
+	@Parameter(names = { "-p",
+			"--parallel" }, description = "Run the join in parallel (requires running as a stream)", arity = 1)
 	public boolean parallel = true;
 
 	@Parameter(names = { "-s",
-			"--stream" }, description = "Run the join as a stream. This improves the memory usage of the program")
+			"--stream" }, description = "Run the join as a stream. This improves the memory usage of the program", arity = 1)
 	public boolean streamed = true;
 
 	@Parameter(names = { "-cv",
-			"--crop-to-vector" }, description = "Crop the output image so it only shows the part of the raster data that lies within the minimum bounding rectangle of the given vector data")
-	public boolean cropToVector = true;
+			"--crop-to-vector" }, description = "Crop the output image so it only shows the part of the raster data that lies within the minimum bounding rectangle of the given vector data", arity = 1)
+	public boolean cropToVector = false;
 }

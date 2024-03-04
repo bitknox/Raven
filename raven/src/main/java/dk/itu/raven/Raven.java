@@ -15,7 +15,6 @@ import dk.itu.raven.join.IRasterFilterFunction;
 import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
-import dk.itu.raven.visualizer.RandomColor;
 import dk.itu.raven.visualizer.Visualizer;
 import dk.itu.raven.visualizer.VisualizerOptions;
 import dk.itu.raven.visualizer.VisualizerOptionsBuilder;
@@ -96,9 +95,7 @@ public class Raven {
 
             builder.setOutputPath(jct.outputPath);
             builder.setUseOutput(true);
-            builder.setCropToVector(false);
-            // builder.setDrawFeatures(false);
-            builder.setPrimaryColor(new RandomColor());
+            builder.setCropToVector(jct.cropToVector);
 
             VisualizerOptions options = builder.build();
 
