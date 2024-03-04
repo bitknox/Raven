@@ -29,7 +29,7 @@ public class CommandLineArgs {
 	public String outputPath = null;
 
 	@Parameter(names = { "-r",
-			"--filter-ranges" }, description = "Filter function. If one range is given it will filter based on the packed value. If a range is given for every sample, it will accept only values that fall within the range for all samples", splitter = RangeSplitter.class)
+			"--filter-ranges" }, description = "Filter function. If one range is given it will filter based on the packed value. If a range is given for every sample, it will accept only values that fall within the range for all samples. Min/max value for each range should be separated by a hyphen, different ranges should be separated by either a comma of a space", splitter = RangeSplitter.class)
 	public List<Long> ranges = Arrays.asList((long) Integer.MIN_VALUE, (long) Integer.MAX_VALUE);
 
 	@Parameter(names = { "-t", "--tile-size" }, description = "Size of the raster image tiles")
@@ -41,4 +41,8 @@ public class CommandLineArgs {
 	@Parameter(names = { "-s",
 			"--stream" }, description = "Run the join as a stream. This improves the memory usage of the program")
 	public boolean streamed = true;
+
+	@Parameter(names = { "-cv",
+			"--crop-to-vector" }, description = "Crop the output image so it only shows the part of the raster data that lies within the minimum bounding rectangle of the given vector data")
+	public boolean cropToVector = true;
 }

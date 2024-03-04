@@ -99,7 +99,6 @@ public class Raven {
             builder.setCropToVector(false);
             // builder.setDrawFeatures(false);
             builder.setPrimaryColor(new RandomColor());
-            builder.setSecondaryColor(new RandomColor());
 
             VisualizerOptions options = builder.build();
 

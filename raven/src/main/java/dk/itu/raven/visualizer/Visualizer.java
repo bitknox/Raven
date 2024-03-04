@@ -125,10 +125,8 @@ public class Visualizer {
 	}
 
 	private void setColor(Graphics2D graphics, Color color) {
-		// when using a random colour, setting the colour to a different one first is
-		// needed to make it use a new random colour.
-		graphics.setColor(Color.WHITE);
-		graphics.setColor(color);
+		// when using a random colour, it will not generate a new one if we just call
+		graphics.setColor(new Color(color.getRGB()));
 	}
 
 	private void drawFeatures(Graphics2D graphics, Iterable<Polygon> features, Color color) {
@@ -245,7 +243,7 @@ public class Visualizer {
 	 * eachother
 	 * 
 	 * Uses the primary color for the K2Raster nodes, the secondary color for the
-	 * R*-tree nodes, and the ternary color for the features
+	 * R*-tree nodes, and the trinary color for the features
 	 * 
 	 * @param features the polygons to be drawn
 	 * @param tree     the R*-tree, this will be drawn as MBRs for all nodes in the
@@ -269,7 +267,7 @@ public class Visualizer {
 
 		graphics.setStroke(new BasicStroke(1));
 		if (options.drawFeatures) {
-			drawFeatures(graphics, features, options.ternaryColor);
+			drawFeatures(graphics, features, options.trinaryColor);
 		}
 
 		drawMbr(tree.root().get(), graphics, options.secondaryColor);

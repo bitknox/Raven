@@ -5,14 +5,13 @@ import java.awt.Color;
 public class VisualizerOptionsBuilder {
 	private String outputPath = "./output.tif";
 	private String outputFormat = "tif";
-	private boolean useRandomColor = false;
 	private boolean useOutput = false;
 	private boolean cropToVector = true;
 	private boolean drawFeatures = true;
 	private Color background = Color.WHITE;
 	private Color primaryColor = Color.black;
 	private Color secondaryColor = Color.RED;
-	private Color ternaryColor = Color.GREEN;
+	private Color trinaryColor = Color.GREEN;
 
 	public VisualizerOptionsBuilder setOutputPath(String outputPath) {
 		this.outputPath = outputPath;
@@ -21,11 +20,6 @@ public class VisualizerOptionsBuilder {
 
 	public VisualizerOptionsBuilder setOutputFormat(String outputFormat) {
 		this.outputFormat = outputFormat;
-		return this;
-	}
-
-	public VisualizerOptionsBuilder setUseRandomColor(boolean useRandomColor) {
-		this.useRandomColor = useRandomColor;
 		return this;
 	}
 
@@ -59,13 +53,13 @@ public class VisualizerOptionsBuilder {
 		return this;
 	}
 
-	public VisualizerOptionsBuilder setTernaryColor(Color ternaryColor) {
-		this.ternaryColor = ternaryColor;
+	public VisualizerOptionsBuilder setTrinaryColor(Color trinaryColor) {
+		this.trinaryColor = trinaryColor;
 		return this;
 	}
 
 	public VisualizerOptions build() {
-		return new VisualizerOptions(primaryColor, outputPath, outputFormat, useRandomColor, useOutput, cropToVector,
-				background, drawFeatures, secondaryColor, ternaryColor);
+		return new VisualizerOptions(primaryColor, outputPath, outputFormat, useOutput, cropToVector,
+				background, drawFeatures, secondaryColor, trinaryColor);
 	}
 }
