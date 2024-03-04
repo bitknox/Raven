@@ -16,10 +16,10 @@ import dk.itu.raven.io.MatrixReader;
 import dk.itu.raven.io.MockedShapefileReader;
 import dk.itu.raven.io.RasterReader;
 import dk.itu.raven.io.TFWFormat;
+import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.join.JoinResult;
 import dk.itu.raven.join.JoinResultItem;
-import dk.itu.raven.join.RavenJoin;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RandomMatrix;
@@ -48,7 +48,7 @@ public class RavenJoinIntegrationTest {
         RasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
 
-        RavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader);
+        AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, false);
         JoinResult result = join.join(JoinFilterFunctions.rangeFilter(filterLow, filterHigh)).asMemoryAllocatedResult();
 
         for (JoinResultItem item : result) {
@@ -92,7 +92,7 @@ public class RavenJoinIntegrationTest {
         RasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
 
-        RavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader);
+        AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, false);
         JoinResult result = join.join(JoinFilterFunctions.rangeFilter(filterLow, filterHigh)).asMemoryAllocatedResult();
 
         for (JoinResultItem item : result) {
@@ -153,7 +153,7 @@ public class RavenJoinIntegrationTest {
         RasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
 
-        RavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader);
+        AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, false);
         JoinResult result = join
                 .join(JoinFilterFunctions.multiSampleRangeFilter(
                         Arrays.asList(filterLow1, filterHigh1, filterLow2, filterHigh2, filterLow3, filterHigh3),
