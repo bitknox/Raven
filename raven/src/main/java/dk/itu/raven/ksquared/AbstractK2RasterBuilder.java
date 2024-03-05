@@ -95,19 +95,35 @@ public abstract class AbstractK2RasterBuilder {
             pMin[0] = 0;
         }
 
-        long startTime = System.currentTimeMillis();
-
         // TODO: build prefix sum array at the same time as the tree
         int imax = 0, imin = 0;
+        // builds the LMax list at the same time as the concatinated tree
         for (int i = 0; i < maxLevel - 1; i++) {
             int internalNodeCount = 0;
-            int innerInternalNodeCount = 0;
             for (int j = 0; j < pMax[i]; j++) {
                 if (t.get(i).isSet(j)) {
                     int start = internalNodeCount * k2;
                     for (int l = start; l < start + k2; l++) {
                         LMaxList.set(imax++, Math.abs(getVMax(i, j) - getVMax(i + 1, l)));
-                        // i < maxlevel 2 can be inserted here;
+                    }
+                    internalNodeCount++;
+                    // tree.set(bitmapIndex++);
+                } else {
+                    // tree.unset(bitmapIndex++);
+                }
+            }
+            t.get(i).setSize(pMax[i]);
+            tree.concat(t.get(i));
+        }
+
+        // compute LMin using the VMin computed in Build
+        for (int i = 0; i < maxLevel - 2; i++) {
+            int internalNodeCount = 0;
+            int innerInternalNodeCount = 0;
+            for (int j = 0; j < pMax[i]; j++) {
+                if (t.get(i).isSet(j)) {
+                    int start = internalNodeCount * k * k;
+                    for (int l = start; l < start + k * k; l++) {
                         if (t.get(i + 1).isSet(l)) {
                             LMinList.set(imin++, Math.abs(
                                     getVMin(i + 1, innerInternalNodeCount) - getVMin(i, internalNodeCount)));
@@ -115,15 +131,9 @@ public abstract class AbstractK2RasterBuilder {
                         }
                     }
                     internalNodeCount++;
-                    tree.set(bitmapIndex++);
-                } else {
-                    tree.unset(bitmapIndex++);
                 }
             }
         }
-
-        long end = System.currentTimeMillis();
-        Logger.log("Time to build tree and prefix sum: " + (end - startTime) + "ms", Logger.LogLevel.DEBUG);
 
         tree.unset(0);
 
