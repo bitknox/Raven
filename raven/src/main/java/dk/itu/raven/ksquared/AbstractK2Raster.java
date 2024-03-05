@@ -16,14 +16,14 @@ public abstract class AbstractK2Raster implements Serializable {
     protected long maxVal;// the minimum value stored in the matrix
     public BitMap tree; // A tree where the i'th index is a one iff. the node with index i is internal
     protected int n; // the size of the matrix, always a power of k
-    protected int[] prefixSum; // a prefix sum of the tree
+    protected IntRank prefixSum; // a prefix sum of the tree
     // TODO: use DACs
     protected PrimitiveArrayWrapper lMin;// stores the difference between the minimum value stored in a node and the
                                          // minimum value of its parent node
     protected PrimitiveArrayWrapper lMax;// stores the difference between the maximum value stored in a node and the
                                          // maximum value of its parent node
 
-    public AbstractK2Raster(int k, long minVal, long maxVal, BitMap tree, int n, int[] prefixSum,
+    public AbstractK2Raster(int k, long minVal, long maxVal, BitMap tree, int n, IntRank prefixSum,
             PrimitiveArrayWrapper lMin, PrimitiveArrayWrapper lMax) {
         this.k = k;
         this.minVal = minVal;
@@ -36,10 +36,7 @@ public abstract class AbstractK2Raster implements Serializable {
     }
 
     private int treeRank(int idx) {
-        // the +1 is to accomodate asking for the rank at index -1. To do this, we moved
-        // the entire prefix sum array one position up and therefore need the +1 to sync
-        // the indices back up.
-        return prefixSum[idx + 1];
+        return prefixSum.rank(idx + 1);
     }
 
     /**
@@ -49,6 +46,8 @@ public abstract class AbstractK2Raster implements Serializable {
      *         internal node, {@code false} otherwise.
      */
     public boolean hasChildren(int index) {
+        if (index == 0)
+            return minVal != maxVal;
         return tree.isSet(index);
     }
 
@@ -108,7 +107,7 @@ public abstract class AbstractK2Raster implements Serializable {
         if (!hasChildren(index)) {
             return new int[0];
         } else {
-            int numInternalNodes = prefixSum[index];
+            int numInternalNodes = prefixSum.rank(index);
             int[] res = new int[k * k];
             for (int i = 0; i < k * k; i++) {
                 res[i] = 1 + k * k * numInternalNodes + i;

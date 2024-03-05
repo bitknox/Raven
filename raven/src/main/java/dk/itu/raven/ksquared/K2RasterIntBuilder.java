@@ -66,7 +66,7 @@ public class K2RasterIntBuilder extends AbstractK2RasterBuilder {
 
     @Override
     protected K2RasterInt getK2Raster(long maxVal, long minVal, BitMap tree, PrimitiveArrayWrapper lMax,
-            PrimitiveArrayWrapper lMin, int[] prefixSum) {
+            PrimitiveArrayWrapper lMin, IntRank prefixSum) {
         // IntArrayWrapper casts are safe, since they originate from this class (and are
         // therfore defined as IntArrayWrapper originally)
         // int casts are safe, becaus ethis class should only be used if the matrix

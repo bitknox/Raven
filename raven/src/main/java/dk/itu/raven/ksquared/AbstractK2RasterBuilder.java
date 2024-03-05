@@ -84,27 +84,27 @@ public abstract class AbstractK2RasterBuilder {
 
         BitMap tree = new BitMap(Math.max(1, size_max));
         int bitmapIndex = 0;
-        int[] prefixSum = new int[size_max + 1];
-        prefixSum[0] = 0;
+        // TODO: build prefix sum array at the same time as the tree
         for (int i = 0; i < maxLevel - 1; i++) {
             for (int j = 0; j < pMax[i]; j++) {
                 if (t.get(i).isSet(j)) {
                     tree.set(++bitmapIndex);
-                    prefixSum[bitmapIndex] = prefixSum[bitmapIndex - 1] + 1;
                 } else {
                     tree.unset(++bitmapIndex);
-                    prefixSum[bitmapIndex] = prefixSum[bitmapIndex - 1];
                 }
             }
         }
 
+        // the +1 is caused by the rank being 0-indexed, while the tree is 1-indexed
+        IntRank prefixSum = new IntRank(tree.getMap(), bitmapIndex + 1);
+
         pMax[0] = 1;
         if (maxVal != minVal) { // the root of the k2 raster tree is not a leaf
-            tree.set(0);
+            // tree.set(0);
             t.get(0).set(0);
             pMin[0] = 1;
         } else { // the root of the k2 raster tree is a leaf
-            tree.unset(0);
+            // tree.unset(0);
             t.get(0).unset(0);
             pMin[0] = 0;
         }
@@ -209,5 +209,5 @@ public abstract class AbstractK2RasterBuilder {
     protected abstract void killVMax();
 
     protected abstract AbstractK2Raster getK2Raster(long maxVal, long minVal, BitMap tree, PrimitiveArrayWrapper lMax,
-            PrimitiveArrayWrapper lMin, int[] prefixSum);
+            PrimitiveArrayWrapper lMin, IntRank prefixSum);
 }

@@ -65,6 +65,10 @@ public class BitMap implements Iterator<Integer>, Iterable<Integer>, Serializabl
         limitPos = 0;
     }
 
+    public int[] getMap() {
+        return map;
+    }
+
     /**
      * computes the rank of the bitmap up to an index {@code i}
      * 
