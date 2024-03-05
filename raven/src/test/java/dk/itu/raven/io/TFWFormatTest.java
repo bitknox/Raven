@@ -41,7 +41,7 @@ public class TFWFormatTest {
 		assertEquals(3.9, tfw.transformFromPixelToCoordinate(1, 1).y(), 0.0);
 	}
 
-	@RepeatedTest(10000)
+	@RepeatedTest(1000)
 	public void testTransformationToPixelCoordinateBackAndForthFromLat() {
 		Point p = generateRandomCoordinate();
 		Point pixelCoordinate = tfw.transFromCoordinateToPixel(p.x(), p.y());

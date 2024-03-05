@@ -83,7 +83,6 @@ public abstract class AbstractK2RasterBuilder {
         PrimitiveArrayWrapper LMinList = getWrapper(size_min + 1);
 
         BitMap tree = new BitMap(Math.max(1, size_max));
-        int bitmapIndex = 0;
         pMax[0] = 1;
         if (maxVal != minVal) { // the root of the k2 raster tree is not a leaf
             // tree.set(0);
@@ -95,7 +94,6 @@ public abstract class AbstractK2RasterBuilder {
             pMin[0] = 0;
         }
 
-        // TODO: build prefix sum array at the same time as the tree
         int imax = 0, imin = 0;
         // builds the LMax list at the same time as the concatinated tree
         for (int i = 0; i < maxLevel - 1; i++) {
@@ -107,9 +105,6 @@ public abstract class AbstractK2RasterBuilder {
                         LMaxList.set(imax++, Math.abs(getVMax(i, j) - getVMax(i + 1, l)));
                     }
                     internalNodeCount++;
-                    // tree.set(bitmapIndex++);
-                } else {
-                    // tree.unset(bitmapIndex++);
                 }
             }
             t.get(i).setSize(pMax[i]);
@@ -138,9 +133,7 @@ public abstract class AbstractK2RasterBuilder {
         tree.unset(0);
 
         // the +1 is caused by the rank being 0-indexed, while the tree is 1-indexed
-        IntRank prefixSum = new IntRank(tree.getMap(), bitmapIndex + 1);
-
-        // compute LMin using the VMin computed in Build
+        IntRank prefixSum = new IntRank(tree.getMap(), tree.size() + 1);
 
         killVMin();
         killVMax();
