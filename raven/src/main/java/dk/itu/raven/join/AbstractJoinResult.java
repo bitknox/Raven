@@ -7,6 +7,10 @@ import dk.itu.raven.geometry.Offset;
 public abstract class AbstractJoinResult implements Iterable<JoinResultItem> {
     protected Offset<Integer> offset;
 
+    public AbstractJoinResult() {
+        this.offset = new Offset<Integer>(0, 0);
+    }
+
     public AbstractJoinResult(Offset<Integer> offset) {
         this.offset = offset;
     }

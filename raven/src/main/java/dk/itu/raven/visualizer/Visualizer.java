@@ -8,9 +8,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
+import com.github.davidmoten.rtree2.Entry;
 import com.github.davidmoten.rtree2.Node;
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
@@ -52,8 +54,10 @@ public class Visualizer {
 
 	private Pair<List<Polygon>, ShapeFileBounds> getFeatures(ShapefileReader shapeFileReader)
 			throws IOException {
-		Pair<List<Polygon>, ShapeFileBounds> geometries = shapeFileReader.readShapefile();
-		return geometries;
+		Pair<List<Entry<String, Geometry>>, ShapeFileBounds> geometries = shapeFileReader.readShapefile();
+
+		var result = geometries.first.stream().map(e -> (Polygon) e.geometry()).collect(Collectors.toList());
+		return new Pair<List<Polygon>, ShapeFileBounds>(result, geometries.second);
 	}
 
 	/**

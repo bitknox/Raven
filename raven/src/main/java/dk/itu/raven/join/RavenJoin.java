@@ -45,17 +45,15 @@ public class RavenJoin extends AbstractRavenJoin {
 	private Size imageSize;
 
 	public RavenJoin(AbstractK2Raster k2Raster, RTree<String, Geometry> tree,
-			Offset<Integer> offset, Size imageSize, java.awt.Rectangle rasterWindow) {
-		super(rasterWindow);
+			Offset<Integer> offset, Size imageSize) {
 		this.k2Raster = k2Raster;
 		this.tree = tree;
 		this.offset = offset;
 		this.imageSize = imageSize;
 	}
 
-	public RavenJoin(AbstractK2Raster k2Raster, RTree<String, Geometry> tree, Size imageSize,
-			java.awt.Rectangle rasterWindow) {
-		this(k2Raster, tree, new Offset<>(0, 0), imageSize, rasterWindow);
+	public RavenJoin(AbstractK2Raster k2Raster, RTree<String, Geometry> tree, Size imageSize) {
+		this(k2Raster, tree, new Offset<>(0, 0), imageSize);
 	}
 
 	/**
@@ -103,7 +101,7 @@ public class RavenJoin extends AbstractRavenJoin {
 				int ix = (int) Math.floor(x - rasterBounding.x);
 				if (ix <= 0) {
 					inRanges[y - rasterBounding.y] = !inRanges[y - rasterBounding.y];
-				} else if (ix < rasterBounding.width && ix + rasterBounding.x < rasterWindow.width) {
+				} else if (ix < rasterBounding.width && ix + rasterBounding.x < imageSize.width) {
 					BST<Integer, Integer> bst = intersections.get(y - rasterBounding.y);
 					incrementSet(bst, ix);
 				}
@@ -112,7 +110,7 @@ public class RavenJoin extends AbstractRavenJoin {
 		}
 
 		Collection<PixelRange> ranges = new ArrayList<>();
-		for (int y = 0; y < Math.min(rasterBounding.height, rasterWindow.height - rasterBounding.y); y++) {
+		for (int y = 0; y < Math.min(rasterBounding.height, imageSize.height - rasterBounding.y); y++) {
 			BST<Integer, Integer> bst = intersections.get(y);
 			boolean inRange = inRanges[y];
 			int start = 0;
@@ -123,16 +121,16 @@ public class RavenJoin extends AbstractRavenJoin {
 						// pixel as a range. If there is an even number of intersections at the edge of
 						// the viewport, it should not be added as a single pixel, as that means a
 						// vector-shape has both started and ended outside the image.
-						ranges.add(new PixelRange(y + rasterBounding.y + rasterWindow.y,
-								x + rasterBounding.x + rasterWindow.x,
-								x + rasterBounding.x + rasterWindow.x));
+						ranges.add(new PixelRange(y + rasterBounding.y,
+								x + rasterBounding.x,
+								x + rasterBounding.x));
 					}
 				} else {
 					if (inRange) {
 						inRange = false;
-						ranges.add(new PixelRange(y + rasterBounding.y + rasterWindow.y,
-								start + rasterBounding.x + rasterWindow.x,
-								x + rasterBounding.x - 1 + rasterWindow.x));
+						ranges.add(new PixelRange(y + rasterBounding.y,
+								start + rasterBounding.x,
+								x + rasterBounding.x - 1));
 					} else {
 						inRange = true;
 						start = x;
@@ -140,10 +138,10 @@ public class RavenJoin extends AbstractRavenJoin {
 				}
 			}
 			if (inRange) {
-				ranges.add(new PixelRange(y + rasterBounding.y + rasterWindow.y,
-						start + rasterBounding.x + rasterWindow.x,
-						Math.min(rasterBounding.width - 1 + rasterBounding.x + rasterWindow.x,
-								rasterWindow.x + rasterWindow.width - 1)));
+				ranges.add(new PixelRange(y + rasterBounding.y,
+						start + rasterBounding.x,
+						Math.min(rasterBounding.width - 1 + rasterBounding.x,
+								imageSize.width - 1)));
 			}
 		}
 
@@ -365,7 +363,7 @@ public class RavenJoin extends AbstractRavenJoin {
 		// Used for early termination. If the vector data does not overlap with BOTH the
 		// image and the square k2Raster there will never be an intersection.
 		java.awt.Rectangle movedRasterWindow = new java.awt.Rectangle(offset.getOffsetX(), offset.getOffsetY(),
-				Math.min(rasterWindow.width, k2Raster.getSize()), Math.min(rasterWindow.height, k2Raster.getSize()));
+				Math.min(imageSize.width, k2Raster.getSize()), Math.min(imageSize.height, k2Raster.getSize()));
 
 		while (!S.empty()) {
 			Tuple5<Node<String, Geometry>, Integer, Square, Long, Long> p = S.pop();
@@ -433,15 +431,15 @@ public class RavenJoin extends AbstractRavenJoin {
 		for (JoinResultItem item : prob) {
 			JoinResultItem result = new JoinResultItem(item.geometry, new ArrayList<>());
 			for (PixelRange range : item.pixelRanges) {
-				PixelRange[] values = k2Raster.searchValuesInWindow(range.row - offset.getOffsetY() - rasterWindow.y,
-						range.row - offset.getOffsetY() - rasterWindow.y,
-						range.x1 - offset.getOffsetX() - rasterWindow.x,
-						range.x2 - offset.getOffsetX() - rasterWindow.x, function);
+				PixelRange[] values = k2Raster.searchValuesInWindow(range.row - offset.getOffsetY(),
+						range.row - offset.getOffsetY(),
+						range.x1 - offset.getOffsetX(),
+						range.x2 - offset.getOffsetX(), function);
 				for (PixelRange filteredRange : values) {
 					result.pixelRanges
-							.add(new PixelRange(filteredRange.row + offset.getOffsetY() + rasterWindow.y,
-									filteredRange.x1 + offset.getOffsetX() + rasterWindow.x,
-									filteredRange.x2 + offset.getOffsetX() + rasterWindow.x));
+							.add(new PixelRange(filteredRange.row + offset.getOffsetY(),
+									filteredRange.x1 + offset.getOffsetX(),
+									filteredRange.x2 + offset.getOffsetX()));
 				}
 			}
 			def.add(result);

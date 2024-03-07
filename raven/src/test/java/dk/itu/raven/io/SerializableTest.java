@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import dk.itu.raven.geometry.Offset;
