@@ -65,7 +65,7 @@ public class K2RasterBuilder extends AbstractK2RasterBuilder {
 
     @Override
     protected K2Raster getK2Raster(long maxVal, long minVal, BitMap tree, PrimitiveArrayWrapper lMax,
-            PrimitiveArrayWrapper lMin, int[] prefixSum) {
+            PrimitiveArrayWrapper lMin, IntRank prefixSum) {
         return new K2Raster(k, maxVal, minVal, tree, (LongArrayWrapper) lMax, (LongArrayWrapper) lMin, n, prefixSum);
     }
 
