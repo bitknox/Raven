@@ -5,6 +5,7 @@ import java.util.Iterator;
 import dk.itu.raven.geometry.Offset;
 
 public abstract class AbstractJoinResult implements Iterable<JoinResultItem> {
+    // TODO: Figure out if this is still needed
     protected Offset<Integer> offset;
 
     public AbstractJoinResult() {
