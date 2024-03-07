@@ -2,13 +2,13 @@ package dk.itu.raven.runner;
 
 import java.io.IOException;
 
+import com.beust.jcommander.JCommander;
 import com.google.gson.Gson;
-
-import dk.itu.raven.runner.BenchResult;
 
 //import com.github.bitknox.Raven;
 import dk.itu.raven.api.RavenApi;
 import dk.itu.raven.join.AbstractRavenJoin;
+import dk.itu.raven.join.JoinFilterFunctions;
 
 /**
  * Bootstrap raven and run the benchmark
@@ -16,28 +16,34 @@ import dk.itu.raven.join.AbstractRavenJoin;
 public class App {
     public static void main(String[] args) throws IOException {
         RavenApi api = new RavenApi();
-        String vectorPath = args[0];
-        String rasterPath = args[1];
-        String type = args[2];
-        int partitionSize = Integer.parseInt(args[3]);
-        int numIterations = Integer.parseInt(args[4]);
+        CommandLineArgs jct = new CommandLineArgs();
+        JCommander commander = JCommander.newBuilder()
+                .addObject(jct)
+                .build();
+        commander.parse(args);
 
         BenchResult benchResult = new BenchResult("Raven Benchmark");
-        benchResult.addLabel("Vector: "+ benchResult.formatPath(vectorPath));
-        benchResult.addLabel("Raster: "+ benchResult.formatPath(rasterPath));
-        benchResult.addLabel("Type: "+ type);
-        benchResult.addLabel("Partition Size: "+ partitionSize);
-        for (int i = 0; i < numIterations; i++) {
+        benchResult.addLabel("Vector: " + benchResult.formatPath(jct.inputVector));
+        benchResult.addLabel("Raster: " + benchResult.formatPath(jct.inputRaster));
+        benchResult.addLabel("Type: " + jct.joinType);
+        if (jct.joinType != JoinType.SEQUENTIAL) {
+            benchResult.addLabel("Partition Size: " + jct.tileSize);
+        }
+        for (int i = 0; i < jct.iterations; i++) {
             long start = System.currentTimeMillis();
             AbstractRavenJoin join;
-            if (type.equals("stream")) {
-                join = api.getStreamedJoin(rasterPath, vectorPath, partitionSize, partitionSize, false);
-            } else if (type.equals("parallel")) {
-                join = api.getStreamedJoin(rasterPath, vectorPath, partitionSize, partitionSize, true);
+            if (jct.joinType.equals(JoinType.STREAMED)) {
+                join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, false);
+            } else if (jct.joinType.equals(JoinType.PARALLEL)) {
+                join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, true);
             } else {
-                join = api.getJoin(rasterPath, vectorPath);
+                join = api.getJoin(jct.inputRaster, jct.inputVector);
             }
-            join.join().count();
+            if (jct.filterLow == Integer.MIN_VALUE && jct.filterHigh == Integer.MAX_VALUE) {
+                join.join(JoinFilterFunctions.acceptAll()).count();
+            } else {
+                join.join(JoinFilterFunctions.rangeFilter(jct.filterLow, jct.filterHigh)).count();
+            }
             long end = System.currentTimeMillis();
             long time = end - start;
             benchResult.addEntry(time);

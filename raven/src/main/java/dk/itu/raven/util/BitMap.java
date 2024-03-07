@@ -65,6 +65,10 @@ public class BitMap implements Iterator<Integer>, Iterable<Integer>, Serializabl
         limitPos = 0;
     }
 
+    public int[] getMap() {
+        return map;
+    }
+
     /**
      * computes the rank of the bitmap up to an index {@code i}
      * 
@@ -276,6 +280,29 @@ public class BitMap implements Iterator<Integer>, Iterable<Integer>, Serializabl
         }
 
         return buf;
+    }
+
+    public void concat(BitMap other) {
+        int windex = this.limitPos >> 5;
+
+        int newLimit = this.limitPos + other.limitPos;
+        // make space
+        int[] newmap = new int[this.map.length + other.map.length + 2];
+        System.arraycopy(this.map, 0, newmap, 0, this.map.length);
+        this.map = newmap;
+        capacity = 32 * this.map.length;
+
+        int relativePos = this.limitPos % 32; // maybe limitpos -1
+        int endMask = (-1) >>> (32 - relativePos);
+        endMask = relativePos == 0 ? 0 : endMask;
+        int startMask = ~endMask;
+        for (int word : other.map) {
+            this.map[windex] |= (word & startMask) >>> relativePos;
+            windex++;
+            this.map[windex] = (word & endMask) << (32 - relativePos);
+        }
+
+        this.limitPos = newLimit;
     }
 
     private void doubleCapacity() {

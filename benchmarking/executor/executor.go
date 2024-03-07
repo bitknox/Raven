@@ -13,7 +13,7 @@ func ExecuteBenchmark(benchmark *model.Benchmark) (*model.BenchmarkResult, error
 	env := environments.NewEnvironment(benchmark.EnvironmentOptions)
 
 	//append iterations to command arguments
-	benchmark.Command.Args = append(benchmark.Command.Args, fmt.Sprintf("%d", benchmark.Iterations))
+	benchmark.Command.Args = append(benchmark.Command.Args, "\"-i\"", fmt.Sprintf("%d", benchmark.Iterations))
 
 	setupErr := env.Runner.Setup()
 

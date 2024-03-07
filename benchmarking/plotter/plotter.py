@@ -25,9 +25,10 @@ font = {'family' : 'DejaVu Sans',
 plt.rc('font', **font)
 
 names = [test["name"] for test in data]
-times = [sum(test["times"])/test["iterations"] for test in data]
-errors_lo = [times[i]-min(data[i]["times"]) for i in range(len(data))]
-errors_hi = [max(data[i]["times"]) - times[i] for i in range(len(data))]
+# NOTE: ignores first entry in all time lists to account for cold starts
+times = [sum(test["times"][1:])/(test["iterations"]-1) for test in data]
+errors_lo = [times[i]-min(data[i]["times"][1:]) for i in range(len(data))]
+errors_hi = [max(data[i]["times"][1:]) - times[i] for i in range(len(data))]
 
 # rcParams.update({'figure.autolayout': True})
 plt.bar(names,times,color="darkturquoise")
