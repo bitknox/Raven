@@ -68,6 +68,8 @@ public class ShapefileReader {
 				extractGeometries(((GeometryAttributeImpl) feature.getProperty("the_geom")).getValue(), features);
 			}
 			return new Pair<>(features, bounds);
+		} finally {
+			myData.dispose();
 		}
 	}
 
