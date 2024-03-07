@@ -1,7 +1,7 @@
 [
 	{
-		"name": "Beast ",
-		"iterations": 5,
+		"name": "Beast Filter",
+		"iterations": 3,
 		"command": {
 			"path": "bash",
 			"args": [
@@ -9,8 +9,36 @@
 				"--class",
 				"dk.itu.raven.beast.App",
 				"/home/beast-uber-examples-0.9.4-SNAPSHOT.jar",
+				"\"-iv\"",
 				"/home/boundaries.zip",
-				"/home/glc2000"
+				"\"-ir\"",
+				"/home/Tiff",
+				"\"-fl\"",
+				"22",
+				"\"-fh\"",
+				"22"
+			]
+		},
+		"environment_options": {
+			"environment_type": "docker",
+			"docker_file_path": "./runners/beast-runner/",
+			"docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+		}
+	},
+	{
+		"name": "Beast ",
+		"iterations": 3,
+		"command": {
+			"path": "bash",
+			"args": [
+				"/opt/bitnami/spark/beast-0.10.0-RC1/bin/beast",
+				"--class",
+				"dk.itu.raven.beast.App",
+				"/home/beast-uber-examples-0.9.4-SNAPSHOT.jar",
+				"\"-iv\"",
+				"/home/boundaries.zip",
+				"\"-ir\"",
+				"/home/Tiff"
 			]
 		},
 		"environment_options": {
