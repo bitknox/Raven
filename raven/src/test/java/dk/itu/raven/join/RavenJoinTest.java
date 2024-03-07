@@ -47,10 +47,10 @@ public class RavenJoinTest {
         RavenJoin join = new RavenJoin(k2, null, null, rect);
         Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, rect);
 
-        assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 0 && (pr.x2 == 2 || pr.x2 == 3)));
+        assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 0 && pr.x2 == 1));
         assertFalse(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 2));
-        assertTrue(ranges.stream().anyMatch(pr -> pr.row == 3 && pr.x1 == 0 && (pr.x2 == 3 || pr.x2 == 4)));
-        assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && (pr.x1 == 18 || pr.x1 == 17) && pr.x2 == 19));
+        assertTrue(ranges.stream().anyMatch(pr -> pr.row == 3 && pr.x1 == 0 && pr.x2 == 2));
+        assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 17 && pr.x2 == 19));
     }
 
     @Test
@@ -160,10 +160,10 @@ public class RavenJoinTest {
                 new Coordinate(1, 3) });
         Polygon p2 = new Polygon(new Coordinate[] { new Coordinate(5, 5), new Coordinate(10, 5), new Coordinate(10, 10),
                 new Coordinate(5, 10) });
-        PixelRange[] expectedRanges = new PixelRange[] { new PixelRange(1, 1, 3), new PixelRange(2, 1, 3) };
-        PixelRange[] expectedRanges2 = new PixelRange[] { new PixelRange(5, 5, 10), new PixelRange(6, 5, 5),
-                new PixelRange(6, 7, 10), new PixelRange(7, 5, 10), new PixelRange(8, 5, 10),
-                new PixelRange(9, 5, 10) };
+        PixelRange[] expectedRanges = new PixelRange[] { new PixelRange(1, 1, 2), new PixelRange(2, 1, 2) };
+        PixelRange[] expectedRanges2 = new PixelRange[] { new PixelRange(5, 5, 9), new PixelRange(6, 5, 5),
+                new PixelRange(6, 7, 9), new PixelRange(7, 5, 9), new PixelRange(8, 5, 9),
+                new PixelRange(9, 5, 9) };
         rtree = rtree.add(null, p);
         rtree = rtree.add(null, p2);
 

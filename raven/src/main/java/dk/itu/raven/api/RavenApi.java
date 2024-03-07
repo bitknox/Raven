@@ -8,7 +8,6 @@ import dk.itu.raven.io.ImageIORasterReader;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.join.AbstractRavenJoin;
-import dk.itu.raven.join.RavenJoin;
 import dk.itu.raven.join.StreamedRavenJoin;
 
 /**

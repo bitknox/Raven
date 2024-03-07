@@ -37,15 +37,16 @@ public abstract class RasterReader {
 		return cacheKey;
 	}
 
-	public Stream<SpatialDataChunk> rasterPartitionStream(Rectangle rect, int widthStep, int heightStep,
+	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
 			Optional<RasterCache<CachedRasterStructure>> cache)
 			throws IOException {
+		ImageMetadata metadata = getImageMetadata();
 
 		// Limit to image size.
-		int startX = rect.x;
-		int startY = rect.y;
-		int endX = rect.x + rect.width;
-		int endY = rect.y + rect.height;
+		int startX = 0;
+		int startY = 0;
+		int endX = metadata.getWidth();
+		int endY = metadata.getHeight();
 
 		ArrayList<Rectangle> windows = new ArrayList<>();
 
@@ -57,7 +58,7 @@ public abstract class RasterReader {
 
 		return windows.stream().map(w -> {
 			try {
-				Offset<Integer> offset = new Offset<>(w.x - rect.x, w.y - rect.y);
+				Offset<Integer> offset = new Offset<>(w.x, w.y);
 
 				SpatialDataChunk chunk = new SpatialDataChunk();
 				chunk.setOffset(offset);

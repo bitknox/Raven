@@ -34,12 +34,6 @@ import dk.itu.raven.util.matrix.Matrix;
 
 public class InternalApi {
 
-    static java.awt.Rectangle getWindowRectangle(RasterReader rasterReader, ShapefileReader.ShapeFileBounds bounds)
-            throws IOException {
-        ImageMetadata imageSize = rasterReader.getImageMetadata();
-        return GeometryUtil.getWindowRectangle(new Size(imageSize.getWidth(), imageSize.getHeight()), bounds);
-    }
-
     /**
      * Creates a stream of join chunks containing the raster and rtree data.
      * 
@@ -59,18 +53,20 @@ public class InternalApi {
         Pair<List<Polygon>, ShapefileReader.ShapeFileBounds> geometries = featureReader
                 .readShapefile();
 
-        // rectangle representing the bounds of the shapefile data
-        java.awt.Rectangle rect = getWindowRectangle(rasterReader, geometries.second);
-
         // TODO: check if it is faster to just use the original rtree
         RTree<String, Geometry> rtree = generateRTree(geometries);
+
+        ImageMetadata metadata = rasterReader.getImageMetadata();
+
+        // make a rectangle that covers the entire image
+        java.awt.Rectangle rect = new java.awt.Rectangle(0, 0, metadata.getWidth(), metadata.getHeight());
 
         if (isCaching) {
             String key = rasterReader.getCacheKey().get();
             Logger.log("Set cache key " + key, LogLevel.DEBUG);
             RasterCache<CachedRasterStructure> cache = new RasterCache<CachedRasterStructure>(
                     rasterReader.getCacheKey().get() + widthStep + "-" + heightStep);
-            Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(rect, widthStep, heightStep,
+            Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
                     Optional.of(cache));
             return new Pair<>(rasterStream.map(chunk -> {
 
@@ -102,7 +98,7 @@ public class InternalApi {
                 return new JoinChunk(raster, chunk.getOffset(), rtree);
             }), rect);
         } else {
-            Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(rect, widthStep, heightStep,
+            Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
                     Optional.empty());
             return new Pair<>(rasterStream.map(chunk -> {
                 AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix());
@@ -140,7 +136,7 @@ public class InternalApi {
         // offset geometries such that they are aligned to the corner
         Offset<Double> offset = GeometryUtil.getGeometryOffset(geometries.second);
         for (Polygon geom : geometries.first) {
-            geom.offset(offset.getOffsetX(), offset.getOffsetY());
+            // geom.offset(offset.getOffsetX(), offset.getOffsetY());
 
             rtree = rtree.add(null, geom);
         }

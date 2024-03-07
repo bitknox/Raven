@@ -132,7 +132,7 @@ public class RavenJoin extends AbstractRavenJoin {
 						inRange = false;
 						ranges.add(new PixelRange(y + rasterBounding.y + rasterWindow.y,
 								start + rasterBounding.x + rasterWindow.x,
-								x + rasterBounding.x + rasterWindow.x));
+								x + rasterBounding.x - 1 + rasterWindow.x));
 					} else {
 						inRange = true;
 						start = x;

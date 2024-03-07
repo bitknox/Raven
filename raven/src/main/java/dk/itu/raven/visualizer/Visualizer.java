@@ -56,12 +56,6 @@ public class Visualizer {
 		return geometries;
 	}
 
-	private void offsetFeatures(List<Polygon> features, Offset<Double> offset) {
-		for (Polygon geom : features) {
-			geom.offset(offset.getOffsetX(), offset.getOffsetY());
-		}
-	}
-
 	/**
 	 * Draws a join result with with geometries laid on top of the raster result.
 	 * 
@@ -79,9 +73,6 @@ public class Visualizer {
 		List<Polygon> features = pair.first;
 		ShapeFileBounds bounds = pair.second;
 
-		if (options.cropToVector) {
-			offsetFeatures(features, GeometryUtil.getGeometryOffset(bounds));
-		}
 		int width = this.width;
 		int height = this.height;
 		if (options.cropToVector) {
