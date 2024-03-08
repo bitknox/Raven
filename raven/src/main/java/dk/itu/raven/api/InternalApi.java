@@ -62,16 +62,8 @@ public class InternalApi {
             RasterCache<CachedRasterStructure> cache = new RasterCache<CachedRasterStructure>(
                     rasterReader.getCacheKey().get() + widthStep + "-" + heightStep);
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
-                    Optional.of(cache));
-            return rasterStream.filter(chunk -> {
-                var offset = chunk.getOffset();
-                boolean intersects = TreeExtensions.intersectsOne(rtree.root().get(),
-                        Geometries.rectangle(offset.getX(), offset.getY(), offset.getX() + widthStep,
-                                offset.getY() + heightStep));
-                Logger.log("Intersects: " + intersects, LogLevel.INFO);
-                return intersects;
-            }).map(chunk -> {
-
+                    Optional.of(cache), rtree);
+            return rasterStream.map(chunk -> {
                 // if the chunk is already cached, read it from cache
                 if (chunk.getCacheKey().isPresent()) {
                     Logger.log("Using cached raster structure " + chunk.getCacheKey().get(), LogLevel.DEBUG);
@@ -100,16 +92,8 @@ public class InternalApi {
             });
         } else {
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
-                    Optional.empty());
-            return rasterStream.filter(chunk -> {
-                var offset = chunk.getOffset();
-                boolean intersects = TreeExtensions.intersectsOne(rtree.root().get(),
-                        Geometries.rectangle(offset.getX(), offset.getY(), offset.getX() + widthStep,
-                                offset.getY() + heightStep));
-                // Logger.log("Intersects: " + intersects + " " + offset.toString(),
-                // LogLevel.INFO);
-                return intersects;
-            }).map(chunk -> {
+                    Optional.empty(), rtree);
+            return rasterStream.map(chunk -> {
                 AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix());
                 return new JoinChunk(raster, chunk.getOffset(), rtree);
             });

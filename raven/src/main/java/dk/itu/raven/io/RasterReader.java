@@ -5,12 +5,17 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.github.davidmoten.rtree2.RTree;
+import com.github.davidmoten.rtree2.geometry.Geometries;
+import com.github.davidmoten.rtree2.geometry.Geometry;
+
 import java.awt.Rectangle;
 
 import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.io.cache.CachedRasterStructure;
 import dk.itu.raven.io.cache.RasterCache;
 import dk.itu.raven.join.SpatialDataChunk;
+import dk.itu.raven.util.TreeExtensions;
 import dk.itu.raven.util.matrix.Matrix;
 
 public abstract class RasterReader {
@@ -38,8 +43,7 @@ public abstract class RasterReader {
 	}
 
 	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
-			Optional<RasterCache<CachedRasterStructure>> cache)
-			throws IOException {
+			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree) throws IOException {
 		ImageMetadata metadata = getImageMetadata();
 
 		// Limit to image size.
@@ -56,7 +60,10 @@ public abstract class RasterReader {
 			}
 		}
 
-		return windows.stream().map(w -> {
+		return windows.stream().filter(w -> {
+			return TreeExtensions.intersectsOne(rtree.root().get(),
+					Geometries.rectangle(w.x, w.y, w.x + w.width, w.y + w.height));
+		}).map(w -> {
 			try {
 				Offset<Integer> offset = new Offset<>(w.x, w.y);
 
