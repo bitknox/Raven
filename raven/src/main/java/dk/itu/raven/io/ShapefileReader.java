@@ -16,8 +16,6 @@ import org.geotools.feature.GeometryAttributeImpl;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
-import com.github.davidmoten.rtree2.Entries;
-import com.github.davidmoten.rtree2.Entry;
 import com.github.davidmoten.rtree2.geometry.Geometries;
 import com.github.davidmoten.rtree2.geometry.Point;
 

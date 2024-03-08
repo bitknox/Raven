@@ -3,16 +3,14 @@ package dk.itu.raven.visualizer;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.util.List;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
-import com.github.davidmoten.rtree2.Entry;
 import com.github.davidmoten.rtree2.Node;
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;

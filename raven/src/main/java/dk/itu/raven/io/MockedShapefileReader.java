@@ -1,12 +1,7 @@
 package dk.itu.raven.io;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-
-import com.github.davidmoten.rtree2.Entries;
-import com.github.davidmoten.rtree2.Entry;
-import com.github.davidmoten.rtree2.geometry.Geometry;
 
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.util.Pair;

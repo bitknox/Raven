@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.github.davidmoten.rtree2.Entry;
 import com.github.davidmoten.rtree2.RTree;
-import com.github.davidmoten.rtree2.geometry.Geometries;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
 import dk.itu.raven.geometry.Polygon;
@@ -18,10 +16,10 @@ import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.cache.CachedRasterStructure;
 import dk.itu.raven.io.cache.RasterCache;
 import dk.itu.raven.join.AbstractRavenJoin;
+import dk.itu.raven.join.EmptyRavenJoin;
 import dk.itu.raven.join.JoinChunk;
 import dk.itu.raven.join.ParallelStreamedRavenJoin;
 import dk.itu.raven.join.RavenJoin;
-import dk.itu.raven.join.EmptyRavenJoin;
 import dk.itu.raven.join.SpatialDataChunk;
 import dk.itu.raven.join.StreamedRavenJoin;
 import dk.itu.raven.ksquared.AbstractK2Raster;
@@ -30,7 +28,6 @@ import dk.itu.raven.ksquared.K2RasterIntBuilder;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.util.Pair;
-import dk.itu.raven.util.TreeExtensions;
 import dk.itu.raven.util.matrix.Matrix;
 
 public class InternalApi {
