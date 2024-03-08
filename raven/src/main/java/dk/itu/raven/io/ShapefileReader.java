@@ -58,12 +58,12 @@ public class ShapefileReader {
 		}
 	}
 
-	public Pair<List<Entry<String, com.github.davidmoten.rtree2.geometry.Geometry>>, ShapeFileBounds> readShapefile()
+	public Pair<List<Polygon>, ShapeFileBounds> readShapefile()
 			throws IOException {
 		FileDataStore myData = FileDataStoreFinder.getDataStore(file);
 		SimpleFeatureSource source = myData.getFeatureSource();
 		bounds.reset();
-		List<Entry<String, com.github.davidmoten.rtree2.geometry.Geometry>> features = new ArrayList<>();
+		List<Polygon> features = new ArrayList<>();
 		FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures();
 		try (FeatureIterator<SimpleFeature> featuresItr = collection.features()) {
 			while (featuresItr.hasNext()) {
@@ -77,7 +77,7 @@ public class ShapefileReader {
 	}
 
 	private void extractGeometries(Geometry geometry,
-			List<Entry<String, com.github.davidmoten.rtree2.geometry.Geometry>> features) {
+			List<Polygon> features) {
 		if (geometry.getNumGeometries() > 1) {
 			for (int i = 0; i < geometry.getNumGeometries(); i++) {
 				Geometry geom = geometry.getGeometryN(i);
@@ -89,7 +89,7 @@ public class ShapefileReader {
 	}
 
 	private void createPolygons(Coordinate[] coordinates,
-			List<Entry<String, com.github.davidmoten.rtree2.geometry.Geometry>> features) {
+			List<Polygon> features) {
 		List<Point> points = new ArrayList<>();
 		double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
 		double maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
@@ -101,7 +101,7 @@ public class ShapefileReader {
 			if (start.x == coord.x && start.y == coord.y && points.size() > 0) {
 				this.bounds.updateBounds(minX, minY, maxX, maxY);
 				features
-						.add(Entries.entry(null, new Polygon(points, Geometries.rectangle(minX, minY, maxX, maxY))));
+						.add(new Polygon(points, Geometries.rectangle(minX, minY, maxX, maxY)));
 				points = new ArrayList<>();
 				minX = Double.MAX_VALUE;
 				minY = Double.MAX_VALUE;

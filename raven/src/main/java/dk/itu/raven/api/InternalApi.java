@@ -10,6 +10,7 @@ import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometries;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
+import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.io.ImageMetadata;
 import dk.itu.raven.io.RasterReader;
@@ -50,7 +51,7 @@ public class InternalApi {
             isCaching = rasterReader.getCacheKey().isPresent();
 
         // load geometries from shapefile
-        Pair<List<Entry<String, Geometry>>, ShapefileReader.ShapeFileBounds> geometries = featureReader.readShapefile();
+        Pair<List<Polygon>, ShapefileReader.ShapeFileBounds> geometries = featureReader.readShapefile();
 
         // TODO: check if it is faster to just use the original rtree
         RTree<String, Geometry> rtree = generateRTree(geometries);
@@ -105,7 +106,8 @@ public class InternalApi {
                 boolean intersects = TreeExtensions.intersectsOne(rtree.root().get(),
                         Geometries.rectangle(offset.getX(), offset.getY(), offset.getX() + widthStep,
                                 offset.getY() + heightStep));
-                Logger.log("Intersects: " + intersects + " " + offset.toString(), LogLevel.INFO);
+                // Logger.log("Intersects: " + intersects + " " + offset.toString(),
+                // LogLevel.INFO);
                 return intersects;
             }).map(chunk -> {
                 AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix());
@@ -138,9 +140,11 @@ public class InternalApi {
      * @return the R* tree
      */
     static RTree<String, Geometry> generateRTree(
-            Pair<List<Entry<String, Geometry>>, ShapefileReader.ShapeFileBounds> geometries) {
-        RTree<String, Geometry> rtree = RTree.star().loadingFactor(2.0).maxChildren(6).create(geometries.first);
-
+            Pair<List<Polygon>, ShapefileReader.ShapeFileBounds> geometries) {
+        RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
+        for (Polygon polygon : geometries.first) {
+            rtree = rtree.add(null, polygon);
+        }
         return rtree;
     }
 

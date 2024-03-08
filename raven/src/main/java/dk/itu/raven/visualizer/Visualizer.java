@@ -54,10 +54,8 @@ public class Visualizer {
 
 	private Pair<List<Polygon>, ShapeFileBounds> getFeatures(ShapefileReader shapeFileReader)
 			throws IOException {
-		Pair<List<Entry<String, Geometry>>, ShapeFileBounds> geometries = shapeFileReader.readShapefile();
+		return shapeFileReader.readShapefile();
 
-		var result = geometries.first.stream().map(e -> (Polygon) e.geometry()).collect(Collectors.toList());
-		return new Pair<List<Polygon>, ShapeFileBounds>(result, geometries.second);
 	}
 
 	/**
