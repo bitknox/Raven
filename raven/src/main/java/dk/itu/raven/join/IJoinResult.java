@@ -3,7 +3,6 @@ package dk.itu.raven.join;
 import java.util.Iterator;
 
 public interface IJoinResult extends Iterable<JoinResultItem> {
-    // TODO: Figure out if this is still needed
 
     /**
      * Returns an iterator over the join result.
