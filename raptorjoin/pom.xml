@@ -19,8 +19,9 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>16</maven.compiler.source>
-    <maven.compiler.target>16</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <geotools.version>31-SNAPSHOT</geotools.version>
   </properties>
 
   <dependencies>
@@ -30,14 +31,47 @@
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>edu.ucr.cs.bdlab</groupId>
+      <artifactId>beast-spark</artifactId>
+      <version>0.10.0-RC1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jcommander</groupId>
+      <artifactId>jcommander</artifactId>
+      <version>1.83</version>
+    </dependency>
   </dependencies>
 
   <build>
     <plugins>
       <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>scala-compile-first</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>add-source</goal>
+              <goal>compile</goal>
+            </goals>
+
+          </execution>
+          <execution>
+            <id>scala-test-compile</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.1.1</version>
+        <version>3.5.2</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -45,6 +79,55 @@
               <goal>shade</goal>
             </goals>
             <configuration>
+              <artifactSet>
+                <includes>
+                  <include>*</include>
+                  <include>com.github.davidmoten:rtree2</include>
+                  <include>com.github.davidmoten:guava-mini</include>
+                  <include>org.locationtech.jts:jts-core</include>
+                  <!-- org.mortbay.jetty:jetty + dependencies -->
+                  <include>org.mortbay.jetty:jetty</include>
+                  <include>org.mortbay.jetty:jetty-util</include>
+                  <include>org.mortbay.jetty:servlet-api</include>
+                  <!-- /org.mortbay.jetty:jetty + dependencies -->
+                  <!-- org.geotools:gt-epsg-hsql + dependencies -->
+                  <include>org.geotools:gt-epsg-hsql</include>
+                  <include>org.geotools:gt-epsg-extension</include>
+                  <include>org.geotools:gt-referencing</include>
+                  <include>org.geotools:gt-metadata</include>
+                  <include>org.geotools:gt-opengis</include>
+                  <include>org.geotools.ogc:net.opengis.ows</include>
+                  <include>org.geotools.ogc:org.w3.xlink</include>
+                  <include>org.hsqldb:hsqldb</include>
+                  <include>org.eclipse.emf:org.eclipse.emf.common</include>
+                  <include>org.eclipse.emf:org.eclipse.emf.ecore</include>
+                  <include>org.eclipse.emf:org.eclipse.emf.ecore.xmi</include>
+                  <include>systems.uom:systems-common-java8</include>
+                  <include>tec.uom:uom-se</include>
+                  <include>tec.uom.lib:uom-lib-common</include>
+                  <include>si.uom:si-quantity</include>
+                  <include>si.uom:si-units-java8</include>
+                  <include>javax.measure:unit-api</include>
+                  <include>javax:javaee-api</include>
+                  <include>javax.media:jai_core</include>
+                  <include>com.sun.mail:javax.mail</include>
+                  <include>org.ejml:ejml-ddense</include>
+                  <include>org.ejml:ejml-core</include>
+                  <include>commons-pool:commons-pool</include>
+                  <include>jgridshift:jgridshift-core</include>
+                  <include>net.sf.geographiclib:GeographicLib-Java</include>
+                  <!-- /org.geotools:gt-epsg-hsql + dependencies -->
+
+                  <!-- Beast includes -->
+                  <include>edu.ucr.cs.bdlab:beast-spark</include>
+                  <include>edu.ucr.cs.bdlab:cg</include>
+                  <include>edu.ucr.cs.bdlab:common</include>
+                  <include>edu.ucr.cs.bdlab:io</include>
+                  <include>edu.ucr.cs.bdlab:raptor</include>
+                  <include>edu.ucr.cs.bdlab:visualization</include>
+                  <include>edu.ucr.cs.bdlab:jhdf</include>
+                </includes>
+              </artifactSet>
               <filters>
                 <filter>
                   <artifact>*:*</artifact>
