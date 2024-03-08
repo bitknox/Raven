@@ -26,4 +26,9 @@ public class Offset<T extends Number> implements Serializable {
         return offsetX.equals(other.offsetX) && offsetY.equals(other.offsetY);
 
     }
+
+    @Override
+    public String toString() {
+        return "Offset [offsetX=" + offsetX + ", offsetY=" + offsetY + "]";
+    }
 }

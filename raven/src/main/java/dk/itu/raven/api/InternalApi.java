@@ -100,7 +100,14 @@ public class InternalApi {
         } else {
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
                     Optional.empty());
-            return rasterStream.map(chunk -> {
+            return rasterStream.filter(chunk -> {
+                var offset = chunk.getOffset();
+                boolean intersects = TreeExtensions.intersectsOne(rtree.root().get(),
+                        Geometries.rectangle(offset.getX(), offset.getY(), offset.getX() + widthStep,
+                                offset.getY() + heightStep));
+                Logger.log("Intersects: " + intersects + " " + offset.toString(), LogLevel.INFO);
+                return intersects;
+            }).map(chunk -> {
                 AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix());
                 return new JoinChunk(raster, chunk.getOffset(), rtree);
             });
@@ -132,7 +139,7 @@ public class InternalApi {
      */
     static RTree<String, Geometry> generateRTree(
             Pair<List<Entry<String, Geometry>>, ShapefileReader.ShapeFileBounds> geometries) {
-        RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create(geometries.first);
+        RTree<String, Geometry> rtree = RTree.star().loadingFactor(2.0).maxChildren(6).create(geometries.first);
 
         return rtree;
     }
