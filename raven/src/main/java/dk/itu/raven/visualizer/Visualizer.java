@@ -17,7 +17,6 @@ import com.github.davidmoten.rtree2.geometry.Geometry;
 import com.github.davidmoten.rtree2.geometry.Point;
 
 import dk.itu.raven.geometry.GeometryUtil;
-import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;

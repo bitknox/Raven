@@ -3,8 +3,6 @@ package dk.itu.raven.util;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,8 +17,7 @@ public class TreeExtensionsTest {
 
 	@BeforeEach
 	public void setUp() {
-
-		// Initialize your RTree with test data before each test
+		// Create an RTree
 		rtree = RTree.star().maxChildren(3).create();
 
 		// Add some test data
