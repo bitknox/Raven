@@ -9,7 +9,7 @@ import dk.itu.raven.io.FileRasterReader;
 import dk.itu.raven.io.ImageMetadata;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.commandline.CommandLineArgs;
-import dk.itu.raven.join.AbstractJoinResult;
+import dk.itu.raven.join.IJoinResult;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.IRasterFilterFunction;
 import dk.itu.raven.join.JoinFilterFunctions;
@@ -75,7 +75,7 @@ public class Raven {
         } else {
             join = api.getJoin(jct.inputRaster, jct.inputVector, jct.isCaching);
         }
-        AbstractJoinResult result = join.join(function);
+        IJoinResult result = join.join(function);
 
         if (jct.outputPath != null) {
             result = result.asMemoryAllocatedResult(); // this allows the visualizer to draw the result while still

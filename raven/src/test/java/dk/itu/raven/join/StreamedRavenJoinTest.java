@@ -45,9 +45,9 @@ public class StreamedRavenJoinTest {
         AbstractRavenJoin streamedJoin = ravenApi.getStreamedJoin(rasterPath, vectorPath, 200, 200, false, false);
         AbstractRavenJoin parallelJoin = ravenApi.getStreamedJoin(rasterPath, vectorPath, 200, 200, true, false);
 
-        AbstractJoinResult inMemoryResult = inMemoryJoin.join().asMemoryAllocatedResult();
-        AbstractJoinResult streamedResult = streamedJoin.join().asMemoryAllocatedResult();
-        AbstractJoinResult parallelResult = parallelJoin.join().asMemoryAllocatedResult();
+        IJoinResult inMemoryResult = inMemoryJoin.join().asMemoryAllocatedResult();
+        IJoinResult streamedResult = streamedJoin.join().asMemoryAllocatedResult();
+        IJoinResult parallelResult = parallelJoin.join().asMemoryAllocatedResult();
 
         Set<Point> inMemorySet = new HashSet<>();
         Set<Point> streamedSet = new HashSet<>();

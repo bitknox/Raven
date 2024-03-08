@@ -349,7 +349,7 @@ public class RavenJoin extends AbstractRavenJoin {
 	 */
 	@Override
 	protected JoinResult joinImplementation(IRasterFilterFunction function) {
-		JoinResult def = new JoinResult(offset), prob = new JoinResult(offset);
+		JoinResult def = new JoinResult(), prob = new JoinResult();
 		Stack<Tuple5<Node<String, Geometry>, Integer, Square, Long, Long>> S = new Stack<>();
 
 		Pair<Long, Long> minMax = k2Raster.getValueRange();

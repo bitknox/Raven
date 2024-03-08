@@ -2,14 +2,14 @@ package dk.itu.raven.join;
 
 public abstract class AbstractRavenJoin {
 
-    protected abstract AbstractJoinResult joinImplementation(IRasterFilterFunction function);
+    protected abstract IJoinResult joinImplementation(IRasterFilterFunction function);
 
-    public AbstractJoinResult join(IRasterFilterFunction function) {
-        AbstractJoinResult result = joinImplementation(function);
+    public IJoinResult join(IRasterFilterFunction function) {
+        IJoinResult result = joinImplementation(function);
         return result;
     }
 
-    public AbstractJoinResult join() {
+    public IJoinResult join() {
         return join(JoinFilterFunctions.acceptAll());
     }
 }

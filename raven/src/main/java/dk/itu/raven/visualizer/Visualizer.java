@@ -23,7 +23,7 @@ import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.ShapefileReader.ShapeFileBounds;
-import dk.itu.raven.join.AbstractJoinResult;
+import dk.itu.raven.join.IJoinResult;
 import dk.itu.raven.join.Square;
 import dk.itu.raven.ksquared.K2Raster;
 import dk.itu.raven.util.Pair;
@@ -67,7 +67,7 @@ public class Visualizer {
 	 * @param options  visualizer options
 	 * @return The imagebuffer
 	 */
-	public BufferedImage drawResult(AbstractJoinResult results, ShapefileReader shapeFileReader,
+	public BufferedImage drawResult(IJoinResult results, ShapefileReader shapeFileReader,
 			VisualizerOptions options) throws IOException {
 		var pair = getFeatures(shapeFileReader);
 		List<Polygon> features = pair.first;
@@ -91,19 +91,12 @@ public class Visualizer {
 		setColor(rasterGraphics, options.background);
 		rasterGraphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
 
-		final Offset<Integer> offset;
-		if (options.cropToVector) {
-			offset = results.getOffset();
-		} else {
-			offset = new Offset<Integer>(0, 0);
-		}
-
 		for (var item : results) {
 			for (PixelRange range : item.pixelRanges) {
 				setColor(rasterGraphics, options.primaryColor);
-				rasterGraphics.drawLine(range.x1 - offset.getX(), range.row - offset.getY(),
-						range.x2 - offset.getX(),
-						range.row - offset.getY());
+				rasterGraphics.drawLine(range.x1, range.row,
+						range.x2,
+						range.row);
 			}
 		}
 
