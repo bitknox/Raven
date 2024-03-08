@@ -356,13 +356,13 @@ public class RavenJoin extends AbstractRavenJoin {
 
 		for (Node<String, Geometry> node : TreeExtensions.getChildren(tree.root().get())) {
 			S.push(new Tuple5<>(node, 0,
-					new Square(offset.getOffsetX(), offset.getOffsetY(), k2Raster.getSize()), minMax.first,
+					new Square(offset.getX(), offset.getY(), k2Raster.getSize()), minMax.first,
 					minMax.second));
 		}
 
 		// Used for early termination. If the vector data does not overlap with BOTH the
 		// image and the square k2Raster there will never be an intersection.
-		java.awt.Rectangle movedRasterWindow = new java.awt.Rectangle(offset.getOffsetX(), offset.getOffsetY(),
+		java.awt.Rectangle movedRasterWindow = new java.awt.Rectangle(offset.getX(), offset.getY(),
 				Math.min(imageSize.width, k2Raster.getSize()), Math.min(imageSize.height, k2Raster.getSize()));
 
 		while (!S.empty()) {
@@ -431,15 +431,15 @@ public class RavenJoin extends AbstractRavenJoin {
 		for (JoinResultItem item : prob) {
 			JoinResultItem result = new JoinResultItem(item.geometry, new ArrayList<>());
 			for (PixelRange range : item.pixelRanges) {
-				PixelRange[] values = k2Raster.searchValuesInWindow(range.row - offset.getOffsetY(),
-						range.row - offset.getOffsetY(),
-						range.x1 - offset.getOffsetX(),
-						range.x2 - offset.getOffsetX(), function);
+				PixelRange[] values = k2Raster.searchValuesInWindow(range.row - offset.getY(),
+						range.row - offset.getY(),
+						range.x1 - offset.getX(),
+						range.x2 - offset.getX(), function);
 				for (PixelRange filteredRange : values) {
 					result.pixelRanges
-							.add(new PixelRange(filteredRange.row + offset.getOffsetY(),
-									filteredRange.x1 + offset.getOffsetX(),
-									filteredRange.x2 + offset.getOffsetX()));
+							.add(new PixelRange(filteredRange.row + offset.getY(),
+									filteredRange.x1 + offset.getX(),
+									filteredRange.x2 + offset.getX()));
 				}
 			}
 			def.add(result);

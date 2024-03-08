@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import com.github.davidmoten.rtree2.Entry;
 import com.github.davidmoten.rtree2.RTree;
+import com.github.davidmoten.rtree2.geometry.Geometries;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
 import dk.itu.raven.geometry.Size;
@@ -28,6 +29,7 @@ import dk.itu.raven.ksquared.K2RasterIntBuilder;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.util.Pair;
+import dk.itu.raven.util.TreeExtensions;
 import dk.itu.raven.util.matrix.Matrix;
 
 public class InternalApi {
@@ -60,7 +62,14 @@ public class InternalApi {
                     rasterReader.getCacheKey().get() + widthStep + "-" + heightStep);
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
                     Optional.of(cache));
-            return rasterStream.map(chunk -> {
+            return rasterStream.filter(chunk -> {
+                var offset = chunk.getOffset();
+                boolean intersects = TreeExtensions.intersectsOne(rtree.root().get(),
+                        Geometries.rectangle(offset.getX(), offset.getY(), offset.getX() + widthStep,
+                                offset.getY() + heightStep));
+                Logger.log("Intersects: " + intersects, LogLevel.INFO);
+                return intersects;
+            }).map(chunk -> {
 
                 // if the chunk is already cached, read it from cache
                 if (chunk.getCacheKey().isPresent()) {

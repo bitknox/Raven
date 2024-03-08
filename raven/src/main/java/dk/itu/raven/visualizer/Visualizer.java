@@ -105,9 +105,9 @@ public class Visualizer {
 		for (var item : results) {
 			for (PixelRange range : item.pixelRanges) {
 				setColor(rasterGraphics, options.primaryColor);
-				rasterGraphics.drawLine(range.x1 - offset.getOffsetX(), range.row - offset.getOffsetY(),
-						range.x2 - offset.getOffsetX(),
-						range.row - offset.getOffsetY());
+				rasterGraphics.drawLine(range.x1 - offset.getX(), range.row - offset.getY(),
+						range.x2 - offset.getX(),
+						range.row - offset.getY());
 			}
 		}
 

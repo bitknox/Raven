@@ -10,11 +10,11 @@ public class Offset<T extends Number> implements Serializable {
         this.offsetY = offsetY;
     }
 
-    public T getOffsetX() {
+    public T getX() {
         return offsetX;
     }
 
-    public T getOffsetY() {
+    public T getY() {
         return offsetY;
     }
 
