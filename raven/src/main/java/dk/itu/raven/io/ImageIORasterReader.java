@@ -1,5 +1,6 @@
 package dk.itu.raven.io;
 
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -7,12 +8,8 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
-import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.stream.FileImageInputStream;
-
-import org.w3c.dom.Element;
-
-import java.awt.Rectangle;
 
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.matrix.AwtRasterMatrix;
@@ -48,20 +45,16 @@ public class ImageIORasterReader extends FileRasterReader {
         ImageReader reader = ImageIO.getImageReaders(stream).next();
         reader.setInput(stream);
 
-        IIOMetadata metadata = reader.getImageMetadata(0);
-        Element metadataNode = (Element) metadata.getAsTree("javax_imageio_1.0");
+        ImageTypeSpecifier imageType = reader.getRawImageType(0);
 
         int width = reader.getWidth(0);
         int height = reader.getHeight(0);
-        int samplesPerPixel = Integer.parseInt(metadataNode.getElementsByTagName("NumChannels").item(0).getAttributes()
-                .getNamedItem("value").getNodeValue());
+
+        int samplesPerPixel = imageType.getNumBands();
         int[] bitsPerSample = new int[samplesPerPixel];
 
-        String[] bitsPerSampleString = metadataNode.getElementsByTagName("BitsPerSample").item(0).getAttributes()
-                .getNamedItem("value").getNodeValue().split(" ");
-
         for (int i = 0; i < samplesPerPixel; i++) {
-            bitsPerSample[i] = Integer.parseInt(bitsPerSampleString[i]);
+            bitsPerSample[i] = imageType.getBitsPerBand(i);
         }
 
         long end = System.currentTimeMillis();

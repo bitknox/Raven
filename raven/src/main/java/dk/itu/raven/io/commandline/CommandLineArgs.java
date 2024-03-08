@@ -15,8 +15,7 @@ public class CommandLineArgs {
 	@Parameter(names = { "--help", "-h" }, help = true)
 	public boolean help = false;
 
-	@Parameter(names = { "-log", "-verbose" }, description = "Level of verbosity", validateWith = {
-			LogLevelValidator.class })
+	@Parameter(names = { "-log", "-verbose" }, description = "Level of verbosity")
 	public Logger.LogLevel verbose = Logger.LogLevel.WARNING;
 
 	@Parameter(names = { "-ir", "--input-raster" }, description = "Input raster file", required = true)
