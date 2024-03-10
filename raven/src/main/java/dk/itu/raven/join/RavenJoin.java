@@ -21,8 +21,9 @@ import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
+import dk.itu.raven.join.intersection.BSTIntersectionIndex;
+import dk.itu.raven.join.intersection.IntersectionIndex;
 import dk.itu.raven.ksquared.AbstractK2Raster;
-import dk.itu.raven.util.BST;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.Logger;
 
@@ -74,9 +75,9 @@ public class RavenJoin extends AbstractRavenJoin {
 		// otherwise
 
 		boolean[] inRanges = new boolean[rasterBounding.height];
-		List<BST<Integer, Integer>> intersections = new ArrayList<BST<Integer, Integer>>(rasterBounding.height);
+		List<IntersectionIndex> intersections = new ArrayList<>(rasterBounding.height);
 		for (int i = 0; i <= rasterBounding.height; i++) {
-			intersections.add(i, new BST<>());
+			intersections.add(new BSTIntersectionIndex());
 		}
 
 		// a line is of the form a*x + b*y = c
@@ -104,8 +105,8 @@ public class RavenJoin extends AbstractRavenJoin {
 				if (ix <= 0) {
 					inRanges[y - rasterBounding.y] = !inRanges[y - rasterBounding.y];
 				} else if (ix < rasterBounding.width && ix + rasterBounding.x < rasterWindow.width) {
-					BST<Integer, Integer> bst = intersections.get(y - rasterBounding.y);
-					incrementSet(bst, ix);
+					IntersectionIndex index = intersections.get(y - rasterBounding.y);
+					index.addIntersection(ix);
 				}
 			}
 			old = next;
@@ -113,11 +114,11 @@ public class RavenJoin extends AbstractRavenJoin {
 
 		Collection<PixelRange> ranges = new ArrayList<>();
 		for (int y = 0; y < Math.min(rasterBounding.height, rasterWindow.height - rasterBounding.y); y++) {
-			BST<Integer, Integer> bst = intersections.get(y);
+			IntersectionIndex index = intersections.get(y);
 			boolean inRange = inRanges[y];
 			int start = 0;
-			for (int x : bst.keys()) {
-				if ((bst.get(x) % 2) == 0) { // an even number of intersections happen at this point
+			for (int x : index) {
+				if ((index.getCount(x) % 2) == 0) { // an even number of intersections happen at this point
 					if (!inRange) {
 						// if a range is ongoing, ignore these intersections, otherwise add this single
 						// pixel as a range. If there is an even number of intersections at the edge of
@@ -148,22 +149,6 @@ public class RavenJoin extends AbstractRavenJoin {
 		}
 
 		return ranges;
-	}
-
-	/**
-	 * increments the stored number of intersections that happen at the given
-	 * x-ordinate
-	 * 
-	 * @param bst a set of intersections
-	 * @param key an x-ordinate of an intersection
-	 */
-	private void incrementSet(BST<Integer, Integer> bst, Integer key) {
-		Integer num = bst.get(key);
-		if (num == null) {
-			bst.put(key, 1);
-		} else {
-			bst.put(key, num + 1);
-		}
 	}
 
 	// based loosely on:
