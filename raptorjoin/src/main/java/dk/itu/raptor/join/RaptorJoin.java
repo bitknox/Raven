@@ -16,7 +16,10 @@ public class RaptorJoin {
     }
 
     public Stream<PixelRange> createFlashIndices(ShapefileFeatureReader featureReader,
-            Stream<RasterMetadata> metadata) {
+            Stream<RasterMetadata> metadatas) {
+        metadatas.forEach(metadata -> {
+
+        });
         return null;
     }
 }

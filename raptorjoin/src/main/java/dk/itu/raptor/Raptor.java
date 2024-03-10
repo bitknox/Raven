@@ -1,5 +1,6 @@
 package dk.itu.raptor;
 
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,11 +9,13 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.spark.SparkConf;
 import org.locationtech.jts.geom.Polygon;
 
 import com.beust.jcommander.JCommander;
 
 import dk.itu.raptor.io.commandline.CommandLineArgs;
+import dk.itu.raptor.join.RasterMetadata;
 // import dk.itu.raptor.join.RasterMetadata;
 import edu.ucr.cs.bdlab.beast.common.BeastOptions;
 import edu.ucr.cs.bdlab.beast.geolite.IFeature;
@@ -44,7 +47,12 @@ public class Raptor {
         Path vectorPath = new Path(new File(jct.inputVector).getAbsolutePath());
         FileSystem fs = rasterPath.getParent().getFileSystem(new Configuration());
 
-        IRasterReader<Object> reader = RasterHelper.createRasterReader(fs, rasterPath, new BeastOptions(), null);
+        IRasterReader<Object> reader = RasterHelper.createRasterReader(fs, rasterPath, new BeastOptions(),
+                null);
+
+        Point2D.Double point = new Point2D.Double();
+        reader.metadata().gridToModel(20.0, 20.0, point);
+        System.out.println(point.x + ", " + point.y);
 
         ITiffReader tiffReader = ITiffReader.openFile(fs, rasterPath);
         TiffRaster raster = new TiffRaster(tiffReader, 0);
@@ -53,16 +61,7 @@ public class Raptor {
 
         RaptorJoin join;
 
-        GeoTiffMetadata metaData = new GeoTiffMetadata(tiffReader, raster);
-
         // RasterMetadata rmd = new RasterMetadata(raster, metaData);
-
-        for (GeoKeyEntry entry : metaData.getGeoKeys()) {
-            for (int i : entry.getValues()) {
-                System.out.print(i + " ");
-            }
-            System.out.println();
-        }
 
         List<Polygon> features = new ArrayList<>();
         try (ShapefileFeatureReader featureReader = new ShapefileFeatureReader()) {
