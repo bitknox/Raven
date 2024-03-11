@@ -24,6 +24,7 @@ import dk.itu.raven.geometry.Size;
 import dk.itu.raven.join.intersection.BSTIndex;
 import dk.itu.raven.join.intersection.BSTIndex2;
 import dk.itu.raven.join.intersection.FastBSTIndex;
+import dk.itu.raven.join.intersection.IntArrayListIndex;
 import dk.itu.raven.join.intersection.IntersectionIndex;
 import dk.itu.raven.join.intersection.SortingIndex;
 import dk.itu.raven.ksquared.AbstractK2Raster;

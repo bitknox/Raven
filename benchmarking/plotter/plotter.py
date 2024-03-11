@@ -9,7 +9,7 @@ def write_labels(ax,labels):
                 text += label + "\n"
         
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        plt.text(0.5, 0, text[0:-1], transform=plt.gcf().transFigure, fontsize=14,
+        plt.text(0.5, -0.05, text[0:-1], transform=plt.gcf().transFigure, fontsize=14,
         verticalalignment='top', horizontalalignment="center", bbox=props)
         
 
@@ -47,7 +47,10 @@ for test in data:
         plt.plot(test["times"], linestyle = 'dotted')
         plt.ylabel("Join time (ms)")
         plt.xlabel("Iteration")
-        plt.xticks(range(0,len(test["times"])),range(1,len(test["times"])+1))
+        # plt.xticks(range(0,len(test["times"])),range(1,len(test["times"])+1))
+        plt.locator_params(axis='x', nbins=10, tight=True)
+        plt.tick_params(axis='x', rotation=30)
+        ax.margins(x=0)
         plt.title("Join Times for " + test["name"])
         plt.ylim(bottom=0)
         write_labels(ax,test["labels"])
