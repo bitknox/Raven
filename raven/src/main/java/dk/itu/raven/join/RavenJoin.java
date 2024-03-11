@@ -78,8 +78,8 @@ public class RavenJoin extends AbstractRavenJoin {
 		List<IntersectionIndex> intersections = new ArrayList<>(rasterBounding.height);
 		for (int i = 0; i <= rasterBounding.height; i++) {
 			// intersections.add(new BSTIndex());
-			// intersections.add(new FastBSTIndex());
-			intersections.add(new SortingIndex());
+			intersections.add(new FastBSTIndex());
+			// intersections.add(new SortingIndex());
 		}
 
 		// a line is of the form a*x + b*y = c
