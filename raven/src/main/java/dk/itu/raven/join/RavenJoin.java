@@ -77,8 +77,8 @@ public class RavenJoin extends AbstractRavenJoin {
 		boolean[] inRanges = new boolean[rasterBounding.height];
 		List<IntersectionIndex> intersections = new ArrayList<>(rasterBounding.height);
 		for (int i = 0; i <= rasterBounding.height; i++) {
-			// intersections.add(new BSTIndex());
-			intersections.add(new FastBSTIndex());
+			intersections.add(new BSTIndex());
+			// intersections.add(new FastBSTIndex());
 			// intersections.add(new SortingIndex());
 		}
 
