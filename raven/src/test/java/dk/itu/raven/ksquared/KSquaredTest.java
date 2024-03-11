@@ -2,18 +2,17 @@ package dk.itu.raven.ksquared;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Random;
 import java.util.Stack;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import dk.itu.raven.geometry.PixelRange;
+import dk.itu.raven.io.serialization.Serializer;
 import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.join.Square;
 import dk.itu.raven.util.PrimitiveArrayWrapper;
@@ -195,16 +194,9 @@ public class KSquaredTest {
 		Matrix matrix = new RandomMatrix(1000, 1000, 100);
 		AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
 
-		FileOutputStream fileOutputStream = new FileOutputStream("serializeTest.txt");
-		ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-		objectOutputStream.writeObject(k2);
-		objectOutputStream.flush();
-		objectOutputStream.close();
+		Serializer.serialize("serializeTest.txt", k2);
 
-		FileInputStream fileInputStream = new FileInputStream("serializeTest.txt");
-		ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-		AbstractK2Raster k2_after = (K2Raster) objectInputStream.readObject();
-		objectInputStream.close();
+		AbstractK2Raster k2_after = (K2Raster) Serializer.deserialize("serializeTest.txt");
 
 		assertEquals(k2.k, k2_after.k);
 		assertEquals(k2.getSize(), k2_after.getSize());
@@ -247,5 +239,11 @@ public class KSquaredTest {
 				assertEquals(expected[i][j], actual[i][j], "seed: " + 2 + ", index: " + i + ", " + j);
 			}
 		}
+	}
+
+	@AfterAll
+	public static void tearDown() {
+		File file = new File("serializeTest.txt");
+		file.delete();
 	}
 }

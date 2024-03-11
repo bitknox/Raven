@@ -3,10 +3,10 @@ package dk.itu.raven.visualizer;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.util.List;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
@@ -17,13 +17,12 @@ import com.github.davidmoten.rtree2.geometry.Geometry;
 import com.github.davidmoten.rtree2.geometry.Point;
 
 import dk.itu.raven.geometry.GeometryUtil;
-import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.ShapefileReader.ShapeFileBounds;
-import dk.itu.raven.join.AbstractJoinResult;
+import dk.itu.raven.join.IJoinResult;
 import dk.itu.raven.join.Square;
 import dk.itu.raven.ksquared.K2Raster;
 import dk.itu.raven.util.Pair;
@@ -52,14 +51,8 @@ public class Visualizer {
 
 	private Pair<List<Polygon>, ShapeFileBounds> getFeatures(ShapefileReader shapeFileReader)
 			throws IOException {
-		Pair<List<Polygon>, ShapeFileBounds> geometries = shapeFileReader.readShapefile();
-		return geometries;
-	}
+		return shapeFileReader.readShapefile();
 
-	private void offsetFeatures(List<Polygon> features, Offset<Double> offset) {
-		for (Polygon geom : features) {
-			geom.offset(offset.getOffsetX(), offset.getOffsetY());
-		}
 	}
 
 	/**
@@ -73,15 +66,12 @@ public class Visualizer {
 	 * @param options  visualizer options
 	 * @return The imagebuffer
 	 */
-	public BufferedImage drawResult(AbstractJoinResult results, ShapefileReader shapeFileReader,
+	public BufferedImage drawResult(IJoinResult results, ShapefileReader shapeFileReader,
 			VisualizerOptions options) throws IOException {
 		var pair = getFeatures(shapeFileReader);
 		List<Polygon> features = pair.first;
 		ShapeFileBounds bounds = pair.second;
 
-		if (options.cropToVector) {
-			offsetFeatures(features, GeometryUtil.getGeometryOffset(bounds));
-		}
 		int width = this.width;
 		int height = this.height;
 		if (options.cropToVector) {
@@ -100,19 +90,12 @@ public class Visualizer {
 		setColor(rasterGraphics, options.background);
 		rasterGraphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
 
-		final Offset<Integer> offset;
-		if (options.cropToVector) {
-			offset = results.getOffset();
-		} else {
-			offset = new Offset<Integer>(0, 0);
-		}
-
 		for (var item : results) {
 			for (PixelRange range : item.pixelRanges) {
 				setColor(rasterGraphics, options.primaryColor);
-				rasterGraphics.drawLine(range.x1 - offset.getOffsetX(), range.row - offset.getOffsetY(),
-						range.x2 - offset.getOffsetX(),
-						range.row - offset.getOffsetY());
+				rasterGraphics.drawLine(range.x1, range.row,
+						range.x2,
+						range.row);
 			}
 		}
 

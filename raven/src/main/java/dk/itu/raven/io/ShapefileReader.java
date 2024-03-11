@@ -56,7 +56,8 @@ public class ShapefileReader {
 		}
 	}
 
-	public Pair<List<Polygon>, ShapeFileBounds> readShapefile() throws IOException {
+	public Pair<List<Polygon>, ShapeFileBounds> readShapefile()
+			throws IOException {
 		FileDataStore myData = FileDataStoreFinder.getDataStore(file);
 		SimpleFeatureSource source = myData.getFeatureSource();
 		bounds.reset();
@@ -68,10 +69,13 @@ public class ShapefileReader {
 				extractGeometries(((GeometryAttributeImpl) feature.getProperty("the_geom")).getValue(), features);
 			}
 			return new Pair<>(features, bounds);
+		} finally {
+			myData.dispose();
 		}
 	}
 
-	private void extractGeometries(Geometry geometry, List<Polygon> features) {
+	private void extractGeometries(Geometry geometry,
+			List<Polygon> features) {
 		if (geometry.getNumGeometries() > 1) {
 			for (int i = 0; i < geometry.getNumGeometries(); i++) {
 				Geometry geom = geometry.getGeometryN(i);
@@ -82,17 +86,20 @@ public class ShapefileReader {
 		}
 	}
 
-	private void createPolygons(Coordinate[] coordinates, List<Polygon> features) {
+	private void createPolygons(Coordinate[] coordinates,
+			List<Polygon> features) {
 		List<Point> points = new ArrayList<>();
 		double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
 		double maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
 		Coordinate start = coordinates[0];
 		Point p;
+
 		for (int i = 0; i < coordinates.length; i++) {
 			Coordinate coord = coordinates[i];
 			if (start.x == coord.x && start.y == coord.y && points.size() > 0) {
 				this.bounds.updateBounds(minX, minY, maxX, maxY);
-				features.add(new Polygon(points, Geometries.rectangle(minX, minY, maxX, maxY)));
+				features
+						.add(new Polygon(points, Geometries.rectangle(minX, minY, maxX, maxY)));
 				points = new ArrayList<>();
 				minX = Double.MAX_VALUE;
 				minY = Double.MAX_VALUE;

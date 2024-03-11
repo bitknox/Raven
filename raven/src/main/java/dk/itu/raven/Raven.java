@@ -9,7 +9,7 @@ import dk.itu.raven.io.FileRasterReader;
 import dk.itu.raven.io.ImageMetadata;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.commandline.CommandLineArgs;
-import dk.itu.raven.join.AbstractJoinResult;
+import dk.itu.raven.join.IJoinResult;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.IRasterFilterFunction;
 import dk.itu.raven.join.JoinFilterFunctions;
@@ -49,14 +49,14 @@ public class Raven {
         IRasterFilterFunction function = JoinFilterFunctions.acceptAll();
 
         if (jct.ranges.size() == 2) {
-            if (metadata.getBitsPerSample().length > 1) {
+            if (metadata.getSamplesPerPixel() > 1) {
                 Logger.log("WARNING: only one range was given, but more than one raster sample exists ("
-                        + metadata.getBitsPerSample().length + ")", LogLevel.WARNING);
+                        + metadata.getSamplesPerPixel() + ")", LogLevel.WARNING);
             }
             long lo = jct.ranges.get(0);
             long hi = jct.ranges.get(1);
             function = JoinFilterFunctions.rangeFilter(lo, hi);
-        } else if (jct.ranges.size() == metadata.getBitsPerSample().length * 2) {
+        } else if (jct.ranges.size() == metadata.getSamplesPerPixel() * 2) {
             Logger.log("using multiSampleRangeFilter", LogLevel.DEBUG);
             function = JoinFilterFunctions.multiSampleRangeFilter(jct.ranges, metadata.getBitsPerSample(),
                     metadata.getTotalBitsPerPixel());
@@ -70,11 +70,12 @@ public class Raven {
         long startJoinNano = System.nanoTime();
         AbstractRavenJoin join;
         if (jct.streamed) {
-            join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, jct.parallel);
+            join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, jct.parallel,
+                    jct.isCaching);
         } else {
-            join = api.getJoin(jct.inputRaster, jct.inputVector);
+            join = api.getJoin(jct.inputRaster, jct.inputVector, jct.isCaching);
         }
-        AbstractJoinResult result = join.join(function);
+        IJoinResult result = join.join(function);
 
         if (jct.outputPath != null) {
             result = result.asMemoryAllocatedResult(); // this allows the visualizer to draw the result while still

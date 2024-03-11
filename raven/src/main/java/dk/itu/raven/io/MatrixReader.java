@@ -43,4 +43,5 @@ public class MatrixReader extends RasterReader {
 		return new ImageMetadata(matrix.getWidth(), matrix.getHeight(), matrix.getBitsUsed(),
 				matrix.getSampleSize());
 	}
+
 }
