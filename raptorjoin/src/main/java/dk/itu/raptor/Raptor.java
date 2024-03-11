@@ -1,6 +1,5 @@
 package dk.itu.raptor;
 
-import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,9 +20,6 @@ import dk.itu.raptor.join.RaptorJoin;
 import edu.ucr.cs.bdlab.beast.common.BeastOptions;
 import edu.ucr.cs.bdlab.beast.geolite.RasterMetadata;
 import edu.ucr.cs.bdlab.beast.io.shapefile.ShapefileFeatureReader;
-import edu.ucr.cs.bdlab.beast.io.tiff.AbstractTiffTile;
-import edu.ucr.cs.bdlab.beast.io.tiff.ITiffReader;
-import edu.ucr.cs.bdlab.beast.io.tiff.TiffRaster;
 import edu.ucr.cs.bdlab.raptor.IRasterReader;
 import edu.ucr.cs.bdlab.raptor.RasterHelper;
 
@@ -49,7 +45,6 @@ public class Raptor {
         readers.add(reader);
 
         RasterMetadata metadata = reader.metadata();
-
         RaptorJoin join = new RaptorJoin();
 
         // RasterMetadata rmd = new RasterMetadata(raster, metaData);
@@ -60,7 +55,16 @@ public class Raptor {
             featureReader.initialize(vectorPath, new BeastOptions());
             Stream<List<PixelRange>> stream = join.createFlashIndices(featureReader, Stream.of(metadata));
             stream = join.optimizeFlashIndices(stream);
+            if (jct.parallel) {
+                stream = stream.parallel();
+            }
             Stream<JoinResult> res = join.processFlashIndices(stream, readers);
+            if (!jct.ranges.isEmpty()) {
+                if (jct.ranges.size() != 2) {
+                    throw new IllegalArgumentException("More than one range is not supported");
+                }
+                res = res.filter(r -> jct.ranges.get(0) <= r.m && r.m <= jct.ranges.get(1));
+            }
             System.out.println(res.count());
         } catch (Exception e) {
             e.printStackTrace();

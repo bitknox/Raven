@@ -18,13 +18,8 @@ import edu.ucr.cs.bdlab.raptor.IRasterReader;
 import edu.ucr.cs.bdlab.raptor.Intersections;
 
 public class RaptorJoin {
-
     public RaptorJoin() {
 
-    }
-
-    private List<PixelRange> extractCellsRaven(Geometry geometry, RasterMetadata metadata) {
-        return null;
     }
 
     private Stream<List<PixelRange>> extractCellsBeast(int rid, Geometry[] geometries, RasterMetadata metadata) {
@@ -50,11 +45,14 @@ public class RaptorJoin {
             int tid = list.get(0).tid;
             int rid = list.get(0).rid;
             ITile<Object> tile = rasterReaders.get(rid).readTile(tid);
+
             for (PixelRange range : list) {
                 for (int x = range.x1; x <= range.x2; x++) {
+                    Object m = tile.getPixelValue(x, range.y);
                     results.add(
-
-                            new JoinResult(range.gid, range.rid, x, range.y, tile.getPixelValue(x, range.y)));
+                            new JoinResult(range.gid, range.rid, x, range.y,
+                                    tile.numComponents() == 1 ? (int) m
+                                            : (((int[]) m)[0] << 16) + (((int[]) m)[1] << 8) + (((int[]) m)[2])));
                 }
             }
             return results.stream();
