@@ -11,9 +11,7 @@ public class MockedShapefileReader extends ShapefileReader {
 
     public MockedShapefileReader(List<Polygon> polygons) {
         super("", null);
-        for (Polygon p : polygons) {
-            this.bounds.updateBounds(p.mbr().x1(), p.mbr().y1(), p.mbr().x2(), p.mbr().y2());
-        }
+
         this.polygons = polygons;
     }
 

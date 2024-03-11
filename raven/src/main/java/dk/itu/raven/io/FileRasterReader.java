@@ -31,10 +31,11 @@ public abstract class FileRasterReader extends RasterReader {
 		if (tiff == null) {
 			throw new IOException("Missing tiff file");
 		}
-
+		this.setCacheKey(tiff.getName());
 		if (tfw != null) {
 			transform = TFWFormat.read(tfw);
 		} else {
+
 			FileImageInputStream stream = new FileImageInputStream(tiff);
 			ImageReader reader = ImageIO.getImageReaders(stream).next();
 			reader.setInput(stream);

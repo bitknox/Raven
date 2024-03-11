@@ -42,6 +42,10 @@ public class CommandLineArgs {
 			"--stream" }, description = "Run the join as a stream. This improves the memory usage of the program", arity = 1)
 	public boolean streamed = true;
 
+	@Parameter(names = { "-c",
+			"--cache" }, description = "Use cached raster structures", arity = 1)
+	public boolean isCaching = true;
+
 	@Parameter(names = { "-cv",
 			"--crop-to-vector" }, description = "Crop the output image so it only shows the part of the raster data that lies within the minimum bounding rectangle of the given vector data", arity = 1)
 	public boolean cropToVector = false;
