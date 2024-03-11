@@ -44,7 +44,7 @@ public class Raptor {
         Path vectorPath = new Path(new File(jct.inputVector).getAbsolutePath());
         FileSystem fs = rasterPath.getParent().getFileSystem(new Configuration());
 
-        var reader = RasterHelper.createRasterReader(fs, rasterPath, new BeastOptions());
+        IRasterReader<Object> reader = RasterHelper.createRasterReader(fs, rasterPath, new BeastOptions());
         List<IRasterReader<Object>> readers = new ArrayList<>();
         readers.add(reader);
 
