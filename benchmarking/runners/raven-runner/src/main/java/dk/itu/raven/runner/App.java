@@ -33,11 +33,11 @@ public class App {
             long start = System.currentTimeMillis();
             AbstractRavenJoin join;
             if (jct.joinType.equals(JoinType.STREAMED)) {
-                join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, false);
+                join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, false, true);
             } else if (jct.joinType.equals(JoinType.PARALLEL)) {
-                join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, true);
+                join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, true, true);
             } else {
-                join = api.getJoin(jct.inputRaster, jct.inputVector);
+                join = api.getJoin(jct.inputRaster, jct.inputVector,true);
             }
             if (jct.filterLow == Integer.MIN_VALUE && jct.filterHigh == Integer.MAX_VALUE) {
                 join.join(JoinFilterFunctions.acceptAll()).count();
