@@ -1,5 +1,7 @@
 package dk.itu.raven.join;
 
+import java.util.Optional;
+
 import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.io.ShapefileReader;
@@ -9,10 +11,15 @@ import dk.itu.raven.util.matrix.Matrix;
 public class SpatialDataChunk {
     private Matrix matrix;
     private Pair<Iterable<Polygon>, ShapefileReader.ShapeFileBounds> geometries;
+    private Optional<String> cacheKey = Optional.empty();
 
     private Offset<Integer> offset;
 
     public SpatialDataChunk() {
+    }
+
+    public void setCacheKey(String cacheKey) {
+        this.cacheKey = Optional.of(cacheKey);
     }
 
     public void setMatrix(Matrix matrix) {
@@ -37,5 +44,13 @@ public class SpatialDataChunk {
 
     public Offset<Integer> getOffset() {
         return offset;
+    }
+
+    public String getCacheKeyName() {
+        return offset.getX() + "-" + offset.getY();
+    }
+
+    public Optional<String> getCacheKey() {
+        return cacheKey;
     }
 }

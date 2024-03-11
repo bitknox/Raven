@@ -2,18 +2,21 @@ package dk.itu.raven.api;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
-import dk.itu.raven.geometry.GeometryUtil;
-import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.io.ImageMetadata;
 import dk.itu.raven.io.RasterReader;
 import dk.itu.raven.io.ShapefileReader;
+import dk.itu.raven.io.cache.CachedRasterStructure;
+import dk.itu.raven.io.cache.RasterCache;
+import dk.itu.raven.join.AbstractRavenJoin;
+import dk.itu.raven.join.EmptyRavenJoin;
 import dk.itu.raven.join.JoinChunk;
 import dk.itu.raven.join.ParallelStreamedRavenJoin;
 import dk.itu.raven.join.RavenJoin;
@@ -25,42 +28,9 @@ import dk.itu.raven.ksquared.K2RasterIntBuilder;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.util.Pair;
-import dk.itu.raven.util.Tuple3;
 import dk.itu.raven.util.matrix.Matrix;
 
 public class InternalApi {
-
-    static java.awt.Rectangle getWindowRectangle(RasterReader rasterReader, ShapefileReader.ShapeFileBounds bounds)
-            throws IOException {
-        ImageMetadata imageSize = rasterReader.getImageMetadata();
-        return GeometryUtil.getWindowRectangle(new Size(imageSize.getWidth(), imageSize.getHeight()), bounds);
-    }
-
-    /**
-     * Builds the data structures needed for join operation
-     * 
-     * @param vectorPath path to the vector data
-     * @param rasterPath path to the raster data
-     * @return a pair of the k2-raster and the rtree
-     * @throws IOException
-     */
-    static Tuple3<AbstractK2Raster, RTree<String, Geometry>, java.awt.Rectangle> buildStructures(
-            ShapefileReader featureReader,
-            RasterReader rasterReader)
-            throws IOException {
-        // load geometries from shapefile
-        Pair<List<Polygon>, ShapefileReader.ShapeFileBounds> geometries = featureReader
-                .readShapefile();
-
-        // rectangle representing the bounds of the shapefile data
-        java.awt.Rectangle rect = getWindowRectangle(rasterReader, geometries.second);
-
-        Matrix rasterData = rasterReader.readRasters(rect);
-
-        AbstractK2Raster k2Raster = generateRasterStructure(rasterData);
-        RTree<String, Geometry> rtree = generateRTree(geometries);
-        return new Tuple3<>(k2Raster, rtree, rect);
-    }
 
     /**
      * Creates a stream of join chunks containing the raster and rtree data.
@@ -70,24 +40,61 @@ public class InternalApi {
      * @return a stream of the join chunks
      * @throws IOException
      */
-    static Pair<Stream<JoinChunk>, java.awt.Rectangle> streamStructures(ShapefileReader featureReader,
+    static Stream<JoinChunk> streamStructures(ShapefileReader featureReader,
             RasterReader rasterReader, int widthStep,
-            int heightStep)
+            int heightStep, boolean isCaching)
             throws IOException {
+        if (isCaching)
+            isCaching = rasterReader.getCacheKey().isPresent();
+
         // load geometries from shapefile
-        Pair<List<Polygon>, ShapefileReader.ShapeFileBounds> geometries = featureReader
-                .readShapefile();
+        Pair<List<Polygon>, ShapefileReader.ShapeFileBounds> geometries = featureReader.readShapefile();
 
-        // rectangle representing the bounds of the shapefile data
-        java.awt.Rectangle rect = getWindowRectangle(rasterReader, geometries.second);
-
-        Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(rect, widthStep, heightStep);
         // TODO: check if it is faster to just use the original rtree
         RTree<String, Geometry> rtree = generateRTree(geometries);
-        return new Pair<>(rasterStream.map(chunk -> {
-            Logger.log("matrix[0,0]: " + chunk.getMatrix().get(0, 0), LogLevel.DEBUG);
-            return new JoinChunk(generateRasterStructure(chunk.getMatrix()), chunk.getOffset(), rtree);
-        }), rect);
+
+        if (isCaching) {
+            String key = rasterReader.getCacheKey().get();
+            Logger.log("Set cache key " + key, LogLevel.DEBUG);
+            RasterCache<CachedRasterStructure> cache = new RasterCache<CachedRasterStructure>(
+                    rasterReader.getCacheKey().get() + widthStep + "-" + heightStep);
+            Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
+                    Optional.of(cache), rtree);
+            return rasterStream.map(chunk -> {
+                // if the chunk is already cached, read it from cache
+                if (chunk.getCacheKey().isPresent()) {
+                    Logger.log("Using cached raster structure " + chunk.getCacheKey().get(), LogLevel.DEBUG);
+                    try {
+                        CachedRasterStructure c = cache.readItem(chunk.getCacheKey().get());
+                        return new JoinChunk(c.raster, c.offset, rtree);
+                    } catch (Exception e) {
+                        Logger.log("Item was in cache index, but not found on disk", LogLevel.ERROR);
+                        System.exit(-1);
+                    }
+                }
+                // cache has not been hit, generate structure
+                Logger.log("matrix[0,0]: " + chunk.getMatrix().get(0, 0), LogLevel.DEBUG);
+                AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix());
+
+                // write the structure to the cache
+                try {
+                    cache.addRasterToCache(chunk.getCacheKeyName(),
+                            new CachedRasterStructure(raster, chunk.getOffset()));
+                } catch (IOException e) {
+                    Logger.log("Failed to write to cache: " + e.getMessage(), LogLevel.ERROR);
+                }
+
+                // create the raster structure an potentially cache it
+                return new JoinChunk(raster, chunk.getOffset(), rtree);
+            });
+        } else {
+            Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
+                    Optional.empty(), rtree);
+            return rasterStream.map(chunk -> {
+                AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix());
+                return new JoinChunk(raster, chunk.getOffset(), rtree);
+            });
+        }
 
     }
 
@@ -113,42 +120,43 @@ public class InternalApi {
      * @param geometries
      * @return the R* tree
      */
-    static RTree<String, Geometry> generateRTree(Pair<List<Polygon>, ShapefileReader.ShapeFileBounds> geometries) {
+    static RTree<String, Geometry> generateRTree(
+            Pair<List<Polygon>, ShapefileReader.ShapeFileBounds> geometries) {
         RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
-
-        // offset geometries such that they are aligned to the corner
-        Offset<Double> offset = GeometryUtil.getGeometryOffset(geometries.second);
-        for (Polygon geom : geometries.first) {
-            geom.offset(offset.getOffsetX(), offset.getOffsetY());
-
-            rtree = rtree.add(null, geom);
+        for (Polygon polygon : geometries.first) {
+            rtree = rtree.add(null, polygon);
         }
         return rtree;
     }
 
-    static RavenJoin getJoin(RasterReader rasterReader, ShapefileReader vectorReader) throws IOException {
+    static AbstractRavenJoin getJoin(RasterReader rasterReader, ShapefileReader vectorReader, boolean isCaching)
+            throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
-        Size imageSize = new Size(metadata.getWidth(), metadata.getHeight());
-        Tuple3<AbstractK2Raster, RTree<String, Geometry>, java.awt.Rectangle> structures = buildStructures(vectorReader,
-                rasterReader);
-        return new RavenJoin(structures.a, structures.b, imageSize, structures.c);
+        Optional<RavenJoin> streamedJoin = getStreamedJoin(rasterReader, vectorReader, metadata.getWidth(),
+                metadata.getHeight(), false, isCaching)
+                .getRavenJoins().findFirst();
+        if (streamedJoin.isPresent()) {
+            return streamedJoin.get();
+        } else {
+            return new EmptyRavenJoin();
+        }
     }
 
     static StreamedRavenJoin getStreamedJoin(RasterReader rasterReader, ShapefileReader vectorReader, int widthStep,
-            int heightStep, boolean parallel)
+            int heightStep, boolean parallel, boolean isCaching)
             throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
         Size imageSize = new Size(metadata.getWidth(), metadata.getHeight());
-        var structures = streamStructures(vectorReader, rasterReader, widthStep, heightStep);
-        Stream<RavenJoin> stream = structures.first.filter(chunk -> {
+        var structures = streamStructures(vectorReader, rasterReader, widthStep, heightStep, isCaching);
+        Stream<RavenJoin> stream = structures.filter(chunk -> {
             return chunk.getRtree().root().isPresent();
         }).map(chunk -> {
-            return new RavenJoin(chunk.getRaster(), chunk.getRtree(), chunk.getOffset(), imageSize, structures.second);
+            return new RavenJoin(chunk.getRaster(), chunk.getRtree(), chunk.getOffset(), imageSize);
         });
         if (parallel) {
-            return new ParallelStreamedRavenJoin(stream, structures.second);
+            return new ParallelStreamedRavenJoin(stream);
         } else {
-            return new StreamedRavenJoin(stream, structures.second);
+            return new StreamedRavenJoin(stream);
         }
 
     }
