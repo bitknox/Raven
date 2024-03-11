@@ -21,9 +21,10 @@ import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
-import dk.itu.raven.join.intersection.BSTIntersectionIndex;
-import dk.itu.raven.join.intersection.FastBSTIntersectionIndex;
+import dk.itu.raven.join.intersection.BSTIndex;
+import dk.itu.raven.join.intersection.FastBSTIndex;
 import dk.itu.raven.join.intersection.IntersectionIndex;
+import dk.itu.raven.join.intersection.SortingIndex;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.Logger;
@@ -76,8 +77,9 @@ public class RavenJoin extends AbstractRavenJoin {
 		boolean[] inRanges = new boolean[rasterBounding.height];
 		List<IntersectionIndex> intersections = new ArrayList<>(rasterBounding.height);
 		for (int i = 0; i <= rasterBounding.height; i++) {
-			// intersections.add(new BSTIntersectionIndex());
-			intersections.add(new FastBSTIntersectionIndex(rasterBounding.width));
+			// intersections.add(new BSTIndex());
+			// intersections.add(new FastBSTIndex());
+			intersections.add(new SortingIndex());
 		}
 
 		// a line is of the form a*x + b*y = c

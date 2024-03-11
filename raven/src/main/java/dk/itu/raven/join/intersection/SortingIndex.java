@@ -1,18 +1,20 @@
 package dk.itu.raven.join.intersection;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import dk.itu.raven.ksquared.IntPointer;
-import dk.itu.raven.util.BST;
 
-public class FastBSTIntersectionIndex implements IntersectionIndex {
+public class SortingIndex implements IntersectionIndex {
     private Map<Integer, IntPointer> count;
-    private BST<Integer, Integer> bst; // in this class, we only a BST set, not a map
+    private List<Integer> intersections;
 
-    public FastBSTIntersectionIndex(int size) {
-        this.bst = new BST<>();
+    public SortingIndex() {
+        this.intersections = new ArrayList<>();
         this.count = new HashMap<>();
     }
 
@@ -20,7 +22,7 @@ public class FastBSTIntersectionIndex implements IntersectionIndex {
     public void addIntersection(int x) {
         IntPointer ptr = count.get(x);
         if (ptr == null) {
-            bst.put(x, 0);
+            intersections.add(x);
             ptr = new IntPointer();
             count.put(x, ptr);
         }
@@ -34,6 +36,8 @@ public class FastBSTIntersectionIndex implements IntersectionIndex {
 
     @Override
     public Iterator<Integer> iterator() {
-        return bst.keys().iterator();
+        Collections.sort(intersections);
+        return this.intersections.iterator();
     }
+
 }

@@ -4,11 +4,11 @@ import java.util.Iterator;
 
 import dk.itu.raven.util.BST;
 
-public class BSTIntersectionIndex implements IntersectionIndex {
+public class BSTIndex implements IntersectionIndex {
 
     private BST<Integer, Integer> bst;
 
-    public BSTIntersectionIndex() {
+    public BSTIndex() {
         this.bst = new BST<>();
     }
 
