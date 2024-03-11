@@ -33,9 +33,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.github.bitknox.Raven</groupId>
-      <artifactId>raven</artifactId>
-      <version>main-SNAPSHOT</version>
+      <groupId>com.github.bitknox</groupId>
+      <artifactId>Raven</artifactId>
+      <version>feature~faster-extract-cells-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
