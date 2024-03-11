@@ -35,7 +35,7 @@
     <dependency>
       <groupId>com.github.bitknox</groupId>
       <artifactId>Raven</artifactId>
-      <version>feature~faster-extract-cells-SNAPSHOT</version>
+      <version>df7305b89a</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

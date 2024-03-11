@@ -22,6 +22,7 @@ import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.join.intersection.BSTIndex;
+import dk.itu.raven.join.intersection.BSTIndex2;
 import dk.itu.raven.join.intersection.FastBSTIndex;
 import dk.itu.raven.join.intersection.IntersectionIndex;
 import dk.itu.raven.join.intersection.SortingIndex;
@@ -77,7 +78,8 @@ public class RavenJoin extends AbstractRavenJoin {
 		boolean[] inRanges = new boolean[rasterBounding.height];
 		List<IntersectionIndex> intersections = new ArrayList<>(rasterBounding.height);
 		for (int i = 0; i <= rasterBounding.height; i++) {
-			intersections.add(new SortingIndex());
+			intersections.add(new BSTIndex2());
+			// intersections.add(new SortingIndex());
 			// intersections.add(new FastBSTIndex());
 			// intersections.add(new BSTIndex());
 		}
