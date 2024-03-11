@@ -43,6 +43,11 @@ public class TFWFormat {
 		inveresePixelLengthY = 1.0 / pixelLengthY;
 	}
 
+	public TFWFormat() {
+		this.topLeftX = Integer.MAX_VALUE;
+		this.topLeftY = Integer.MIN_VALUE;
+	}
+
 	static TFWFormat read(File file) throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		double pixelLengthX = Double.parseDouble(br.readLine());
