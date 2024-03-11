@@ -4,24 +4,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import dk.itu.raven.geometry.Offset;
-
-public class JoinResult extends AbstractJoinResult {
+public class JoinResult implements IJoinResult {
 
     private List<JoinResultItem> list;
 
-    JoinResult() {
-        super(new Offset<Integer>(0, 0));
+    public JoinResult() {
         this.list = new ArrayList<>();
     }
 
-    public JoinResult(Offset<Integer> offset) {
-        super(offset);
-        this.list = new ArrayList<>();
-    }
+    JoinResult(List<JoinResultItem> list) {
 
-    JoinResult(List<JoinResultItem> list, Offset<Integer> offset) {
-        super(offset);
         this.list = list;
     }
 

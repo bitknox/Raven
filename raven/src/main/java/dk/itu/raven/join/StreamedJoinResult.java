@@ -1,3 +1,4 @@
+
 package dk.itu.raven.join;
 
 import java.util.ArrayList;
@@ -7,15 +8,14 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
 
-public class StreamedJoinResult extends AbstractJoinResult {
+public class StreamedJoinResult implements IJoinResult {
     private Stream<JoinResult> stream;
 
-    public StreamedJoinResult(Stream<JoinResult> stream, Offset<Integer> offset) {
-        super(offset);
+    public StreamedJoinResult(Stream<JoinResult> stream) {
+        super();
         this.stream = stream;
     }
 
@@ -65,7 +65,7 @@ public class StreamedJoinResult extends AbstractJoinResult {
     public JoinResult asMemoryAllocatedResult() {
         ArrayList<JoinResultItem> items = this.stream.collect(ArrayList::new, (l, x) -> l.addAll(x.getList()),
                 (l, r) -> l.addAll(r));
-        JoinResult result = new JoinResult(items, this.offset);
+        JoinResult result = new JoinResult(items);
 
         return result;
     }

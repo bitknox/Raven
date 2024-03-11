@@ -7,7 +7,7 @@ import dk.itu.raven.io.FileRasterReader;
 import dk.itu.raven.io.ImageIORasterReader;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.TFWFormat;
-import dk.itu.raven.join.RavenJoin;
+import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.StreamedRavenJoin;
 
 /**
@@ -26,11 +26,11 @@ public class RavenApi {
 	 * @return
 	 * @throws IOException
 	 */
-	public RavenJoin getJoin(String rasterPath, String vectorPath) throws IOException {
+	public AbstractRavenJoin getJoin(String rasterPath, String vectorPath, boolean isCaching) throws IOException {
 		FileRasterReader rasterReader = createRasterReader(rasterPath);
 		ShapefileReader vectorReader = createShapefileReader(vectorPath, rasterReader.getTransform());
 
-		return InternalApi.getJoin(rasterReader, vectorReader);
+		return InternalApi.getJoin(rasterReader, vectorReader, isCaching);
 	}
 
 	/**
@@ -42,11 +42,11 @@ public class RavenApi {
 	 * @return a stream of results of the join
 	 */
 	public StreamedRavenJoin getStreamedJoin(String rasterPath, String vectorPath,
-			int widthStep, int heightStep, boolean parallel) throws IOException {
+			int widthStep, int heightStep, boolean parallel, boolean isCaching) throws IOException {
 		FileRasterReader rasterReader = createRasterReader(rasterPath);
 		ShapefileReader vectorReader = createShapefileReader(vectorPath, rasterReader.getTransform());
 
-		return InternalApi.getStreamedJoin(rasterReader, vectorReader, widthStep, heightStep, parallel);
+		return InternalApi.getStreamedJoin(rasterReader, vectorReader, widthStep, heightStep, parallel, isCaching);
 	}
 
 	/**
