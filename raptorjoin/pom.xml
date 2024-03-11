@@ -19,8 +19,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>16</maven.compiler.source>
+    <maven.compiler.target>16</maven.compiler.target>
     <geotools.version>31-SNAPSHOT</geotools.version>
   </properties>
 
@@ -34,7 +34,7 @@
     <dependency>
       <groupId>edu.ucr.cs.bdlab</groupId>
       <artifactId>beast-spark</artifactId>
-      <version>0.10.0-RC1</version>
+      <version>0.10.1-RC1</version>
     </dependency>
     <dependency>
       <groupId>org.jcommander</groupId>
