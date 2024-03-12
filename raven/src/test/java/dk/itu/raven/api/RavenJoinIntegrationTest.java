@@ -12,9 +12,9 @@ import com.github.davidmoten.rtree2.geometry.Geometries;
 
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
+import dk.itu.raven.io.IRasterReader;
 import dk.itu.raven.io.MatrixReader;
 import dk.itu.raven.io.MockedShapefileReader;
-import dk.itu.raven.io.RasterReader;
 import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.JoinFilterFunctions;
@@ -45,7 +45,7 @@ public class RavenJoinIntegrationTest {
             }
         }
 
-        RasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
+        IRasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
 
         AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, false);
@@ -89,7 +89,7 @@ public class RavenJoinIntegrationTest {
             }
         }
 
-        RasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
+        IRasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
 
         AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, false);
@@ -150,7 +150,7 @@ public class RavenJoinIntegrationTest {
 
         boolean[][] actual = new boolean[width][height];
 
-        RasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
+        IRasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
 
         AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, false);

@@ -45,7 +45,7 @@ public class TFWFormat {
 
 	public TFWFormat() {
 		this.topLeftX = Integer.MAX_VALUE;
-		this.topLeftY = Integer.MIN_VALUE;
+		this.topLeftY = Integer.MAX_VALUE;
 	}
 
 	static TFWFormat read(File file) throws IOException {
@@ -70,6 +70,18 @@ public class TFWFormat {
 		double xPixel = (lat - topLeftX) * inveresePixelLengthX;
 		double yPixel = (lon - topLeftY) * inveresePixelLengthY;
 		return Geometries.point(xPixel, yPixel);
+	}
+
+	public void applyOther(TFWFormat other) {
+		this.pixelLengthX = other.pixelLengthX;
+		this.rotationY = other.rotationY;
+		this.rotationX = other.rotationX;
+		this.pixelLengthYNegative = other.pixelLengthYNegative;
+		this.pixelLengthY = other.pixelLengthY;
+		this.topLeftX = other.topLeftX;
+		this.topLeftY = other.topLeftY;
+		this.inveresePixelLengthX = other.inveresePixelLengthX;
+		this.inveresePixelLengthY = other.inveresePixelLengthY;
 	}
 
 	@Override

@@ -11,7 +11,7 @@ import com.github.davidmoten.rtree2.geometry.Geometry;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.io.ImageMetadata;
-import dk.itu.raven.io.RasterReader;
+import dk.itu.raven.io.IRasterReader;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.cache.CachedRasterStructure;
 import dk.itu.raven.io.cache.RasterCache;
@@ -41,7 +41,7 @@ public class InternalApi {
      * @throws IOException
      */
     static Stream<JoinChunk> streamStructures(ShapefileReader featureReader,
-            RasterReader rasterReader, int widthStep,
+            IRasterReader rasterReader, int widthStep,
             int heightStep, boolean isCaching)
             throws IOException {
         if (isCaching)
@@ -129,7 +129,7 @@ public class InternalApi {
         return rtree;
     }
 
-    static AbstractRavenJoin getJoin(RasterReader rasterReader, ShapefileReader vectorReader, boolean isCaching)
+    static AbstractRavenJoin getJoin(IRasterReader rasterReader, ShapefileReader vectorReader, boolean isCaching)
             throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
         Optional<RavenJoin> streamedJoin = getStreamedJoin(rasterReader, vectorReader, metadata.getWidth(),
@@ -142,7 +142,7 @@ public class InternalApi {
         }
     }
 
-    static StreamedRavenJoin getStreamedJoin(RasterReader rasterReader, ShapefileReader vectorReader, int widthStep,
+    static StreamedRavenJoin getStreamedJoin(IRasterReader rasterReader, ShapefileReader vectorReader, int widthStep,
             int heightStep, boolean parallel, boolean isCaching)
             throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();

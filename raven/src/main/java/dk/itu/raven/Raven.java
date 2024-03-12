@@ -1,12 +1,15 @@
 package dk.itu.raven;
 
+import java.io.File;
 import java.io.IOException;
 
 import com.beust.jcommander.JCommander;
 
 import dk.itu.raven.api.RavenApi;
 import dk.itu.raven.io.FileRasterReader;
+import dk.itu.raven.io.IRasterReader;
 import dk.itu.raven.io.ImageMetadata;
+import dk.itu.raven.io.MultiFileRasterReader;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.commandline.CommandLineArgs;
 import dk.itu.raven.join.IJoinResult;
@@ -26,10 +29,9 @@ import dk.itu.raven.visualizer.VisualizerOptionsBuilder;
 public class Raven {
 
     public static void main(String[] args) throws IOException {
+
         CommandLineArgs jct = new CommandLineArgs();
-        JCommander commander = JCommander.newBuilder()
-                .addObject(jct)
-                .build();
+        JCommander commander = JCommander.newBuilder().addObject(jct).build();
         commander.parse(args);
         commander.setProgramName("Raven");
         if (jct.help) {
@@ -41,8 +43,9 @@ public class Raven {
 
         RavenApi api = new RavenApi();
 
-        FileRasterReader rasterReader = api.createRasterReader(jct.inputRaster);
-        ShapefileReader shapefileReader = api.createShapefileReader(jct.inputVector, rasterReader.getTransform());
+        IRasterReader rasterReader = new MultiFileRasterReader(new File(jct.inputRaster));
+        ShapefileReader shapefileReader = api.createShapefileReader(jct.inputVector,
+                rasterReader.getTransform());
 
         ImageMetadata metadata = rasterReader.getImageMetadata();
 
@@ -58,10 +61,12 @@ public class Raven {
             function = JoinFilterFunctions.rangeFilter(lo, hi);
         } else if (jct.ranges.size() == metadata.getSamplesPerPixel() * 2) {
             Logger.log("using multiSampleRangeFilter", LogLevel.DEBUG);
-            function = JoinFilterFunctions.multiSampleRangeFilter(jct.ranges, metadata.getBitsPerSample(),
+            function = JoinFilterFunctions.multiSampleRangeFilter(jct.ranges,
+                    metadata.getBitsPerSample(),
                     metadata.getTotalBitsPerPixel());
         } else if (jct.ranges.size() == 0) {
-            function = JoinFilterFunctions.rangeFilter(Integer.MIN_VALUE, Integer.MAX_VALUE);
+            function = JoinFilterFunctions.rangeFilter(Integer.MIN_VALUE,
+                    Integer.MAX_VALUE);
         } else {
             throw new IllegalArgumentException(
                     "The number of provided search ranges does not match the number of raster samples");
@@ -70,7 +75,8 @@ public class Raven {
         long startJoinNano = System.nanoTime();
         AbstractRavenJoin join;
         if (jct.streamed) {
-            join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, jct.parallel,
+            join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize,
+                    jct.tileSize, jct.parallel,
                     jct.isCaching);
         } else {
             join = api.getJoin(jct.inputRaster, jct.inputVector, jct.isCaching);
@@ -79,19 +85,21 @@ public class Raven {
 
         if (jct.outputPath != null) {
             result = result.asMemoryAllocatedResult(); // this allows the visualizer to draw the result while still
-                                                       // allowing us to consume the stream and time the join
+            // allowing us to consume the stream and time the join
         } else {
             result.count(); // count will still force the stream to be executed, so the timing of the
                             // function will work
         }
 
         long endJoinNano = System.nanoTime();
-        Logger.log("Join time: " + (endJoinNano - startJoinNano) / 1000000 + "ms", LogLevel.INFO);
+        Logger.log("Join time: " + (endJoinNano - startJoinNano) / 1000000 + "ms",
+                LogLevel.INFO);
 
         // Visualize the result
         if (jct.outputPath != null) {
 
-            Visualizer visual = new Visualizer(metadata.getWidth(), metadata.getHeight());
+            Visualizer visual = new Visualizer(metadata.getWidth(),
+                    metadata.getHeight());
             VisualizerOptionsBuilder builder = new VisualizerOptionsBuilder();
 
             builder.setOutputPath(jct.outputPath);

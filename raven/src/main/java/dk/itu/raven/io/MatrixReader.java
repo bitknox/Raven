@@ -7,7 +7,7 @@ import java.awt.Rectangle;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 
-public class MatrixReader extends RasterReader {
+public class MatrixReader extends RasterReader implements IRasterReader {
 	public Matrix matrix;
 	public TFWFormat transform;
 
@@ -31,7 +31,7 @@ public class MatrixReader extends RasterReader {
 	}
 
 	@Override
-	public TFWFormat getTransform() throws IOException {
+	public TFWFormat getTransform() {
 		return transform;
 	}
 

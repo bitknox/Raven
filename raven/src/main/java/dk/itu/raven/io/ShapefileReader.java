@@ -110,6 +110,7 @@ public class ShapefileReader {
 				}
 			} else {
 				p = transform.transFromCoordinateToPixel(coord.x, coord.y);
+
 				minX = Math.min(minX, p.x());
 				maxX = Math.max(maxX, p.x());
 				minY = Math.min(minY, p.y());

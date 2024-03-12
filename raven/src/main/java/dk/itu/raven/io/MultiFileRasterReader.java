@@ -1,9 +1,7 @@
 package dk.itu.raven.io;
 
-import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -12,51 +10,69 @@ import java.util.stream.Stream;
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
+import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.io.cache.CachedRasterStructure;
 import dk.itu.raven.io.cache.RasterCache;
 import dk.itu.raven.join.SpatialDataChunk;
-import dk.itu.raven.util.matrix.Matrix;
-import dk.itu.raven.io.FileRasterReader;
 
-public class MultiFileRasterReader {
+public class MultiFileRasterReader implements IRasterReader {
 
-	private List<RasterReader> readers = new ArrayList<RasterReader>();
+	private Stream<RasterReader> readers;
 	private TFWFormat transform = new TFWFormat(0, 0, 0, 0, Integer.MAX_VALUE, Integer.MIN_VALUE);
+	private ImageMetadata metadata;
+	private String cacheKey;
 
-	// TODO: Figure out if reading metadata from all files synchronously is the best
-	// approach,
-	// or if we should just transform the metadata for the vector data to the same
-	// coordinate
-	// system as the raster data file.
 	public MultiFileRasterReader(File directory) throws IOException {
+		cacheKey = directory.getName() + "-" + "cache";
 		// find all tiff files in directory and subdirectories
-
-		TFWFormat topLeft = Arrays.asList(directory.listFiles()).stream().map(f -> {
+		List<File> files = Arrays.asList(directory.listFiles());
+		ImageIORasterReader reader = new ImageIORasterReader(files.get(0));
+		this.transform = reader.getTransform();
+		this.metadata = reader.getImageMetadata();
+		Stream<ImageIORasterReader> singleStream = Stream.of(reader);
+		Stream<ImageIORasterReader> stream = files.subList(1, files.size()).stream().map(f -> {
 			if (f.isDirectory()) {
 				try {
-					return new ImageIORasterReader(f).getTransform();
+					return new ImageIORasterReader(f);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 			return null;
-		}).filter(f -> f != null).collect(new TFWCollector());
+		});
+
+		this.readers = Stream.concat(singleStream, stream);
 
 	}
 
-	public Matrix readRasters(Rectangle rect) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+	public Optional<String> getCacheKey() {
+		return Optional.of(cacheKey);
 	}
 
-	public TFWFormat getTransform() throws IOException {
+	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
+			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree) throws IOException {
+		return readers.map(reader -> {
+			try {
+				TFWFormat transform = reader.getTransform();
+				return reader.rasterPartitionStream(widthStep, heightStep,
+						new Offset<Integer>((int) (this.transform.topLeftX - transform.topLeftX),
+								(int) (this.transform.topLeftY - transform.topLeftY)),
+						cache, rtree).parallel();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		}).reduce(Stream::concat).orElse(Stream.empty());
+	}
+
+	public TFWFormat getTransform() {
 		return transform;
 	}
 
-	protected ImageMetadata readImageMetadata() throws IOException {
+	public ImageMetadata getImageMetadata() {
 		// we assume that all the tiff files must have the same metadata
-		return readers.get(0).readImageMetadata();
+		return metadata;
 	}
-
 }

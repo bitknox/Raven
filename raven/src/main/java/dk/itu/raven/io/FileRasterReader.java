@@ -40,7 +40,18 @@ public abstract class FileRasterReader extends RasterReader {
 			ImageReader reader = ImageIO.getImageReaders(stream).next();
 			reader.setInput(stream);
 			GeoTiffIIOMetadataDecoder metadata = new GeoTiffIIOMetadataDecoder(reader.getImageMetadata(0));
+			for (TiePoint tiePoint : metadata.getModelTiePoints()) {
+				System.out.println(tiePoint);
+			}
+
+			if (metadata.hasModelTrasformation()) {
+				System.out.println(metadata.getModelTransformation());
+			}
+
+			System.out.println(metadata.getGeographicCitation().getGcsName());
+
 			PixelScale pixelScale = metadata.getModelPixelScales();
+			System.out.println(pixelScale);
 			TiePoint[] tiePoint = metadata.getModelTiePoints();
 
 			if (pixelScale == null || tiePoint == null || tiePoint.length < 1) {

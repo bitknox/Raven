@@ -24,7 +24,7 @@ public abstract class RasterReader {
 
 	public abstract Matrix readRasters(Rectangle rect) throws IOException;
 
-	public abstract TFWFormat getTransform() throws IOException;
+	public abstract TFWFormat getTransform();
 
 	protected abstract ImageMetadata readImageMetadata() throws IOException;
 
@@ -44,6 +44,11 @@ public abstract class RasterReader {
 
 	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
 			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree) throws IOException {
+		return rasterPartitionStream(widthStep, heightStep, new Offset<Integer>(0, 0), cache, rtree);
+	}
+
+	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep, Offset<Integer> globalOffset,
+			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree) throws IOException {
 		ImageMetadata metadata = getImageMetadata();
 
 		// Limit to image size.
@@ -61,11 +66,17 @@ public abstract class RasterReader {
 		}
 
 		return windows.stream().filter(w -> {
-			return TreeExtensions.intersectsOne(rtree.root().get(),
-					Geometries.rectangle(w.x, w.y, w.x + w.width, w.y + w.height));
+			int x = w.x + globalOffset.getX();
+			int y = w.y + globalOffset.getY();
+			var rect = Geometries.rectangle(x, y, x + w.width, y + w.height);
+			System.out.println(rect);
+			boolean selected = TreeExtensions.intersectsOne(rtree.root().get(), rect);
+			System.out.println("Selecting tile... " + selected);
+			return selected;
 		}).map(w -> {
 			try {
 				Offset<Integer> offset = new Offset<>(w.x, w.y);
+				offset.offset(globalOffset);
 
 				SpatialDataChunk chunk = new SpatialDataChunk();
 				chunk.setOffset(offset);
