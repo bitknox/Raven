@@ -21,9 +21,7 @@ import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
-import dk.itu.raven.join.intersection.IntersectionIndex;
 import dk.itu.raven.ksquared.AbstractK2Raster;
-import dk.itu.raven.util.BST;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.TreeExtensions;
@@ -75,19 +73,11 @@ public class RavenJoin extends AbstractRavenJoin {
 		// 1 on index i if the left-most pixel of row i intersects the polygon, 0
 		// otherwise
 
-		boolean[] inRanges = new boolean[rasterBounding.height + 1];
-		// BST<Long, Integer> intersections = new BST<>();
-		List<Long> intersections = new ArrayList<>();
-		Map<Long, Integer> count = new HashMap<>();
-		// List<IntersectionIndex> intersections = new
-		// ArrayList<>(rasterBounding.height);
-		// for (int i = 0; i <= rasterBounding.height; i++) {
-		// intersections.add(new IntArrayListIndex());
-		// intersections.add(new BSTIndex2());
-		// intersections.add(new SortingIndex());
-		// intersections.add(new FastBSTIndex());
-		// intersections.add(new BSTIndex());
-		// }
+		boolean[] inRanges = new boolean[rasterBounding.height + 1]; // we add one to the length to prevent an
+																		// out-of-bounds exeption at the end of this
+																		// method. This way saves us an if statement.
+		List<Long> intersections = new ArrayList<>(); // packed intersection coordinates
+		Map<Long, Integer> count = new HashMap<>(); // number of intersection for all packed intersection coordinates
 
 		// a line is of the form a*x + b*y = c
 		Point old = polygon.getFirst();
@@ -109,19 +99,20 @@ public class RavenJoin extends AbstractRavenJoin {
 			// compute all intersections between the line segment and horizontal pixel lines
 			for (int y = minY; y < maxY; y++) {
 				double x = (c - b * (y + 0.5)) / a;
-				// assert x - rasterBounding.getTopX() >= 0;
 				int ix = (int) Math.floor(x - rasterBounding.x);
 				if (ix <= 0) {
 					inRanges[y - rasterBounding.y] = !inRanges[y - rasterBounding.y];
 				} else if (ix < rasterBounding.width && ix + rasterBounding.x < imageSize.width) {
+					// pack the y and x ordinates together into one long. Sorting a list of these
+					// longs will sort the intersections by y, and secondarily by x.
 					long yComp = y - rasterBounding.y;
 					yComp <<= 32;
 					long key = yComp + ix;
 					Integer val = count.get(key);
-					if (val == null) {
+					if (val == null) { // new intersection
 						intersections.add(key);
 						count.put(key, 1);
-					} else {
+					} else { // an intersection we already encountered
 						count.put(key, val + 1);
 					}
 				}
@@ -134,14 +125,13 @@ public class RavenJoin extends AbstractRavenJoin {
 		int oldY = 0;
 		boolean inRange = inRanges[0];
 		int start = 0;
-		// System.err.println();
 		for (long k : intersections) {
+			// reconstruct x and y from packed value
 			int x = (int) k;
 			int y = (int) (k >>> 32);
-			// System.err.println("key: " + k);
-			// System.err.println("x: " + x);
-			// System.err.println("y: " + y);
-			if (y != oldY) {
+			if (y != oldY) { // new pixel-line
+				// start by finding out for all pixel-lines between old and new y if it should
+				// be joined or not
 				for (int j = oldY + 1; j <= y; j++) {
 					if (inRange) {
 						ranges.add(new PixelRange(oldY + rasterBounding.y,
@@ -149,6 +139,7 @@ public class RavenJoin extends AbstractRavenJoin {
 								Math.min(rasterBounding.width - 1 + rasterBounding.x,
 										imageSize.width - 1)));
 					}
+					// start a new pixel-line
 					oldY = j;
 					inRange = inRanges[j];
 					start = 0;
@@ -176,6 +167,8 @@ public class RavenJoin extends AbstractRavenJoin {
 				}
 			}
 		}
+		// perform one last check to handle all pixel-lines below the bottom-most
+		// intersection
 		for (int j = oldY + 1; j <= Math.min(rasterBounding.height, imageSize.height - rasterBounding.y); j++) {
 			if (inRange) {
 				ranges.add(new PixelRange(oldY + rasterBounding.y,
