@@ -28,6 +28,7 @@ import org.locationtech.jts.geom.Geometry;
 import com.github.davidmoten.rtree2.geometry.Geometries;
 import com.github.davidmoten.rtree2.geometry.Point;
 
+import dk.itu.raven.geometry.FeatureGeometry;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.util.Pair;
 
@@ -67,12 +68,12 @@ public class ShapefileReader {
 		}
 	}
 
-	public Pair<List<Polygon>, ShapeFileBounds> readShapefile()
+	public Pair<List<FeatureGeometry>, ShapeFileBounds> readShapefile()
 			throws IOException {
 		FileDataStore myData = FileDataStoreFinder.getDataStore(file);
 		SimpleFeatureSource source = myData.getFeatureSource();
 		bounds.reset();
-		List<Polygon> features = new ArrayList<>();
+		List<FeatureGeometry> features = new ArrayList<>();
 		FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures();
 		MathTransform transform = null;
 		try {
@@ -116,14 +117,14 @@ public class ShapefileReader {
 	}
 
 	private void extractGeometries(Geometry geometry,
-			List<Polygon> features) {
+			List<FeatureGeometry> features) {
 		if (geometry.getNumGeometries() > 1) {
 			for (int i = 0; i < geometry.getNumGeometries(); i++) {
 				Geometry geom = geometry.getGeometryN(i);
 				extractGeometries(geom, features);
 			}
 		} else {
-			createPolygons(geometry.getCoordinates(), features);
+			features.add(new FeatureGeometry(geometry));
 		}
 	}
 

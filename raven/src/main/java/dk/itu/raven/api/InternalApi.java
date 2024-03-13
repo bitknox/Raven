@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
-import dk.itu.raven.geometry.Polygon;
+import dk.itu.raven.geometry.FeatureGeometry;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.io.ImageMetadata;
 import dk.itu.raven.io.IRasterReader;
@@ -48,7 +48,7 @@ public class InternalApi {
             isCaching = rasterReader.getCacheKey().isPresent();
 
         // load geometries from shapefile
-        Pair<List<Polygon>, ShapefileReader.ShapeFileBounds> geometries = featureReader.readShapefile();
+        Pair<List<FeatureGeometry>, ShapefileReader.ShapeFileBounds> geometries = featureReader.readShapefile();
 
         // TODO: check if it is faster to just use the original rtree
         RTree<String, Geometry> rtree = generateRTree(geometries);
@@ -121,9 +121,9 @@ public class InternalApi {
      * @return the R* tree
      */
     static RTree<String, Geometry> generateRTree(
-            Pair<List<Polygon>, ShapefileReader.ShapeFileBounds> geometries) {
+            Pair<List<FeatureGeometry>, ShapefileReader.ShapeFileBounds> geometries) {
         RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
-        for (Polygon polygon : geometries.first) {
+        for (Geometry polygon : geometries.first) {
             rtree = rtree.add(null, polygon);
         }
         return rtree;

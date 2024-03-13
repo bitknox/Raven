@@ -136,4 +136,13 @@ public class Polygon implements Geometry, Iterator<Point>, Iterable<Point> {
         return this.points.get(index % this.points.size()); // when accessing the point one past the last, give the
                                                             // first point instead
     }
+
+    public Coordinate[] getCoordinates() {
+        Coordinate[] coords = new Coordinate[this.points.size() + 1];
+        for (int i = 0; i < this.points.size(); i++) {
+            coords[i] = new Coordinate(this.points.get(i).x(), this.points.get(i).y());
+        }
+        coords[this.points.size()] = new Coordinate(this.points.get(0).x(), this.points.get(0).y());
+        return coords;
+    }
 }

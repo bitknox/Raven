@@ -11,14 +11,15 @@ import java.util.Random;
 
 import javax.imageio.ImageIO;
 
+import org.locationtech.jts.geom.Coordinate;
+
 import com.github.davidmoten.rtree2.Node;
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
-import com.github.davidmoten.rtree2.geometry.Point;
 
+import dk.itu.raven.geometry.FeatureGeometry;
 import dk.itu.raven.geometry.GeometryUtil;
 import dk.itu.raven.geometry.PixelRange;
-import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.ShapefileReader.ShapeFileBounds;
@@ -49,7 +50,7 @@ public class Visualizer {
 		this.r = new Random();
 	}
 
-	private Pair<List<Polygon>, ShapeFileBounds> getFeatures(ShapefileReader shapeFileReader)
+	private Pair<List<FeatureGeometry>, ShapeFileBounds> getFeatures(ShapefileReader shapeFileReader)
 			throws IOException {
 		return shapeFileReader.readShapefile();
 
@@ -69,7 +70,7 @@ public class Visualizer {
 	public BufferedImage drawResult(IJoinResult results, ShapefileReader shapeFileReader,
 			VisualizerOptions options) throws IOException {
 		var pair = getFeatures(shapeFileReader);
-		List<Polygon> features = pair.first;
+		List<FeatureGeometry> features = pair.first;
 		ShapeFileBounds bounds = pair.second;
 
 		int width = this.width;
@@ -114,13 +115,13 @@ public class Visualizer {
 		graphics.setColor(new Color(color.getRGB()));
 	}
 
-	private void drawFeatures(Graphics2D graphics, Iterable<Polygon> features, Color color) {
+	private void drawFeatures(Graphics2D graphics, Iterable<FeatureGeometry> features, Color color) {
 
-		for (Polygon poly : features) {
+		for (FeatureGeometry poly : features) {
 			setColor(graphics, color);
-			Point old = poly.getFirst();
-			for (Point next : poly) {
-				graphics.drawLine((int) old.x(), (int) old.y(), (int) next.x(), (int) next.y());
+			Coordinate old = poly.getFirst();
+			for (Coordinate next : poly) {
+				graphics.drawLine((int) old.getX(), (int) old.getY(), (int) next.getX(), (int) next.getY());
 				old = next;
 			}
 		}
@@ -135,7 +136,7 @@ public class Visualizer {
 	 *         {@code features}
 	 */
 	public BufferedImage drawShapefile(ShapefileReader shapeFileReader, VisualizerOptions options) throws IOException {
-		List<Polygon> features = getFeatures(shapeFileReader).first;
+		List<FeatureGeometry> features = getFeatures(shapeFileReader).first;
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D vectorGraphics = image.createGraphics();
 
@@ -239,7 +240,7 @@ public class Visualizer {
 	 */
 	public BufferedImage drawVectorRasterOverlap(ShapefileReader shapeFileReader, RTree<String, Geometry> tree,
 			K2Raster k2Raster, int k2RecursionDepth, VisualizerOptions options) throws IOException {
-		Iterable<Polygon> features = getFeatures(shapeFileReader).first;
+		Iterable<FeatureGeometry> features = getFeatures(shapeFileReader).first;
 
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics = image.createGraphics();

@@ -19,8 +19,8 @@ import com.github.davidmoten.rtree2.geometry.Geometries;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 import com.github.davidmoten.rtree2.geometry.Point;
 
+import dk.itu.raven.geometry.FeatureGeometry;
 import dk.itu.raven.geometry.PixelRange;
-import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.ksquared.K2RasterBuilder;
@@ -38,7 +38,7 @@ public class RavenJoinTest {
         points.add(Geometries.point(20, 30));
         points.add(Geometries.point(10, 20));
         points.add(Geometries.point(0, 30));
-        Polygon poly = new Polygon(points);
+        FeatureGeometry poly = new FeatureGeometry(points);
 
         java.awt.Rectangle rect = new java.awt.Rectangle(0, 0, 20, 30);
         Matrix matrix = new RandomMatrix(20, 30, 2);
@@ -57,7 +57,7 @@ public class RavenJoinTest {
         List<Point> points = new ArrayList<>();
         points.add(Geometries.point(1, 1));
         points.add(Geometries.point(10, 10));
-        Polygon poly = new Polygon(points);
+        FeatureGeometry poly = new FeatureGeometry(points);
         java.awt.Rectangle rect = new java.awt.Rectangle(0, 0, 11, 11);
         Matrix matrix = new RandomMatrix(10, 10, 2);
         AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
@@ -155,10 +155,12 @@ public class RavenJoinTest {
         AbstractK2Raster k2 = new K2RasterBuilder().build(new ArrayMatrix(matrix, 16, 16), 2);
 
         RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
-        Polygon p = new Polygon(new Coordinate[] { new Coordinate(1, 1), new Coordinate(3, 1), new Coordinate(3, 3),
-                new Coordinate(1, 3) });
-        Polygon p2 = new Polygon(new Coordinate[] { new Coordinate(5, 5), new Coordinate(10, 5), new Coordinate(10, 10),
-                new Coordinate(5, 10) });
+        FeatureGeometry p = new FeatureGeometry(
+                new Coordinate[] { new Coordinate(1, 1), new Coordinate(3, 1), new Coordinate(3, 3),
+                        new Coordinate(1, 3), new Coordinate(1, 1) });
+        FeatureGeometry p2 = new FeatureGeometry(
+                new Coordinate[] { new Coordinate(5, 5), new Coordinate(10, 5), new Coordinate(10, 10),
+                        new Coordinate(5, 10), new Coordinate(5, 5) });
         PixelRange[] expectedRanges = new PixelRange[] { new PixelRange(1, 1, 2), new PixelRange(2, 1, 2) };
         PixelRange[] expectedRanges2 = new PixelRange[] { new PixelRange(5, 5, 9), new PixelRange(6, 5, 5),
                 new PixelRange(6, 7, 9), new PixelRange(7, 5, 9), new PixelRange(8, 5, 9),

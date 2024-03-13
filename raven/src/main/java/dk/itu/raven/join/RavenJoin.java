@@ -5,26 +5,27 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
 
-import com.github.davidmoten.rtree2.RTree;
+import org.locationtech.jts.geom.Coordinate;
+
 import com.github.davidmoten.rtree2.Entry;
 import com.github.davidmoten.rtree2.Leaf;
 import com.github.davidmoten.rtree2.Node;
 import com.github.davidmoten.rtree2.NonLeaf;
+import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
-import com.github.davidmoten.rtree2.geometry.Point;
 import com.github.davidmoten.rtree2.geometry.Rectangle;
 
-import dk.itu.raven.util.TreeExtensions;
-import dk.itu.raven.util.Tuple4;
-import dk.itu.raven.util.Tuple5;
+import dk.itu.raven.geometry.FeatureGeometry;
 import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.PixelRange;
-import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.util.BST;
-import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.Logger;
+import dk.itu.raven.util.Pair;
+import dk.itu.raven.util.TreeExtensions;
+import dk.itu.raven.util.Tuple4;
+import dk.itu.raven.util.Tuple5;
 
 public class RavenJoin extends AbstractRavenJoin {
 	private enum QuadOverlapType {
@@ -65,7 +66,8 @@ public class RavenJoin extends AbstractRavenJoin {
 	 * @return A collection of pixels that are contained in the vector shape
 	 *         described by {@code polygon}
 	 */
-	protected Collection<PixelRange> extractCellsPolygon(Polygon polygon, int pk, java.awt.Rectangle rasterBounding) {
+	protected Collection<PixelRange> extractCellsPolygon(FeatureGeometry polygon, int pk,
+			java.awt.Rectangle rasterBounding) {
 		// 1 on index i * rasterBounding.geetSize() + j if an intersection between a
 		// line of the polygon and the line y=j happens at point (i,j)
 		// 1 on index i if the left-most pixel of row i intersects the polygon, 0
@@ -78,21 +80,21 @@ public class RavenJoin extends AbstractRavenJoin {
 		}
 
 		// a line is of the form a*x + b*y = c
-		Point old = polygon.getFirst();
+		Coordinate old = polygon.getFirst();
 
 		// we run the loop to polygon.size() + 1 because we want to wrap around end at
 		// the first point
 		for (int i = 1; i < polygon.size() + 1; i++) {
-			Point next = polygon.getPoint(i);
+			Coordinate next = polygon.getPoint(i);
 			// compute the standard form of the line segment between the points old and next
-			double a = (next.y() - old.y());
-			double b = (old.x() - next.x());
-			double c = a * old.x() + b * old.y();
+			double a = (next.getY() - old.getY());
+			double b = (old.getX() - next.getX());
+			double c = a * old.getX() + b * old.getY();
 
 			int minY = (int) Math.min(rasterBounding.y + rasterBounding.height,
-					Math.max(rasterBounding.y, Math.round(Math.min(old.y(), next.y()))));
+					Math.max(rasterBounding.y, Math.round(Math.min(old.getY(), next.getY()))));
 			int maxY = (int) Math.min(rasterBounding.y + rasterBounding.height,
-					Math.max(rasterBounding.y, Math.round(Math.max(old.y(), next.y()))));
+					Math.max(rasterBounding.y, Math.round(Math.max(old.getY(), next.getY()))));
 
 			// compute all intersections between the line segment and horizontal pixel lines
 			for (int y = minY; y < maxY; y++) {
@@ -171,7 +173,7 @@ public class RavenJoin extends AbstractRavenJoin {
 		for (Entry<String, Geometry> entry : ((Leaf<String, Geometry>) pr).entries()) {
 			// all geometries we store are polygons
 			def.add(new JoinResultItem(entry.geometry(),
-					extractCellsPolygon((Polygon) entry.geometry(), pk, rasterBounding)));
+					extractCellsPolygon((FeatureGeometry) entry.geometry(), pk, rasterBounding)));
 		}
 	}
 
