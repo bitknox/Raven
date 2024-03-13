@@ -45,7 +45,7 @@ public class Raven {
 
         IRasterReader rasterReader = new MultiFileRasterReader(new File(jct.inputRaster));
         ShapefileReader shapefileReader = api.createShapefileReader(jct.inputVector,
-                rasterReader.getTransform());
+                rasterReader.getTransform(), rasterReader.getCRS());
 
         ImageMetadata metadata = rasterReader.getImageMetadata();
 

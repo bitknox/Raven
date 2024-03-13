@@ -3,9 +3,9 @@ package dk.itu.raven.api;
 import java.io.File;
 import java.io.IOException;
 
-import dk.itu.raven.io.FileRasterReader;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+
 import dk.itu.raven.io.IRasterReader;
-import dk.itu.raven.io.ImageIORasterReader;
 import dk.itu.raven.io.MultiFileRasterReader;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.TFWFormat;
@@ -30,7 +30,8 @@ public class RavenApi {
 	 */
 	public AbstractRavenJoin getJoin(String rasterPath, String vectorPath, boolean isCaching) throws IOException {
 		IRasterReader rasterReader = createRasterReader(rasterPath);
-		ShapefileReader vectorReader = createShapefileReader(vectorPath, rasterReader.getTransform());
+		ShapefileReader vectorReader = createShapefileReader(vectorPath, rasterReader.getTransform(),
+				rasterReader.getCRS());
 
 		return InternalApi.getJoin(rasterReader, vectorReader, isCaching);
 	}
@@ -46,7 +47,8 @@ public class RavenApi {
 	public StreamedRavenJoin getStreamedJoin(String rasterPath, String vectorPath,
 			int widthStep, int heightStep, boolean parallel, boolean isCaching) throws IOException {
 		IRasterReader rasterReader = createRasterReader(rasterPath);
-		ShapefileReader vectorReader = createShapefileReader(vectorPath, rasterReader.getTransform());
+		ShapefileReader vectorReader = createShapefileReader(vectorPath, rasterReader.getTransform(),
+				rasterReader.getCRS());
 
 		return InternalApi.getStreamedJoin(rasterReader, vectorReader, widthStep, heightStep, parallel, isCaching);
 	}
@@ -69,7 +71,8 @@ public class RavenApi {
 	 * @param transform  the transform to use for the shapefile
 	 * @return the shapefile reader
 	 */
-	public ShapefileReader createShapefileReader(String vectorPath, TFWFormat transform) {
-		return new ShapefileReader(vectorPath, transform);
+	public ShapefileReader createShapefileReader(String vectorPath, TFWFormat transform,
+			CoordinateReferenceSystem crs) {
+		return new ShapefileReader(vectorPath, transform, crs);
 	}
 }

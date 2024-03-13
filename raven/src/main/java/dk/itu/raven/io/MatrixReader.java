@@ -2,6 +2,11 @@ package dk.itu.raven.io;
 
 import java.io.IOException;
 
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.NoSuchAuthorityCodeException;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.referencing.CRS;
+
 import java.awt.Rectangle;
 
 import dk.itu.raven.util.matrix.ArrayMatrix;
@@ -44,4 +49,18 @@ public class MatrixReader extends RasterReader implements IRasterReader {
 				matrix.getSampleSize());
 	}
 
+	@Override
+	public CoordinateReferenceSystem getCRS() {
+		// TODO Auto-generated method stub
+		try {
+			return CRS.decode("EPSG:4326");
+		} catch (NoSuchAuthorityCodeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FactoryException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
 }

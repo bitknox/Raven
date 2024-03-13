@@ -43,6 +43,11 @@ public class TFWFormat {
 		inveresePixelLengthY = 1.0 / pixelLengthY;
 	}
 
+	public AffineTransform getAffineTransform() {
+		return new AffineTransform(pixelLengthX, rotationY, rotationX, pixelLengthY, topLeftX,
+				topLeftY);
+	}
+
 	public TFWFormat() {
 		this.topLeftX = Integer.MAX_VALUE;
 		this.topLeftY = Integer.MAX_VALUE;

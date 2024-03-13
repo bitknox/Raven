@@ -10,7 +10,7 @@ public class MockedShapefileReader extends ShapefileReader {
     private List<Polygon> polygons;
 
     public MockedShapefileReader(List<Polygon> polygons) {
-        super("", null);
+        super("", null, null);
 
         this.polygons = polygons;
     }

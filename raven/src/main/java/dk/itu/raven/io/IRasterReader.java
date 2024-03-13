@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
@@ -18,6 +20,8 @@ public interface IRasterReader {
 	public Optional<String> getCacheKey();
 
 	public ImageMetadata getImageMetadata() throws IOException;
+
+	public CoordinateReferenceSystem getCRS();
 
 	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
 			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree) throws IOException;

@@ -3,18 +3,17 @@ package dk.itu.raven.io;
 import java.io.File;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.FileImageInputStream;
-
-import dk.itu.raven.geotools.GeoTiffIIOMetadataDecoder;
-import dk.itu.raven.geotools.PixelScale;
-import dk.itu.raven.geotools.TiePoint;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder;
+import org.geotools.coverage.grid.io.imageio.geotiff.PixelScale;
+import org.geotools.coverage.grid.io.imageio.geotiff.TiePoint;
+import org.geotools.gce.geotiff.GeoTiffReader;
 
 public abstract class FileRasterReader extends RasterReader {
 	File tiff;
 	File tfw;
 
+	CoordinateReferenceSystem crs;
 	TFWFormat transform;
 
 	public FileRasterReader(File directory) throws IOException {
@@ -32,26 +31,17 @@ public abstract class FileRasterReader extends RasterReader {
 			throw new IOException("Missing tiff file");
 		}
 		this.setCacheKey(tiff.getName());
+		GeoTiffReader gtiffreader = new GeoTiffReader(tiff);
+		GeoTiffIIOMetadataDecoder metadata = gtiffreader.getMetadata();
+		this.crs = gtiffreader.getCoordinateReferenceSystem();
+
 		if (tfw != null) {
 			transform = TFWFormat.read(tfw);
 		} else {
 
-			FileImageInputStream stream = new FileImageInputStream(tiff);
-			ImageReader reader = ImageIO.getImageReaders(stream).next();
-			reader.setInput(stream);
-			GeoTiffIIOMetadataDecoder metadata = new GeoTiffIIOMetadataDecoder(reader.getImageMetadata(0));
-			for (TiePoint tiePoint : metadata.getModelTiePoints()) {
-				System.out.println(tiePoint);
-			}
-
-			if (metadata.hasModelTrasformation()) {
-				System.out.println(metadata.getModelTransformation());
-			}
-
-			System.out.println(metadata.getGeographicCitation().getGcsName());
+			// TODO: Use this for reprojection
 
 			PixelScale pixelScale = metadata.getModelPixelScales();
-			System.out.println(pixelScale);
 			TiePoint[] tiePoint = metadata.getModelTiePoints();
 
 			if (pixelScale == null || tiePoint == null || tiePoint.length < 1) {
@@ -71,4 +61,7 @@ public abstract class FileRasterReader extends RasterReader {
 		return transform;
 	}
 
+	public CoordinateReferenceSystem getCRS() {
+		return crs;
+	}
 }

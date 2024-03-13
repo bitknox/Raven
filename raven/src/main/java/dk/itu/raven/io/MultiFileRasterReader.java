@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
@@ -20,6 +22,7 @@ public class MultiFileRasterReader implements IRasterReader {
 	private Stream<RasterReader> readers;
 	private TFWFormat transform = new TFWFormat(0, 0, 0, 0, Integer.MAX_VALUE, Integer.MIN_VALUE);
 	private ImageMetadata metadata;
+	private CoordinateReferenceSystem crs;
 	private String cacheKey;
 
 	public MultiFileRasterReader(File directory) throws IOException {
@@ -28,6 +31,7 @@ public class MultiFileRasterReader implements IRasterReader {
 		List<File> files = Arrays.asList(directory.listFiles());
 		ImageIORasterReader reader = new ImageIORasterReader(files.get(0));
 		this.transform = reader.getTransform();
+		this.crs = reader.getCRS();
 		this.metadata = reader.getImageMetadata();
 		Stream<ImageIORasterReader> singleStream = Stream.of(reader);
 		Stream<ImageIORasterReader> stream = files.subList(1, files.size()).stream().map(f -> {
@@ -69,6 +73,10 @@ public class MultiFileRasterReader implements IRasterReader {
 
 	public TFWFormat getTransform() {
 		return transform;
+	}
+
+	public CoordinateReferenceSystem getCRS() {
+		return crs;
 	}
 
 	public ImageMetadata getImageMetadata() {
