@@ -68,6 +68,10 @@ public class ShapefileReader {
 		}
 	}
 
+	public ShapeFileBounds getBounds() {
+		return this.bounds;
+	}
+
 	public Pair<List<FeatureGeometry>, ShapeFileBounds> readShapefile()
 			throws IOException {
 		FileDataStore myData = FileDataStoreFinder.getDataStore(file);
@@ -75,27 +79,8 @@ public class ShapefileReader {
 		bounds.reset();
 		List<FeatureGeometry> features = new ArrayList<>();
 		FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures();
-		MathTransform transform = null;
-		try {
-			transform = CRS.findMathTransform(myData.getSchema().getCoordinateReferenceSystem(), crs, true);
-		} catch (FactoryException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
-		AffineTransform g2w = this.transform.getAffineTransform();
-
-		try {
-			g2w.invert();
-		} catch (java.awt.geom.NoninvertibleTransformException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		MathTransform w2g = ConcatenatedTransform.create(transform, ProjectiveTransform.create(g2w));
+		MathTransform w2g = calculateTransform(myData.getSchema().getCoordinateReferenceSystem());
 
 		try (FeatureIterator<SimpleFeature> featuresItr = collection.features()) {
 			while (featuresItr.hasNext()) {
@@ -162,7 +147,28 @@ public class ShapefileReader {
 		}
 	}
 
-	public ShapeFileBounds getBounds() {
-		return this.bounds;
+	private MathTransform calculateTransform(CoordinateReferenceSystem source) {
+		MathTransform transform = null;
+		AffineTransform g2w = this.transform.getAffineTransform();
+
+		try {
+			g2w.invert();
+		} catch (java.awt.geom.NoninvertibleTransformException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		if (crs == null) {
+			return ProjectiveTransform.create(g2w);
+		}
+
+		try {
+			transform = CRS.findMathTransform(source, crs, true);
+		} catch (FactoryException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return ConcatenatedTransform.create(transform, ProjectiveTransform.create(g2w));
 	}
 }

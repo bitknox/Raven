@@ -3,6 +3,7 @@ package dk.itu.raven.io;
 import java.io.File;
 import java.io.IOException;
 
+import org.geotools.api.data.DataSourceException;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder;
 import org.geotools.coverage.grid.io.imageio.geotiff.PixelScale;
@@ -31,13 +32,20 @@ public abstract class FileRasterReader extends RasterReader {
 			throw new IOException("Missing tiff file");
 		}
 		this.setCacheKey(tiff.getName());
-		GeoTiffReader gtiffreader = new GeoTiffReader(tiff);
-		GeoTiffIIOMetadataDecoder metadata = gtiffreader.getMetadata();
-		this.crs = gtiffreader.getCoordinateReferenceSystem();
+
+		GeoTiffReader gtiffreader = null;
+		GeoTiffIIOMetadataDecoder metadata = null;
+		try {
+			gtiffreader = new GeoTiffReader(tiff);
+			metadata = gtiffreader.getMetadata();
+			this.crs = gtiffreader.getCoordinateReferenceSystem();
+		} catch (DataSourceException e) {
+			// TODO: handle exception
+		}
 
 		if (tfw != null) {
 			transform = TFWFormat.read(tfw);
-		} else {
+		} else if (metadata != null) {
 
 			// TODO: Use this for reprojection
 
