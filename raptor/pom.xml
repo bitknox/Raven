@@ -52,29 +52,6 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>net.alchim31.maven</groupId>
-                        <artifactId>scala-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>scala-compile-first</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>add-source</goal>
-                                    <goal>compile</goal>
-                                </goals>
-
-                            </execution>
-                            <execution>
-                                <id>scala-test-compile</id>
-                                <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>testCompile</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
                         <version>3.5.2</version>
@@ -100,8 +77,10 @@
                                             </excludes>
                                         </filter>
                                     </filters>
+
                                     <finalName>raptor-${project.version}</finalName>
                                     <outputDirectory>target/</outputDirectory>
+
                                     <transformers>
                                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                             <mainClass>dk.itu.raptor.Raptor</mainClass>
@@ -128,29 +107,6 @@
             <id>library-jar</id>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>net.alchim31.maven</groupId>
-                        <artifactId>scala-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>scala-compile-first</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>add-source</goal>
-                                    <goal>compile</goal>
-                                </goals>
-
-                            </execution>
-                            <execution>
-                                <id>scala-test-compile</id>
-                                <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>testCompile</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>

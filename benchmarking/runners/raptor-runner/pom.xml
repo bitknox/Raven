@@ -20,12 +20,12 @@
 
   <repositories>
     <repository>
-      <id>central</id>
-      <url>https://repo1.maven.org/maven2/</url>
-    </repository>
-    <repository>
       <id>jitpack.io</id>
       <url>https://jitpack.io</url>
+    </repository>
+    <repository>
+      <id>central</id>
+      <url>https://repo1.maven.org/maven2/</url>
     </repository>
   </repositories>
 
@@ -33,7 +33,7 @@
     <dependency>
       <groupId>com.github.bitknox.Raven</groupId>
       <artifactId>raptor</artifactId>
-      <version>c109ecb4b1</version>
+      <version>be1c40f0e4</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
