@@ -92,6 +92,7 @@ public class RavenJoin extends AbstractRavenJoin {
 			Point next = polygon.getPoint(i);
 			// compute the standard form of the line segment between the points old and next
 			double a = (next.y() - old.y());
+			double aInv = 1.0 / a;
 			double b = (old.x() - next.x());
 			double c = a * old.x() + b * old.y();
 
@@ -102,7 +103,7 @@ public class RavenJoin extends AbstractRavenJoin {
 
 			// compute all intersections between the line segment and horizontal pixel lines
 			for (int y = minY; y < maxY; y++) {
-				double x = (c - b * (y + 0.5)) / a;
+				double x = (c - b * (y + 0.5)) * aInv;
 				int ix = (int) Math.floor(x - rasterBounding.x);
 				if (ix <= 0) {
 					inRanges[y - rasterBounding.y] = !inRanges[y - rasterBounding.y];
@@ -112,19 +113,8 @@ public class RavenJoin extends AbstractRavenJoin {
 					long yComp = y - rasterBounding.y;
 					yComp <<= 32;
 					long key = yComp + ix;
-					Integer val = intersections.get(key);
-					if (val == null) {
-						intersections.put(key, 1);
-					} else {
-						intersections.put(key, val + 1);
-					}
-					// Integer val = count.get(key);
-					// if (val == null) { // new intersection
-					// intersections.add(key);
-					// count.put(key, 1);
-					// } else { // an intersection we already encountered
-					// count.put(key, val + 1);
-					// }
+					int val = intersections.getOrDefault(key, 0);
+					intersections.put(key, val + 1);
 				}
 			}
 			old = next;
@@ -135,7 +125,7 @@ public class RavenJoin extends AbstractRavenJoin {
 		int oldY = 0;
 		boolean inRange = inRanges[0];
 		int start = 0;
-		for (Map.Entry<Long, Integer> kv : intersections.entrySet()) {
+		for (var kv : intersections.entrySet()) {
 			long k = kv.getKey();
 			int v = kv.getValue();
 			// reconstruct x and y from packed value

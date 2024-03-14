@@ -27,15 +27,16 @@ plt.rc('font', **font)
 thrown_away = 1
 
 for test in data:
-        test["times"].sort()
-        test["times"] = test["times"][:-thrown_away]
+        test["times"] = test["times"][thrown_away:]
         test["iterations"] -= thrown_away
+        test["sorted times"] = [time for time in test["times"]]
+        test["sorted times"].sort()
 
 names = [test["name"] for test in data]
 # NOTE: ignores first entry in all time lists to account for cold starts
 times = [sum(test["times"])/(test["iterations"]) for test in data]
-errors_lo = [times[i]-data[i]["times"][0] for i in range(len(data))]
-errors_hi = [data[i]["times"][-1] - times[i] for i in range(len(data))]
+errors_lo = [times[i]-data[i]["sorted times"][0] for i in range(len(data))]
+errors_hi = [data[i]["sorted times"][-1] - times[i] for i in range(len(data))]
 
 percentile = 5
 index = []
@@ -43,8 +44,8 @@ for i in range(len(data)):
         index = int(percentile*data[i]["iterations"]/100)
 print(index)
 
-errors_lo_95p = [times[i]-data[i]["times"][index] for i in range(len(data))]
-errors_hi_95p = [data[i]["times"][-index-1] - times[i] for i in range(len(data))]
+errors_lo_95p = [times[i]-data[i]["sorted times"][index] for i in range(len(data))]
+errors_hi_95p = [data[i]["sorted times"][-index-1] - times[i] for i in range(len(data))]
 
 _, ax = plt.subplots(figsize=(8, 6))
 
