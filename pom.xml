@@ -16,7 +16,10 @@
   <name>Raven-root</name>
 
   <modules>
+
     <module>raptor</module>
+
+    <module>raven</module>
 
   </modules>
 
