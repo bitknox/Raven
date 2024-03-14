@@ -97,9 +97,9 @@ public class Raven {
 
         // Visualize the result
         if (jct.outputPath != null) {
-
-            Visualizer visual = new Visualizer(metadata.getWidth(),
-                    metadata.getHeight());
+            // FIXME: This is a hack to get the visualizer to work with multifile raster
+            Visualizer visual = new Visualizer(44000,
+                    16000);
             VisualizerOptionsBuilder builder = new VisualizerOptionsBuilder();
 
             builder.setOutputPath(jct.outputPath);

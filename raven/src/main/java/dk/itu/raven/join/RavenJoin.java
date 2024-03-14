@@ -329,8 +329,8 @@ public class RavenJoin extends AbstractRavenJoin {
 
 	private java.awt.Rectangle getRectangle(Square rasterBounding) {
 		return new java.awt.Rectangle(rasterBounding.getTopX(), rasterBounding.getTopY(),
-				Math.min(rasterBounding.getSize(), Math.max(0, imageSize.width - rasterBounding.getTopX())),
-				Math.min(rasterBounding.getSize(), Math.max(0, imageSize.height - rasterBounding.getTopY())));
+				Math.min(rasterBounding.getSize(), Math.max(0, imageSize.width)),
+				Math.min(rasterBounding.getSize(), Math.max(0, imageSize.height)));
 	}
 
 	private boolean intersects(java.awt.Rectangle movedRasterWindow, Rectangle mbr) {

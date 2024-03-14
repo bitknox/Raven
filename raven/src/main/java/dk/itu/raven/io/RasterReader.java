@@ -69,7 +69,8 @@ public abstract class RasterReader {
 			int x = w.x + globalOffset.getX();
 			int y = w.y + globalOffset.getY();
 			var rect = Geometries.rectangle(x, y, x + w.width, y + w.height);
-			return TreeExtensions.intersectsOne(rtree.root().get(), rect);
+			boolean intersects = TreeExtensions.intersectsOne(rtree.root().get(), rect);
+			return intersects;
 		}).map(w -> {
 			try {
 				Offset<Integer> offset = new Offset<>(w.x, w.y);

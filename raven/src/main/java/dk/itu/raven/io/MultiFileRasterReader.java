@@ -59,10 +59,13 @@ public class MultiFileRasterReader implements IRasterReader {
 		return readers.map(reader -> {
 			try {
 				TFWFormat transform = reader.getTransform();
+
+				Offset<Integer> offset = new Offset<Integer>(
+						(int) ((transform.topLeftX - this.transform.topLeftX) / transform.pixelLengthX),
+						(int) ((transform.topLeftY - this.transform.topLeftY) / transform.pixelLengthY));
+
 				return reader.rasterPartitionStream(widthStep, heightStep,
-						new Offset<Integer>((int) (this.transform.topLeftX - transform.topLeftX),
-								(int) (this.transform.topLeftY - transform.topLeftY)),
-						cache, rtree).parallel();
+						offset, cache, rtree).parallel();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

@@ -34,6 +34,8 @@ public class ImageIORasterReader extends FileRasterReader {
         int maxY = Math.min(rect.y + rect.height, reader.getHeight(0));
         param.setSourceRegion(new java.awt.Rectangle(minX, minY, maxX - minX, maxY - minY));
         BufferedImage img = reader.read(0, param);
+        reader.dispose();
+        stream.close();
         return new AwtRasterMatrix(img.getData());
     }
 
@@ -60,6 +62,8 @@ public class ImageIORasterReader extends FileRasterReader {
         long end = System.currentTimeMillis();
         Logger.log("Read tiff in " + (end - start) + "ms", Logger.LogLevel.INFO);
 
+        reader.dispose();
+        stream.close();
         return new ImageMetadata(width, height, samplesPerPixel, bitsPerSample);
     }
 }
