@@ -32,8 +32,8 @@
   <dependencies>
     <dependency>
       <groupId>com.github.bitknox.Raven</groupId>
-      <artifactId>Raptor</artifactId>
-      <version>1b8e4f2618</version>
+      <artifactId>raven</artifactId>
+      <version>110c133400</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

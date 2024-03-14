@@ -17,9 +17,9 @@
 
   <modules>
 
-    <module>raptor</module>
-
     <module>raven</module>
+
+    <module>raptor</module>
 
   </modules>
 
