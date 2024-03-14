@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.TreeMap;
 
 import com.github.davidmoten.rtree2.Entry;
 import com.github.davidmoten.rtree2.Leaf;
@@ -76,8 +77,8 @@ public class RavenJoin extends AbstractRavenJoin {
 		boolean[] inRanges = new boolean[rasterBounding.height + 1]; // we add one to the length to prevent an
 																		// out-of-bounds exeption at the end of this
 																		// method. This way saves us an if statement.
-		List<Long> intersections = new ArrayList<>(); // packed intersection coordinates
-		Map<Long, Integer> count = new HashMap<>(); // number of intersection for all packed intersection coordinates
+
+		Map<Long, Integer> intersections = new TreeMap<>();
 
 		// a line is of the form a*x + b*y = c
 		Point old = polygon.getFirst();
@@ -88,6 +89,7 @@ public class RavenJoin extends AbstractRavenJoin {
 			Point next = polygon.getPoint(i);
 			// compute the standard form of the line segment between the points old and next
 			double a = (next.y() - old.y());
+			double aInv = 1.0 / a;
 			double b = (old.x() - next.x());
 			double c = a * old.x() + b * old.y();
 
@@ -98,7 +100,7 @@ public class RavenJoin extends AbstractRavenJoin {
 
 			// compute all intersections between the line segment and horizontal pixel lines
 			for (int y = minY; y < maxY; y++) {
-				double x = (c - b * (y + 0.5)) / a;
+				double x = (c - b * (y + 0.5)) * aInv;
 				int ix = (int) Math.floor(x - rasterBounding.x);
 				if (ix <= 0) {
 					inRanges[y - rasterBounding.y] = !inRanges[y - rasterBounding.y];
@@ -108,24 +110,20 @@ public class RavenJoin extends AbstractRavenJoin {
 					long yComp = y - rasterBounding.y;
 					yComp <<= 32;
 					long key = yComp + ix;
-					Integer val = count.get(key);
-					if (val == null) { // new intersection
-						intersections.add(key);
-						count.put(key, 1);
-					} else { // an intersection we already encountered
-						count.put(key, val + 1);
-					}
+					int val = intersections.getOrDefault(key, 0);
+					intersections.put(key, val + 1);
 				}
 			}
 			old = next;
 		}
 
-		Collections.sort(intersections);
 		Collection<PixelRange> ranges = new ArrayList<>();
 		int oldY = 0;
 		boolean inRange = inRanges[0];
 		int start = 0;
-		for (long k : intersections) {
+		for (var kv : intersections.entrySet()) {
+			long k = kv.getKey();
+			int v = kv.getValue();
 			// reconstruct x and y from packed value
 			int x = (int) k;
 			int y = (int) (k >>> 32);
@@ -145,7 +143,7 @@ public class RavenJoin extends AbstractRavenJoin {
 					start = 0;
 				}
 			}
-			if ((count.get(k) % 2) == 0) { // an even number of intersections happen at this point
+			if ((v % 2) == 0) { // an even number of intersections happen at this point
 				if (!inRange) {
 					// if a range is ongoing, ignore these intersections, otherwise add this single
 					// pixel as a range. If there is an even number of intersections at the edge of
