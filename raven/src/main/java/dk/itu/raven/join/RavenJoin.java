@@ -135,7 +135,9 @@ public class RavenJoin extends AbstractRavenJoin {
 		int oldY = 0;
 		boolean inRange = inRanges[0];
 		int start = 0;
-		for (long k : intersections.keySet()) {
+		for (Map.Entry<Long, Integer> kv : intersections.entrySet()) {
+			long k = kv.getKey();
+			int v = kv.getValue();
 			// reconstruct x and y from packed value
 			int x = (int) k;
 			int y = (int) (k >>> 32);
@@ -155,7 +157,7 @@ public class RavenJoin extends AbstractRavenJoin {
 					start = 0;
 				}
 			}
-			if ((intersections.get(k) % 2) == 0) { // an even number of intersections happen at this point
+			if ((v % 2) == 0) { // an even number of intersections happen at this point
 				if (!inRange) {
 					// if a range is ongoing, ignore these intersections, otherwise add this single
 					// pixel as a range. If there is an even number of intersections at the edge of

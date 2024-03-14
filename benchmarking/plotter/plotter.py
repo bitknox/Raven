@@ -24,20 +24,41 @@ font = {'family' : 'DejaVu Sans',
 
 plt.rc('font', **font)
 
+thrown_away = 1
+
+for test in data:
+        test["times"].sort()
+        test["times"] = test["times"][:-thrown_away]
+        test["iterations"] -= thrown_away
+
 names = [test["name"] for test in data]
 # NOTE: ignores first entry in all time lists to account for cold starts
-times = [sum(test["times"][1:])/(test["iterations"]-1) for test in data]
-errors_lo = [times[i]-min(data[i]["times"][1:]) for i in range(len(data))]
-errors_hi = [max(data[i]["times"][1:]) - times[i] for i in range(len(data))]
+times = [sum(test["times"])/(test["iterations"]) for test in data]
+errors_lo = [times[i]-data[i]["times"][0] for i in range(len(data))]
+errors_hi = [data[i]["times"][-1] - times[i] for i in range(len(data))]
 
-# rcParams.update({'figure.autolayout': True})
+percentile = 5
+index = []
+for i in range(len(data)):
+        index = int(percentile*data[i]["iterations"]/100)
+print(index)
+
+errors_lo_95p = [times[i]-data[i]["times"][index] for i in range(len(data))]
+errors_hi_95p = [data[i]["times"][-index-1] - times[i] for i in range(len(data))]
+
+_, ax = plt.subplots(figsize=(8, 6))
+
+ax.grid(axis='y',which = "major", linewidth = 1, alpha=0.3,linestyle='dashed')
+plt.grid(color='gray', linestyle='dashed', linewidth=1, alpha=0.3, axis='y',which = "minor")
+ax.minorticks_on()
+ax.set_axisbelow(True)
+
 plt.bar(names,times,color="darkturquoise")
 plt.ylabel("Join time (ms)")
 plt.title("Average Join Times")
-eb = plt.errorbar(names,times, yerr=[errors_lo,errors_hi], marker=" ", fmt="o", capsize=10, elinewidth=2, color="darkslategray")
-eb[-1][0].set_linestyle("--")
-# plt.tight_layout()
-# plt.show()
+plt.errorbar(names,times, yerr=[errors_lo,errors_hi], marker=" ", fmt="o", capsize=5, elinewidth=0, color="darkslategray")
+eb = plt.errorbar(names,times, yerr=[errors_lo_95p,errors_hi_95p], marker=" ", fmt="o", capsize=10, elinewidth=2, color="darkslategray")
+
 plt.savefig(sys.argv[2]+"/big " + sys.argv[3] +".png", bbox_inches="tight")
 plt.clf()
 
