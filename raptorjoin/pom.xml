@@ -9,11 +9,11 @@
     <version>1.0</version>
   </parent>
 
-  <groupId>dk.itu.raven</groupId>
+  <groupId>dk.itu.raptor</groupId>
   <artifactId>raptor</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>raptorjoin</name>
+  <name>Raptor</name>
   <!-- FIXME change it to the project's website -->
   <url>http://www.example.com</url>
 
