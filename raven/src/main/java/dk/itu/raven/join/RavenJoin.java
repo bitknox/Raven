@@ -77,10 +77,7 @@ public class RavenJoin extends AbstractRavenJoin {
 		boolean[] inRanges = new boolean[rasterBounding.height + 1]; // we add one to the length to prevent an
 																		// out-of-bounds exeption at the end of this
 																		// method. This way saves us an if statement.
-		// List<Long> intersections = new ArrayList<>(); // packed intersection
-		// coordinates
-		// Map<Long, Integer> count = new HashMap<>(); // number of intersection for all
-		// packed intersection coordinates
+
 		Map<Long, Integer> intersections = new TreeMap<>();
 
 		// a line is of the form a*x + b*y = c
@@ -120,7 +117,6 @@ public class RavenJoin extends AbstractRavenJoin {
 			old = next;
 		}
 
-		// Collections.sort(intersections);
 		Collection<PixelRange> ranges = new ArrayList<>();
 		int oldY = 0;
 		boolean inRange = inRanges[0];
