@@ -37,7 +37,7 @@ public class App {
             } else if (jct.joinType.equals(JoinType.PARALLEL)) {
                 join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, true, true);
             } else {
-                join = api.getJoin(jct.inputRaster, jct.inputVector,true);
+                join = api.getJoin(jct.inputRaster, jct.inputVector, true);
             }
             if (jct.filterLow == Integer.MIN_VALUE && jct.filterHigh == Integer.MAX_VALUE) {
                 join.join(JoinFilterFunctions.acceptAll()).count();
