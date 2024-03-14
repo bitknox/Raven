@@ -16,9 +16,6 @@
   <name>Raven-root</name>
 
   <modules>
-
-    <module>raven</module>
-
     <module>raptor</module>
 
   </modules>
