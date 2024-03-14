@@ -9,7 +9,7 @@
     <version>1.0</version>
   </parent>
 
-  <groupId>dk.itu.raptor</groupId>
+  <groupId>dk.itu.raven</groupId>
   <artifactId>raptor</artifactId>
   <version>1.0-SNAPSHOT</version>
 
