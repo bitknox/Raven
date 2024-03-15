@@ -1,8 +1,13 @@
 package dk.itu.raptor.api;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import dk.itu.raptor.join.JoinResult;
@@ -12,14 +17,23 @@ import edu.ucr.cs.bdlab.beast.common.BeastOptions;
 import edu.ucr.cs.bdlab.beast.geolite.RasterMetadata;
 import edu.ucr.cs.bdlab.beast.io.shapefile.ShapefileFeatureReader;
 import edu.ucr.cs.bdlab.raptor.IRasterReader;
+import edu.ucr.cs.bdlab.raptor.RasterHelper;
 
 public class RaptorApi {
-    public Stream<JoinResult> join(Path vectorPath, Path rasterPath,
-            Stream<RasterMetadata> metadatas, List<IRasterReader<Object>> readers) {
+    public Stream<JoinResult> join(String inputRaster, String inputVector) throws IOException {
+        Path rasterPath = new Path(new File(inputRaster).getAbsolutePath());
+        Path vectorPath = new Path(new File(inputVector).getAbsolutePath());
+        FileSystem fs = rasterPath.getParent().getFileSystem(new Configuration());
+
+        IRasterReader<Object> reader = RasterHelper.createRasterReader(fs, rasterPath, new BeastOptions());
+        List<IRasterReader<Object>> readers = new ArrayList<>();
+        readers.add(reader);
+
+        RasterMetadata metadata = reader.metadata();
         RaptorJoin join = new RaptorJoin();
         try (ShapefileFeatureReader featureReader = new ShapefileFeatureReader()) {
             featureReader.initialize(vectorPath, new BeastOptions());
-            Stream<List<PixelRange>> stream = join.createFlashIndices(featureReader, metadatas);
+            Stream<List<PixelRange>> stream = join.createFlashIndices(featureReader, Stream.of(metadata));
             stream = join.optimizeFlashIndices(stream);
             Stream<JoinResult> res = join.processFlashIndices(stream, readers);
 

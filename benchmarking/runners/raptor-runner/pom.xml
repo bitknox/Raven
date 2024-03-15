@@ -33,7 +33,7 @@
     <dependency>
       <groupId>com.github.bitknox.Raven</groupId>
       <artifactId>raptor</artifactId>
-      <version>c35b6ebfe3</version>
+      <version>a2f83c7e01</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
