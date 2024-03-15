@@ -1,5 +1,6 @@
 package dk.itu.raven.io;
 
+import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -9,8 +10,6 @@ import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometries;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
-import java.awt.Rectangle;
-
 import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.io.cache.CachedRasterStructure;
 import dk.itu.raven.io.cache.RasterCache;
@@ -18,13 +17,11 @@ import dk.itu.raven.join.SpatialDataChunk;
 import dk.itu.raven.util.TreeExtensions;
 import dk.itu.raven.util.matrix.Matrix;
 
-public abstract class RasterReader {
+public abstract class RasterReader implements IRasterReader {
 	ImageMetadata metadata;
 	private Optional<String> cacheKey = Optional.empty();
 
 	public abstract Matrix readRasters(Rectangle rect) throws IOException;
-
-	public abstract TFWFormat getTransform();
 
 	protected abstract ImageMetadata readImageMetadata() throws IOException;
 
@@ -74,10 +71,9 @@ public abstract class RasterReader {
 		}).map(w -> {
 			try {
 				Offset<Integer> offset = new Offset<>(w.x, w.y);
-				offset.offset(globalOffset);
-
 				SpatialDataChunk chunk = new SpatialDataChunk();
 				chunk.setOffset(offset);
+				chunk.setGlobalOffset(globalOffset);
 				String key = chunk.getCacheKeyName();
 				if (cache.isPresent() && cache.get().contains(key)) {
 					chunk.setCacheKey(key);

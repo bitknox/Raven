@@ -12,7 +12,7 @@ import java.awt.Rectangle;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 
-public class MatrixReader extends RasterReader implements IRasterReader {
+public class MatrixReader extends RasterReader {
 	public Matrix matrix;
 	public TFWFormat transform;
 
@@ -33,11 +33,6 @@ public class MatrixReader extends RasterReader implements IRasterReader {
 		Matrix arrayMatrix = new ArrayMatrix(values, rect.width, rect.height);
 
 		return arrayMatrix;
-	}
-
-	@Override
-	public TFWFormat getTransform() {
-		return transform;
 	}
 
 	/**
@@ -62,5 +57,17 @@ public class MatrixReader extends RasterReader implements IRasterReader {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	@Override
+	public TFWFormat getG2M() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getG2M'");
+	}
+
+	@Override
+	public TFWFormat getG2W() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getG2W'");
 	}
 }

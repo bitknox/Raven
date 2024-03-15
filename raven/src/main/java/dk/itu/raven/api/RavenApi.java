@@ -30,7 +30,7 @@ public class RavenApi {
 	 */
 	public AbstractRavenJoin getJoin(String rasterPath, String vectorPath, boolean isCaching) throws IOException {
 		IRasterReader rasterReader = createRasterReader(rasterPath);
-		ShapefileReader vectorReader = createShapefileReader(vectorPath, rasterReader.getTransform(),
+		ShapefileReader vectorReader = createShapefileReader(vectorPath, rasterReader.getG2W(),
 				rasterReader.getCRS());
 
 		return InternalApi.getJoin(rasterReader, vectorReader, isCaching);
@@ -47,7 +47,7 @@ public class RavenApi {
 	public StreamedRavenJoin getStreamedJoin(String rasterPath, String vectorPath,
 			int widthStep, int heightStep, boolean parallel, boolean isCaching) throws IOException {
 		IRasterReader rasterReader = createRasterReader(rasterPath);
-		ShapefileReader vectorReader = createShapefileReader(vectorPath, rasterReader.getTransform(),
+		ShapefileReader vectorReader = createShapefileReader(vectorPath, rasterReader.getG2W(),
 				rasterReader.getCRS());
 
 		return InternalApi.getStreamedJoin(rasterReader, vectorReader, widthStep, heightStep, parallel, isCaching);

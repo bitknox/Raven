@@ -19,8 +19,9 @@ import dk.itu.raven.join.SpatialDataChunk;
 
 public class MultiFileRasterReader implements IRasterReader {
 
-	private Stream<RasterReader> readers;
-	private TFWFormat transform = new TFWFormat(0, 0, 0, 0, Integer.MAX_VALUE, Integer.MIN_VALUE);
+	private Stream<ImageIORasterReader> readers;
+	private TFWFormat g2m = new TFWFormat(0, 0, 0, 0, Integer.MAX_VALUE, Integer.MIN_VALUE);
+	private TFWFormat g2w = new TFWFormat(0, 0, 0, 0, Integer.MAX_VALUE, Integer.MIN_VALUE);
 	private ImageMetadata metadata;
 	private CoordinateReferenceSystem crs;
 	private String cacheKey;
@@ -30,7 +31,8 @@ public class MultiFileRasterReader implements IRasterReader {
 		// find all tiff files in directory and subdirectories
 		List<File> files = Arrays.asList(directory.listFiles());
 		ImageIORasterReader reader = new ImageIORasterReader(files.get(0));
-		this.transform = reader.getTransform();
+		this.g2m = reader.getG2M();
+		this.g2w = reader.getG2W();
 		this.crs = reader.getCRS();
 		this.metadata = reader.getImageMetadata();
 		Stream<ImageIORasterReader> singleStream = Stream.of(reader);
@@ -58,11 +60,13 @@ public class MultiFileRasterReader implements IRasterReader {
 			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree) throws IOException {
 		return readers.map(reader -> {
 			try {
-				TFWFormat transform = reader.getTransform();
+				TFWFormat transform = reader.getG2M();
 
 				Offset<Integer> offset = new Offset<Integer>(
-						(int) ((transform.topLeftX - this.transform.topLeftX) / transform.pixelLengthX),
-						(int) ((transform.topLeftY - this.transform.topLeftY) / transform.pixelLengthY));
+						(int) ((transform.topLeftX - this.g2m.topLeftX) / transform.pixelLengthX),
+						(int) ((transform.topLeftY - this.g2m.topLeftY) / transform.pixelLengthY));
+
+				System.out.println("Offset: " + offset.getX() + " " + offset.getY());
 
 				return reader.rasterPartitionStream(widthStep, heightStep,
 						offset, cache, rtree).parallel();
@@ -74,8 +78,12 @@ public class MultiFileRasterReader implements IRasterReader {
 		}).reduce(Stream::concat).orElse(Stream.empty());
 	}
 
-	public TFWFormat getTransform() {
-		return transform;
+	public TFWFormat getG2M() {
+		return g2m;
+	}
+
+	public TFWFormat getG2W() {
+		return g2w;
 	}
 
 	public CoordinateReferenceSystem getCRS() {

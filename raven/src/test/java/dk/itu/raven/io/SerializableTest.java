@@ -22,10 +22,11 @@ public class SerializableTest {
 	@Test
 	public void testSerializableChunk() throws IOException, ClassNotFoundException {
 		Offset<Integer> offset = new Offset<Integer>(5, 10);
+		Offset<Integer> globalOffset = new Offset<Integer>(0, 0);
 		Matrix matrix = new RandomMatrix(1000, 1000, 100);
 		AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
 
-		CachedRasterStructure crs = new CachedRasterStructure(k2, offset);
+		CachedRasterStructure crs = new CachedRasterStructure(k2, offset, globalOffset);
 
 		Serializer.serialize("serializeTest.txt", crs);
 
@@ -34,6 +35,7 @@ public class SerializableTest {
 		assertEquals(k2.k, crs2.raster.k);
 		assertEquals(k2.getSize(), crs2.raster.getSize());
 		assertEquals(offset, crs2.offset);
+		assertEquals(globalOffset, crs2.globalOffset);
 	}
 
 	@AfterAll

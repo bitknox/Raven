@@ -9,11 +9,14 @@ import dk.itu.raven.ksquared.AbstractK2Raster;
 public class JoinChunk {
     private AbstractK2Raster raster;
     private Offset<Integer> offset;
+    private Offset<Integer> globalOffset;
     private RTree<String, Geometry> rtree;
 
-    public JoinChunk(AbstractK2Raster raster, Offset<Integer> offset, RTree<String, Geometry> rtree) {
+    public JoinChunk(AbstractK2Raster raster, Offset<Integer> offset, Offset<Integer> globalOffset,
+            RTree<String, Geometry> rtree) {
         this.raster = raster;
         this.offset = offset;
+        this.globalOffset = globalOffset;
         this.rtree = rtree;
     }
 
@@ -23,6 +26,10 @@ public class JoinChunk {
 
     public Offset<Integer> getOffset() {
         return offset;
+    }
+
+    public Offset<Integer> getGlobalOffset() {
+        return globalOffset;
     }
 
     public RTree<String, Geometry> getRtree() {

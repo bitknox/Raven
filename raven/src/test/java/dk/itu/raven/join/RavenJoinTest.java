@@ -21,6 +21,7 @@ import com.github.davidmoten.rtree2.geometry.Point;
 
 import dk.itu.raven.geometry.FeatureGeometry;
 import dk.itu.raven.geometry.PixelRange;
+import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.ksquared.K2RasterBuilder;
@@ -38,7 +39,7 @@ public class RavenJoinTest {
         points.add(Geometries.point(20, 30));
         points.add(Geometries.point(10, 20));
         points.add(Geometries.point(0, 30));
-        FeatureGeometry poly = new FeatureGeometry(points);
+        Polygon poly = new Polygon(points);
 
         java.awt.Rectangle rect = new java.awt.Rectangle(0, 0, 20, 30);
         Matrix matrix = new RandomMatrix(20, 30, 2);
@@ -57,7 +58,7 @@ public class RavenJoinTest {
         List<Point> points = new ArrayList<>();
         points.add(Geometries.point(1, 1));
         points.add(Geometries.point(10, 10));
-        FeatureGeometry poly = new FeatureGeometry(points);
+        Polygon poly = new Polygon(points);
         java.awt.Rectangle rect = new java.awt.Rectangle(0, 0, 11, 11);
         Matrix matrix = new RandomMatrix(10, 10, 2);
         AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);

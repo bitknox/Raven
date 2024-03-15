@@ -31,18 +31,6 @@ public class TFWFormat {
 		this.inveresePixelLengthY = 1.0 / pixelLengthY;
 	}
 
-	public TFWFormat(AffineTransform transformation) {
-		pixelLengthX = transformation.getScaleX();
-		rotationY = transformation.getShearY();
-		rotationX = transformation.getShearX();
-		pixelLengthYNegative = transformation.getScaleY();
-		pixelLengthY = -pixelLengthYNegative;
-		topLeftX = transformation.getTranslateX();
-		topLeftY = transformation.getTranslateY();
-		inveresePixelLengthX = 1.0 / pixelLengthX;
-		inveresePixelLengthY = 1.0 / pixelLengthY;
-	}
-
 	public AffineTransform getAffineTransform() {
 		return new AffineTransform(pixelLengthX, rotationY, rotationX, pixelLengthY, topLeftX,
 				topLeftY);

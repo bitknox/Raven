@@ -15,7 +15,9 @@ import dk.itu.raven.join.SpatialDataChunk;
 
 public interface IRasterReader {
 
-	public TFWFormat getTransform();
+	public TFWFormat getG2M();
+
+	public TFWFormat getG2W();
 
 	public Optional<String> getCacheKey();
 

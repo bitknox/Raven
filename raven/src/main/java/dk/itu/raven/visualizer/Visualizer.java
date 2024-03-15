@@ -9,17 +9,20 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-
-import org.locationtech.jts.geom.Coordinate;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 
 import com.github.davidmoten.rtree2.Node;
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
+import com.github.davidmoten.rtree2.geometry.Point;
 
-import dk.itu.raven.geometry.FeatureGeometry;
 import dk.itu.raven.geometry.GeometryUtil;
 import dk.itu.raven.geometry.PixelRange;
+import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.ShapefileReader.ShapeFileBounds;
@@ -50,7 +53,7 @@ public class Visualizer {
 		this.r = new Random();
 	}
 
-	private Pair<List<FeatureGeometry>, ShapeFileBounds> getFeatures(ShapefileReader shapeFileReader)
+	private Pair<List<Polygon>, ShapeFileBounds> getFeatures(ShapefileReader shapeFileReader)
 			throws IOException {
 		return shapeFileReader.readShapefile();
 
@@ -70,7 +73,7 @@ public class Visualizer {
 	public BufferedImage drawResult(IJoinResult results, ShapefileReader shapeFileReader,
 			VisualizerOptions options) throws IOException {
 		var pair = getFeatures(shapeFileReader);
-		List<FeatureGeometry> features = pair.first;
+		List<Polygon> features = pair.first;
 		ShapeFileBounds bounds = pair.second;
 
 		int width = this.width;
@@ -115,13 +118,13 @@ public class Visualizer {
 		graphics.setColor(new Color(color.getRGB()));
 	}
 
-	private void drawFeatures(Graphics2D graphics, Iterable<FeatureGeometry> features, Color color) {
+	private void drawFeatures(Graphics2D graphics, Iterable<Polygon> features, Color color) {
 
-		for (FeatureGeometry poly : features) {
+		for (Polygon poly : features) {
 			setColor(graphics, color);
-			Coordinate old = poly.getFirst();
-			for (Coordinate next : poly) {
-				graphics.drawLine((int) old.getX(), (int) old.getY(), (int) next.getX(), (int) next.getY());
+			Point old = poly.getFirst();
+			for (Point next : poly) {
+				graphics.drawLine((int) old.x(), (int) old.y(), (int) next.x(), (int) next.y());
 				old = next;
 			}
 		}
@@ -136,7 +139,7 @@ public class Visualizer {
 	 *         {@code features}
 	 */
 	public BufferedImage drawShapefile(ShapefileReader shapeFileReader, VisualizerOptions options) throws IOException {
-		List<FeatureGeometry> features = getFeatures(shapeFileReader).first;
+		List<Polygon> features = getFeatures(shapeFileReader).first;
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D vectorGraphics = image.createGraphics();
 
@@ -240,7 +243,7 @@ public class Visualizer {
 	 */
 	public BufferedImage drawVectorRasterOverlap(ShapefileReader shapeFileReader, RTree<String, Geometry> tree,
 			K2Raster k2Raster, int k2RecursionDepth, VisualizerOptions options) throws IOException {
-		Iterable<FeatureGeometry> features = getFeatures(shapeFileReader).first;
+		Iterable<Polygon> features = getFeatures(shapeFileReader).first;
 
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics = image.createGraphics();
@@ -273,8 +276,17 @@ public class Visualizer {
 	 * @param outputFormat The image format
 	 */
 	private void writeImage(BufferedImage image, String outputPath, String outputFormat) throws IOException {
-		ImageIO.write(image, outputFormat, new File(outputPath));
+		ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
+		ImageWriteParam param = writer.getDefaultWriteParam();
+		param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+		param.setCompressionQuality(0.5f); // Adjust the quality parameter as needed
 
+		File fOutputFile = new File(outputPath);
+		ImageOutputStream ios = ImageIO.createImageOutputStream(fOutputFile);
+		writer.setOutput(ios);
+		writer.write(null, new IIOImage(image, null, null), param);
+		writer.dispose();
+		ios.close();
 	}
 
 }

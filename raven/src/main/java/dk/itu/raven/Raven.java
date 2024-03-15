@@ -45,7 +45,7 @@ public class Raven {
 
         IRasterReader rasterReader = new MultiFileRasterReader(new File(jct.inputRaster));
         ShapefileReader shapefileReader = api.createShapefileReader(jct.inputVector,
-                rasterReader.getTransform(), rasterReader.getCRS());
+                rasterReader.getG2W(), rasterReader.getCRS());
 
         ImageMetadata metadata = rasterReader.getImageMetadata();
 
@@ -98,7 +98,7 @@ public class Raven {
         // Visualize the result
         if (jct.outputPath != null) {
             // FIXME: This is a hack to get the visualizer to work with multifile raster
-            Visualizer visual = new Visualizer(44000,
+            Visualizer visual = new Visualizer(40000,
                     16000);
             VisualizerOptionsBuilder builder = new VisualizerOptionsBuilder();
 

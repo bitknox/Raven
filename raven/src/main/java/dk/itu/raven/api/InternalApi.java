@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
-import dk.itu.raven.geometry.FeatureGeometry;
+import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.io.ImageMetadata;
 import dk.itu.raven.io.IRasterReader;
@@ -48,7 +48,7 @@ public class InternalApi {
             isCaching = rasterReader.getCacheKey().isPresent();
 
         // load geometries from shapefile
-        Pair<List<FeatureGeometry>, ShapefileReader.ShapeFileBounds> geometries = featureReader.readShapefile();
+        Pair<List<Polygon>, ShapefileReader.ShapeFileBounds> geometries = featureReader.readShapefile();
 
         // TODO: check if it is faster to just use the original rtree
         RTree<String, Geometry> rtree = generateRTree(geometries);
@@ -66,7 +66,7 @@ public class InternalApi {
                     Logger.log("Using cached raster structure " + chunk.getCacheKey().get(), LogLevel.DEBUG);
                     try {
                         CachedRasterStructure c = cache.readItem(chunk.getCacheKey().get());
-                        return new JoinChunk(c.raster, c.offset, rtree);
+                        return new JoinChunk(c.raster, c.offset, c.globalOffset, rtree);
                     } catch (Exception e) {
                         Logger.log("Item was in cache index, but not found on disk", LogLevel.ERROR);
                         System.exit(-1);
@@ -79,20 +79,20 @@ public class InternalApi {
                 // write the structure to the cache
                 try {
                     cache.addRasterToCache(chunk.getCacheKeyName(),
-                            new CachedRasterStructure(raster, chunk.getOffset()));
+                            new CachedRasterStructure(raster, chunk.getOffset(), chunk.getGlobalOffset()));
                 } catch (IOException e) {
                     Logger.log("Failed to write to cache: " + e.getMessage(), LogLevel.ERROR);
                 }
 
                 // create the raster structure an potentially cache it
-                return new JoinChunk(raster, chunk.getOffset(), rtree);
+                return new JoinChunk(raster, chunk.getOffset(), chunk.getGlobalOffset(), rtree);
             });
         } else {
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
                     Optional.empty(), rtree);
             return rasterStream.map(chunk -> {
                 AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix());
-                return new JoinChunk(raster, chunk.getOffset(), rtree);
+                return new JoinChunk(raster, chunk.getOffset(), chunk.getGlobalOffset(), rtree);
             });
         }
 
@@ -121,7 +121,7 @@ public class InternalApi {
      * @return the R* tree
      */
     static RTree<String, Geometry> generateRTree(
-            Pair<List<FeatureGeometry>, ShapefileReader.ShapeFileBounds> geometries) {
+            Pair<List<Polygon>, ShapefileReader.ShapeFileBounds> geometries) {
         RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
         for (Geometry polygon : geometries.first) {
             rtree = rtree.add(null, polygon);
@@ -147,11 +147,13 @@ public class InternalApi {
             throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
         Size imageSize = new Size(metadata.getWidth(), metadata.getHeight());
+        System.out.println("Image size: " + imageSize.width + " " + imageSize.height);
         var structures = streamStructures(vectorReader, rasterReader, widthStep, heightStep, isCaching);
         Stream<RavenJoin> stream = structures.filter(chunk -> {
             return chunk.getRtree().root().isPresent();
         }).map(chunk -> {
-            return new RavenJoin(chunk.getRaster(), chunk.getRtree(), chunk.getOffset(), imageSize);
+            return new RavenJoin(chunk.getRaster(), chunk.getRtree(), chunk.getOffset(), chunk.getGlobalOffset(),
+                    imageSize);
         });
         if (parallel) {
             return new ParallelStreamedRavenJoin(stream);

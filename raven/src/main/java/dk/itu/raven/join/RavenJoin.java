@@ -5,19 +5,18 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
 
-import org.locationtech.jts.geom.Coordinate;
-
 import com.github.davidmoten.rtree2.Entry;
 import com.github.davidmoten.rtree2.Leaf;
 import com.github.davidmoten.rtree2.Node;
 import com.github.davidmoten.rtree2.NonLeaf;
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
+import com.github.davidmoten.rtree2.geometry.Point;
 import com.github.davidmoten.rtree2.geometry.Rectangle;
 
-import dk.itu.raven.geometry.FeatureGeometry;
 import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.PixelRange;
+import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.util.BST;
@@ -43,18 +42,20 @@ public class RavenJoin extends AbstractRavenJoin {
 	private AbstractK2Raster k2Raster;
 	private RTree<String, Geometry> tree;
 	private Offset<Integer> offset;
+	private Offset<Integer> globalOffset;
 	private Size imageSize;
 
 	public RavenJoin(AbstractK2Raster k2Raster, RTree<String, Geometry> tree,
-			Offset<Integer> offset, Size imageSize) {
+			Offset<Integer> offset, Offset<Integer> globalOffset, Size imageSize) {
 		this.k2Raster = k2Raster;
 		this.tree = tree;
 		this.offset = offset;
+		this.globalOffset = globalOffset;
 		this.imageSize = imageSize;
 	}
 
 	public RavenJoin(AbstractK2Raster k2Raster, RTree<String, Geometry> tree, Size imageSize) {
-		this(k2Raster, tree, new Offset<>(0, 0), imageSize);
+		this(k2Raster, tree, new Offset<>(0, 0), new Offset<>(0, 0), imageSize);
 	}
 
 	/**
@@ -66,7 +67,7 @@ public class RavenJoin extends AbstractRavenJoin {
 	 * @return A collection of pixels that are contained in the vector shape
 	 *         described by {@code polygon}
 	 */
-	protected Collection<PixelRange> extractCellsPolygon(FeatureGeometry polygon, int pk,
+	protected Collection<PixelRange> extractCellsPolygon(Polygon polygon, int pk,
 			java.awt.Rectangle rasterBounding) {
 		// 1 on index i * rasterBounding.geetSize() + j if an intersection between a
 		// line of the polygon and the line y=j happens at point (i,j)
@@ -80,21 +81,21 @@ public class RavenJoin extends AbstractRavenJoin {
 		}
 
 		// a line is of the form a*x + b*y = c
-		Coordinate old = polygon.getFirst();
+		Point old = polygon.getFirst();
 
 		// we run the loop to polygon.size() + 1 because we want to wrap around end at
 		// the first point
 		for (int i = 1; i < polygon.size() + 1; i++) {
-			Coordinate next = polygon.getPoint(i);
+			Point next = polygon.getPoint(i);
 			// compute the standard form of the line segment between the points old and next
-			double a = (next.getY() - old.getY());
-			double b = (old.getX() - next.getX());
-			double c = a * old.getX() + b * old.getY();
+			double a = (next.y() - old.y());
+			double b = (old.x() - next.x());
+			double c = a * old.x() + b * old.y();
 
 			int minY = (int) Math.min(rasterBounding.y + rasterBounding.height,
-					Math.max(rasterBounding.y, Math.round(Math.min(old.getY(), next.getY()))));
+					Math.max(rasterBounding.y, Math.round(Math.min(old.y(), next.y()))));
 			int maxY = (int) Math.min(rasterBounding.y + rasterBounding.height,
-					Math.max(rasterBounding.y, Math.round(Math.max(old.getY(), next.getY()))));
+					Math.max(rasterBounding.y, Math.round(Math.max(old.y(), next.y()))));
 
 			// compute all intersections between the line segment and horizontal pixel lines
 			for (int y = minY; y < maxY; y++) {
@@ -112,7 +113,8 @@ public class RavenJoin extends AbstractRavenJoin {
 		}
 
 		Collection<PixelRange> ranges = new ArrayList<>();
-		for (int y = 0; y < Math.min(rasterBounding.height, imageSize.height - rasterBounding.y); y++) {
+		for (int y = 0; y < Math.min(rasterBounding.height,
+				imageSize.height + globalOffset.getY() - rasterBounding.y); y++) {
 			BST<Integer, Integer> bst = intersections.get(y);
 			boolean inRange = inRanges[y];
 			int start = 0;
@@ -143,7 +145,7 @@ public class RavenJoin extends AbstractRavenJoin {
 				ranges.add(new PixelRange(y + rasterBounding.y,
 						start + rasterBounding.x,
 						Math.min(rasterBounding.width - 1 + rasterBounding.x,
-								imageSize.width - 1)));
+								imageSize.width + globalOffset.getX() - 1)));
 			}
 		}
 
@@ -173,7 +175,7 @@ public class RavenJoin extends AbstractRavenJoin {
 		for (Entry<String, Geometry> entry : ((Leaf<String, Geometry>) pr).entries()) {
 			// all geometries we store are polygons
 			def.add(new JoinResultItem(entry.geometry(),
-					extractCellsPolygon((FeatureGeometry) entry.geometry(), pk, rasterBounding)));
+					extractCellsPolygon((Polygon) entry.geometry(), pk, rasterBounding)));
 		}
 	}
 
@@ -329,8 +331,10 @@ public class RavenJoin extends AbstractRavenJoin {
 
 	private java.awt.Rectangle getRectangle(Square rasterBounding) {
 		return new java.awt.Rectangle(rasterBounding.getTopX(), rasterBounding.getTopY(),
-				Math.min(rasterBounding.getSize(), Math.max(0, imageSize.width)),
-				Math.min(rasterBounding.getSize(), Math.max(0, imageSize.height)));
+				Math.min(rasterBounding.getSize(),
+						Math.max(0, imageSize.width + globalOffset.getX() - rasterBounding.getTopX())),
+				Math.min(rasterBounding.getSize(), Math.max(0,
+						imageSize.height + globalOffset.getX() - rasterBounding.getTopY())));
 	}
 
 	private boolean intersects(java.awt.Rectangle movedRasterWindow, Rectangle mbr) {
@@ -358,13 +362,15 @@ public class RavenJoin extends AbstractRavenJoin {
 
 		for (Node<String, Geometry> node : TreeExtensions.getChildren(tree.root().get())) {
 			S.push(new Tuple5<>(node, 0,
-					new Square(offset.getX(), offset.getY(), k2Raster.getSize()), minMax.first,
-					minMax.second));
+					new Square(offset.getX() + globalOffset.getX(), offset.getY() + globalOffset.getY(),
+							k2Raster.getSize()),
+					minMax.first, minMax.second));
 		}
 
 		// Used for early termination. If the vector data does not overlap with BOTH the
 		// image and the square k2Raster there will never be an intersection.
-		java.awt.Rectangle movedRasterWindow = new java.awt.Rectangle(offset.getX(), offset.getY(),
+		java.awt.Rectangle movedRasterWindow = new java.awt.Rectangle(offset.getX() + globalOffset.getX(),
+				offset.getY() + globalOffset.getY(),
 				Math.min(imageSize.width, k2Raster.getSize()), Math.min(imageSize.height, k2Raster.getSize()));
 
 		while (!S.empty()) {
@@ -433,15 +439,15 @@ public class RavenJoin extends AbstractRavenJoin {
 		for (JoinResultItem item : prob) {
 			JoinResultItem result = new JoinResultItem(item.geometry, new ArrayList<>());
 			for (PixelRange range : item.pixelRanges) {
-				PixelRange[] values = k2Raster.searchValuesInWindow(range.row - offset.getY(),
-						range.row - offset.getY(),
-						range.x1 - offset.getX(),
-						range.x2 - offset.getX(), function);
+				PixelRange[] values = k2Raster.searchValuesInWindow(range.row - offset.getY() - globalOffset.getY(),
+						range.row - offset.getY() - globalOffset.getY(),
+						range.x1 - offset.getX() - globalOffset.getX(),
+						range.x2 - offset.getX() - globalOffset.getX(), function);
 				for (PixelRange filteredRange : values) {
 					result.pixelRanges
-							.add(new PixelRange(filteredRange.row + offset.getY(),
-									filteredRange.x1 + offset.getX(),
-									filteredRange.x2 + offset.getX()));
+							.add(new PixelRange(filteredRange.row + offset.getY() + globalOffset.getY(),
+									filteredRange.x1 + offset.getX() + globalOffset.getX(),
+									filteredRange.x2 + offset.getX() + globalOffset.getX()));
 				}
 			}
 			def.add(result);

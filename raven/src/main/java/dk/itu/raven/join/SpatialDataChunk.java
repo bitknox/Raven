@@ -14,6 +14,7 @@ public class SpatialDataChunk {
     private Optional<String> cacheKey = Optional.empty();
 
     private Offset<Integer> offset;
+    private Offset<Integer> globalOffset;
 
     public SpatialDataChunk() {
     }
@@ -34,6 +35,10 @@ public class SpatialDataChunk {
         this.offset = offset;
     }
 
+    public void setGlobalOffset(Offset<Integer> globalOffset) {
+        this.globalOffset = globalOffset;
+    }
+
     public Matrix getMatrix() {
         return matrix;
     }
@@ -46,8 +51,12 @@ public class SpatialDataChunk {
         return offset;
     }
 
+    public Offset<Integer> getGlobalOffset() {
+        return this.globalOffset;
+    }
+
     public String getCacheKeyName() {
-        return offset.getX() + "-" + offset.getY();
+        return offset.getX() + globalOffset.getX() + "-" + offset.getY() + globalOffset.getY();
     }
 
     public Optional<String> getCacheKey() {
