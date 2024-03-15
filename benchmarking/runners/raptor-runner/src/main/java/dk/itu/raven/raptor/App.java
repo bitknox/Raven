@@ -22,7 +22,7 @@ public class App {
         RaptorApi api = new RaptorApi();
         for (int i = 0; i < jct.iterations; i++) {
             long start = System.currentTimeMillis();
-            api.join(jct.inputRaster, jct.inputVector);
+            api.join(jct.inputRaster, jct.inputVector).count();
             long end = System.currentTimeMillis();
             long time = end - start;
             benchResult.addEntry(time);

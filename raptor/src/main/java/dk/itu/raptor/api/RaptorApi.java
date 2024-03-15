@@ -25,9 +25,10 @@ public class RaptorApi {
         Path rasterPath = new Path(new File(inputRaster).getAbsolutePath());
         Path vectorPath = new Path(new File(inputVector).getAbsolutePath());
 
+        FileSystem fs = rasterPath.getParent().getFileSystem(new Configuration());
+
         RaptorJoin join = new RaptorJoin();
         try (ShapefileFeatureReader featureReader = new ShapefileFeatureReader();
-                FileSystem fs = rasterPath.getParent().getFileSystem(new Configuration());
                 IRasterReader<Object> reader = RasterHelper.createRasterReader(fs, rasterPath, new BeastOptions(),
                         new SparkConf())) {
             List<IRasterReader<Object>> readers = new ArrayList<>();
