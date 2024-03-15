@@ -12,14 +12,12 @@ import org.apache.hadoop.fs.Path;
 
 import com.beust.jcommander.JCommander;
 
+import dk.itu.raptor.api.RaptorApi;
 import dk.itu.raptor.io.commandline.CommandLineArgs;
 import dk.itu.raptor.join.JoinResult;
-import dk.itu.raptor.join.PixelRange;
-import dk.itu.raptor.join.RaptorJoin;
-// import dk.itu.raptor.join.RasterMetadata;
+
 import edu.ucr.cs.bdlab.beast.common.BeastOptions;
 import edu.ucr.cs.bdlab.beast.geolite.RasterMetadata;
-import edu.ucr.cs.bdlab.beast.io.shapefile.ShapefileFeatureReader;
 import edu.ucr.cs.bdlab.raptor.IRasterReader;
 import edu.ucr.cs.bdlab.raptor.RasterHelper;
 
@@ -45,31 +43,19 @@ public class Raptor {
         readers.add(reader);
 
         RasterMetadata metadata = reader.metadata();
-        RaptorJoin join = new RaptorJoin();
 
         // RasterMetadata rmd = new RasterMetadata(raster, metaData);
+        RaptorApi api = new RaptorApi();
 
         long start = System.currentTimeMillis();
-
-        try (ShapefileFeatureReader featureReader = new ShapefileFeatureReader()) {
-            featureReader.initialize(vectorPath, new BeastOptions());
-            Stream<List<PixelRange>> stream = join.createFlashIndices(featureReader, Stream.of(metadata));
-            stream = join.optimizeFlashIndices(stream);
-            if (jct.parallel) {
-                stream = stream.parallel();
+        Stream<JoinResult> res = api.join(rasterPath, vectorPath, Stream.of(metadata), readers);
+        if (!jct.ranges.isEmpty()) {
+            if (jct.ranges.size() != 2) {
+                throw new IllegalArgumentException("More than one range is not supported");
             }
-            Stream<JoinResult> res = join.processFlashIndices(stream, readers);
-            if (!jct.ranges.isEmpty()) {
-                if (jct.ranges.size() != 2) {
-                    throw new IllegalArgumentException("More than one range is not supported");
-                }
-                res = res.filter(r -> jct.ranges.get(0) <= r.m && r.m <= jct.ranges.get(1));
-            }
-            System.out.println(res.count());
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(-1);
+            res = res.filter(r -> jct.ranges.get(0) <= r.m && r.m <= jct.ranges.get(1));
         }
+        System.out.println(res.count());
 
         long end = System.currentTimeMillis();
         System.out.println("joined in " + (end - start) + "ms");
