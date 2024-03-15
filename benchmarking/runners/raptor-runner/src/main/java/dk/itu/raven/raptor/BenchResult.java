@@ -1,4 +1,4 @@
-package dk.itu.raven.runner;
+package dk.itu.raven.raptor;
 
 import java.util.ArrayList;
 
@@ -7,8 +7,6 @@ public class BenchResult {
 	private ArrayList<Long> times;
 	private int iterations;
 	public ArrayList<String> labels = new ArrayList<String>();
-
-
 
 	public BenchResult(String name) {
 		this.name = name;

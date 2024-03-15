@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.spark.SparkConf;
 
 import dk.itu.raptor.join.JoinResult;
 import dk.itu.raptor.join.PixelRange;
@@ -25,7 +26,8 @@ public class RaptorApi {
         Path vectorPath = new Path(new File(inputVector).getAbsolutePath());
         FileSystem fs = rasterPath.getParent().getFileSystem(new Configuration());
 
-        IRasterReader<Object> reader = RasterHelper.createRasterReader(fs, rasterPath, new BeastOptions());
+        IRasterReader<Object> reader = RasterHelper.createRasterReader(fs, rasterPath, new BeastOptions(),
+                new SparkConf());
         List<IRasterReader<Object>> readers = new ArrayList<>();
         readers.add(reader);
 

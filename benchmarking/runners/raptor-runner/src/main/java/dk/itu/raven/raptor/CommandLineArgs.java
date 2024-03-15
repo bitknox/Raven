@@ -1,4 +1,4 @@
-package dk.itu.raven.runner;
+package dk.itu.raven.raptor;
 
 import com.beust.jcommander.Parameter;
 
