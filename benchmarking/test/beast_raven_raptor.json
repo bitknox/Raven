@@ -1,5 +1,25 @@
 [
     {
+        "name": "Raptor",
+        "iterations": 25,
+        "command": {
+            "path": "java",
+            "args": [
+                "-jar",
+                "/home/raptor-runner-1.0.jar",
+                "-iv",
+                "/home/boundaries.zip",
+                "-ir",
+                "/home/glc2000/glc2000_v1_1.tif"
+            ]
+        },
+        "environment_options": {
+            "environment_type": "docker",
+            "docker_file_path": "./runners/raptor-runner/",
+            "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+        }
+    },
+    {
         "name": "Beast ",
         "iterations": 5,
         "command": {
@@ -42,26 +62,6 @@
         "environment_options": {
             "environment_type": "docker",
             "docker_file_path": "./runners/raven-runner/",
-            "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
-        }
-    },
-    {
-        "name": "Raptor",
-        "iterations": 25,
-        "command": {
-            "path": "java",
-            "args": [
-                "-jar",
-                "/home/raptor-runner-1.0.jar",
-                "-iv",
-                "/home/boundaries.zip",
-                "-ir",
-                "/home/glc2000"
-            ]
-        },
-        "environment_options": {
-            "environment_type": "docker",
-            "docker_file_path": "./runners/raptor-runner/",
             "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
         }
     }
