@@ -25,26 +25,21 @@ public class RaptorApi {
         Path rasterPath = new Path(new File(inputRaster).getAbsolutePath());
         Path vectorPath = new Path(new File(inputVector).getAbsolutePath());
 
-        FileSystem fs = rasterPath.getParent().getFileSystem(new Configuration());
+        FileSystem fs = FileSystem.newInstance(new Configuration());
 
         RaptorJoin join = new RaptorJoin();
-        try (ShapefileFeatureReader featureReader = new ShapefileFeatureReader();
-                IRasterReader<Object> reader = RasterHelper.createRasterReader(fs, rasterPath, new BeastOptions(),
-                        new SparkConf())) {
-            List<IRasterReader<Object>> readers = new ArrayList<>();
-            readers.add(reader);
+        ShapefileFeatureReader featureReader = new ShapefileFeatureReader();
+        IRasterReader<Object> reader = RasterHelper.createRasterReader(fs, rasterPath, new BeastOptions(),
+                new SparkConf());
+        List<IRasterReader<Object>> readers = new ArrayList<>();
+        readers.add(reader);
 
-            RasterMetadata metadata = reader.metadata();
-            featureReader.initialize(vectorPath, new BeastOptions());
-            Stream<List<PixelRange>> stream = join.createFlashIndices(featureReader, Stream.of(metadata));
-            stream = join.optimizeFlashIndices(stream);
-            Stream<JoinResult> res = join.processFlashIndices(stream, readers);
+        RasterMetadata metadata = reader.metadata();
+        featureReader.initialize(vectorPath, new BeastOptions());
+        Stream<List<PixelRange>> stream = join.createFlashIndices(featureReader, Stream.of(metadata));
+        stream = join.optimizeFlashIndices(stream);
+        Stream<JoinResult> res = join.processFlashIndices(stream, readers);
 
-            return res;
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(-1);
-            return Stream.empty();
-        }
+        return res;
     }
 }

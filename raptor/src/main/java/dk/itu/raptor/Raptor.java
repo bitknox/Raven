@@ -25,7 +25,7 @@ public class Raptor {
         RaptorApi api = new RaptorApi();
 
         long start = System.currentTimeMillis();
-        Stream<JoinResult> res = api.join(jct.inputRaster,jct.inputVector);
+        Stream<JoinResult> res = api.join(jct.inputRaster, jct.inputVector);
         if (!jct.ranges.isEmpty()) {
             if (jct.ranges.size() != 2) {
                 throw new IllegalArgumentException("More than one range is not supported");
@@ -37,4 +37,4 @@ public class Raptor {
         long end = System.currentTimeMillis();
         System.out.println("joined in " + (end - start) + "ms");
     }
-}   
+}
