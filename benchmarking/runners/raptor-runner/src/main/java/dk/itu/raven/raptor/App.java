@@ -1,11 +1,13 @@
 package dk.itu.raven.raptor;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 import com.beust.jcommander.JCommander;
 import com.google.gson.Gson;
 
 import dk.itu.raptor.api.RaptorApi;
+import dk.itu.raptor.join.JoinResult;
 
 public class App {
     public static void main(String[] args) throws IOException {
@@ -22,7 +24,13 @@ public class App {
         RaptorApi api = new RaptorApi();
         for (int i = 0; i < jct.iterations; i++) {
             long start = System.currentTimeMillis();
-            api.join(jct.inputRaster, jct.inputVector).count();
+
+            Stream<JoinResult> res = api.join(jct.inputRaster, jct.inputVector);
+            if (jct.filterLow == Integer.MIN_VALUE && jct.filterHigh == Integer.MAX_VALUE) {
+                res.count();
+            } else {
+                res.filter(f -> f.m >= jct.filterLow && f.m <= jct.filterHigh).count();
+            }
             long end = System.currentTimeMillis();
             long time = end - start;
             benchResult.addEntry(time);
