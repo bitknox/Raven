@@ -49,8 +49,7 @@ public class JoinFilterFunctionsTests {
                                 for (int lo = 0; lo < 1 << (3 * bits); lo++) {
                                     for (int hi = lo; hi < 1 << (3 * bits); hi++) {
                                         // the function says there are some matching numbers within the range, check
-                                        // that
-                                        // this is true
+                                        // that this is true
                                         if (function.containsWithin(lo, hi)) {
                                             assertTrue(prefixSumWithin[lo] != prefixSumWithin[hi + 1]);
                                         }
@@ -60,14 +59,12 @@ public class JoinFilterFunctionsTests {
                                             assertTrue(function.containsWithin(lo, hi));
                                         }
                                         // the function says there are some non-matching numbers within the range, check
-                                        // that
-                                        // this is true
+                                        // that this is true
                                         if (function.containsOutside(lo, hi)) {
                                             assertTrue(prefixSumOutside[lo] != prefixSumOutside[hi + 1]);
                                         }
                                         // there are some non-matching numbers within the the range, check that the
-                                        // function
-                                        // agrees
+                                        // function agrees
                                         if (prefixSumOutside[lo] != prefixSumOutside[hi + 1]) {
                                             assertTrue(function.containsOutside(lo, hi));
                                         }
@@ -162,8 +159,7 @@ public class JoinFilterFunctionsTests {
             }
 
             // the function says there are some matching numbers within the range, check
-            // that
-            // this is true
+            // that this is true
             if (function.containsWithin(lo, hi)) {
                 assertTrue(prefixSumWithin[lo] != prefixSumWithin[hi + 1]);
             }
@@ -173,14 +169,12 @@ public class JoinFilterFunctionsTests {
                 assertTrue(function.containsWithin(lo, hi));
             }
             // the function says there are some non-matching numbers within the range, check
-            // that
-            // this is true
+            // that this is true
             if (function.containsOutside(lo, hi)) {
                 assertTrue(prefixSumOutside[lo] != prefixSumOutside[hi + 1]);
             }
             // there are some non-matching numbers within the the range, check that the
-            // function
-            // agrees
+            // function agrees
             if (prefixSumOutside[lo] != prefixSumOutside[hi + 1]) {
                 assertTrue(function.containsOutside(lo, hi));
             }
