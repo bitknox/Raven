@@ -96,7 +96,7 @@ public abstract class AbstractDAC implements Serializable {
             Logger.log("  - " + bm.getMap().length * 32, LogLevel.DEBUG);
             sum += bm.getMap().length * 32;
         }
-        Logger.log("sum:" + sum, LogLevel.DEBUG);
+        Logger.log("sum: " + sum, LogLevel.DEBUG);
         Logger.log(LogLevel.DEBUG);
     }
 
