@@ -1,6 +1,6 @@
-package dk.itu.raven.ksquared;
+package dk.itu.raven.ksquared.dac;
 
-import static dk.itu.raven.ksquared.Basics.*;
+import static dk.itu.raven.ksquared.dac.Basics.*;
 
 /**
  * DAC

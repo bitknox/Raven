@@ -1,30 +1,30 @@
-package dk.itu.raven.ksquared;
+package dk.itu.raven.ksquared.dac;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
+import dk.itu.raven.ksquared.IntRank;
 import dk.itu.raven.util.BitMap;
 import dk.itu.raven.util.GoodLongArrayList;
 import dk.itu.raven.util.LongArrayWrapper;
 import dk.itu.raven.util.PrimitiveArrayWrapper;
 
-public class DAC implements Serializable {
-    int numValues;
-    int levels;
-    int vByteBitSize;
-    int originalBitSize;
-    int[] blockSizes;
-    int[] blockSizesPrefixSum;
-    List<long[]> A;
-    List<IntRank> B;
+public abstract class AbstractDAC implements Serializable {
+    protected List<IntRank> B;
+    protected int numValues;
+    protected int levels;
+    protected int vByteBitSize;
+    protected int originalBitSize;
+    protected int[] blockSizes;
+    protected int[] blockSizesPrefixSum;
+    protected List<PrimitiveArrayWrapper> A;
+    protected long maxValue;
 
-    private long maxValue;
+    protected static final int FACT_RANK = 20;
 
-    private static final int FACT_RANK = 20;
-
-    public DAC(PrimitiveArrayWrapper values) {
+    public AbstractDAC(PrimitiveArrayWrapper values) {
         this.numValues = values.length();
 
         this.A = new ArrayList<>();
@@ -43,20 +43,21 @@ public class DAC implements Serializable {
             this.vByteBitSize += 8 * Math.ceil(Math.log(values.get(i) + 1) / (Math.log(2) * 7.0));
         }
 
+        // TODO: store A in bitarray
         for (int level = 0; level < levels; level++) {
             int blockSize = blockSizes[level];
-            long[] Ai = new long[values.length()];
-            long[] Aj = new long[values.length()];
+            PrimitiveArrayWrapper Ai = getWrapper(values.length());
+            PrimitiveArrayWrapper Aj = getWrapper(values.length());
 
             for (int i = 0; i < values.length(); i++) {
                 long x = values.get(i);
-                Ai[i] = x & ((1L << blockSize) - 1); // TODO: if blockSize is 64 this breaks
-                Aj[i] = x >> blockSize;
+                Ai.set(i, x & ((1L << blockSize) - 1)); // TODO: if blockSize is 64 this breaks
+                Aj.set(i, x >> blockSize);
             }
 
-            BitMap continuation_bits = new BitMap(Aj.length);
-            for (int i = 0; i < Aj.length; i++) {
-                if (Aj[i] > 0) {
+            BitMap continuation_bits = new BitMap(Aj.length());
+            for (int i = 0; i < Aj.length(); i++) {
+                if (Aj.get(i) > 0) {
                     continuation_bits.set(i);
                 } else {
                     continuation_bits.unset(i);
@@ -70,9 +71,9 @@ public class DAC implements Serializable {
 
             GoodLongArrayList vals = new GoodLongArrayList();
 
-            for (int i = 0; i < Aj.length; i++) {
-                if (Aj[i] > 0) {
-                    vals.add(Aj[i]);
+            for (int i = 0; i < Aj.length(); i++) {
+                if (Aj.get(i) > 0) {
+                    vals.add(Aj.get(i));
                 }
             }
 
@@ -84,7 +85,7 @@ public class DAC implements Serializable {
         long item = 0;
 
         for (int level = 0; level < this.A.size(); level++) {
-            item += this.A.get(level)[index] << this.blockSizesPrefixSum[level];
+            item += this.A.get(level).get(index) << this.blockSizesPrefixSum[level];
             if (level >= this.B.size()) {
                 break;
             }
@@ -170,4 +171,6 @@ public class DAC implements Serializable {
 
         return kvalues;
     }
+
+    protected abstract PrimitiveArrayWrapper getWrapper(int size);
 }

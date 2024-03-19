@@ -5,6 +5,7 @@ import java.util.List;
 
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.join.IRasterFilterFunction;
+import dk.itu.raven.ksquared.dac.AbstractDAC;
 import dk.itu.raven.util.BitMap;
 import dk.itu.raven.util.GoodArrayList;
 import dk.itu.raven.util.Pair;
@@ -17,22 +18,21 @@ public abstract class AbstractK2Raster implements Serializable {
     public BitMap tree; // A tree where the i'th index is a one iff. the node with index i is internal
     protected int n; // the size of the matrix, always a power of k
     protected IntRank prefixSum; // a prefix sum of the tree
-    // TODO: use DACs
-    protected DAC lMin;// stores the difference between the minimum value stored in a node and the
-                       // minimum value of its parent node
-    protected DAC lMax;// stores the difference between the maximum value stored in a node and the
-                       // maximum value of its parent node
+    protected AbstractDAC lMin;// stores the difference between the minimum value stored in a node and the
+    // minimum value of its parent node
+    protected AbstractDAC lMax;// stores the difference between the maximum value stored in a node and the
+    // maximum value of its parent node
 
     public AbstractK2Raster(int k, long minVal, long maxVal, BitMap tree, int n, IntRank prefixSum,
-            PrimitiveArrayWrapper lMin, PrimitiveArrayWrapper lMax) {
+            AbstractDAC lMin, AbstractDAC lMax) {
         this.k = k;
         this.minVal = minVal;
         this.maxVal = maxVal;
         this.tree = tree;
         this.n = n;
         this.prefixSum = prefixSum;
-        this.lMin = new DAC(lMin);
-        this.lMax = new DAC(lMax);
+        this.lMax = lMax;
+        this.lMin = lMin;
     }
 
     private int treeRank(int idx) {

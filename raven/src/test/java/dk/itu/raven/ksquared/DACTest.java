@@ -6,6 +6,8 @@ import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
+import dk.itu.raven.ksquared.dac.IntDAC;
+import dk.itu.raven.ksquared.dac.LongDAC;
 import dk.itu.raven.util.IntArrayWrapper;
 import dk.itu.raven.util.LongArrayWrapper;
 
@@ -18,7 +20,7 @@ public class DACTest {
             list[i] = r.nextInt(1000);
         }
 
-        DAC dac = new DAC(new IntArrayWrapper(list));
+        IntDAC dac = new IntDAC(new IntArrayWrapper(list));
 
         for (int i = 0; i < list.length; i++) {
             assertEquals(list[i], dac.get(i), "Index: " + i);
@@ -35,7 +37,7 @@ public class DACTest {
                 list[i] = 0;
         }
 
-        DAC dac = new DAC(new LongArrayWrapper(list));
+        LongDAC dac = new LongDAC(new LongArrayWrapper(list));
 
         for (int i = 0; i < list.length; i++) {
             assertEquals(list[i], dac.get(i));

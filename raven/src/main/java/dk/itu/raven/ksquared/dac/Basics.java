@@ -1,4 +1,4 @@
-package dk.itu.raven.ksquared;
+package dk.itu.raven.ksquared.dac;
 
 /*
 * Translated from the following C-code:
