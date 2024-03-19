@@ -140,6 +140,10 @@ public class IntRank implements Serializable {
         return size;
     }
 
+    public int memorySize() {
+        return this.vector.length * 32 + this.largeRankDirectory.length * 32 + this.smallRankDirectory.length * 8;
+    }
+
     /*
      * Rank implementation.
      */

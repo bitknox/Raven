@@ -18,6 +18,7 @@ public abstract class AbstractK2Raster implements Serializable {
     public BitMap tree; // A tree where the i'th index is a one iff. the node with index i is internal
     protected int n; // the size of the matrix, always a power of k
     protected IntRank prefixSum; // a prefix sum of the tree
+
     protected AbstractDAC lMin;// stores the difference between the minimum value stored in a node and the
     // minimum value of its parent node
     protected AbstractDAC lMax;// stores the difference between the maximum value stored in a node and the

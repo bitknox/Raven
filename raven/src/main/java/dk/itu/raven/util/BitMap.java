@@ -305,6 +305,66 @@ public class BitMap implements Iterator<Integer>, Iterable<Integer>, Serializabl
         this.limitPos = newLimit;
     }
 
+    public void setInt(int idx, int val, int length) {
+        int windex = idx >> 5;
+
+        val <<= (32 - length);
+
+        int newLimit = this.limitPos + length;
+
+        capacity = 32 * this.map.length;
+
+        int relativePos = idx % 32;
+        int endMask = (-1) >>> (32 - relativePos);
+        endMask = relativePos == 0 ? 0 : endMask;
+        int startMask = ~endMask;
+        this.map[windex] |= (val & startMask) >>> relativePos;
+        windex++;
+        this.map[windex] = (val & endMask) << (32 - relativePos);
+
+        this.limitPos = newLimit;
+    }
+
+    public void setLong(int idx, long val, int length) {
+        if (length < 32) {
+            setInt(idx, (int) (val), Math.min(length, 32));
+        } else {
+            val <<= (64 - length);
+            setInt(idx, (int) (val >>> 32), Math.min(length, 32));
+            if (length > 32) {
+                setInt(idx + 32, ((int) val) >>> (64 - length), length - 32);
+            }
+        }
+    }
+
+    public int getInt(int idx, int length) {
+        int windex = idx >> 5;
+
+        int endMask = ((-1) << (32 - length)) >>> (idx % 32);
+        int remaining = length + (idx % 32) - 32;
+        int startMask = 0;
+        if (remaining > 0) {
+            startMask = (-1) << (32 - remaining);
+        }
+        int res = (this.map[windex] & endMask);
+        if ((32 - length) - (idx % 32) > 0) {
+            res >>>= ((32 - length) - (idx % 32));
+        } else {
+            res <<= ((length) + (idx % 32));
+        }
+        res += (this.map[windex + 1] & startMask) >>> (32 - remaining);
+        return res;
+    }
+
+    public long getLong(int idx, int length) {
+        long res = 0xFFFFFFFFL & (getInt(idx, Math.min(length, 32)));
+        if (length > 32) {
+            res <<= (length - 32);
+            res += getInt(idx + 32, length - 32);
+        }
+        return res;
+    }
+
     private void doubleCapacity() {
 
         int[] newmap = new int[map.length * 2];

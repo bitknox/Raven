@@ -67,4 +67,101 @@ public class BitMapTest {
 			}
 		}
 	}
+
+	@Test
+	public void testGetSetInt() {
+		int[] list = new int[1000000];
+		Random r = new Random(42);
+		int bitsPerNumber = 31;
+
+		for (int i = 0; i < list.length; i++) {
+			list[i] = Math.abs(r.nextInt());
+			if (list[i] < 0)
+				list[i] = 0;
+		}
+
+		BitMap bm = new BitMap(list.length * bitsPerNumber * 2);
+
+		for (int i = 0; i < list.length; i++) {
+			bm.setInt(i * bitsPerNumber, list[i], bitsPerNumber);
+		}
+
+		for (int i = 0; i < list.length; i++) {
+			int actual = bm.getInt(i * bitsPerNumber, bitsPerNumber);
+			assertEquals(list[i], actual);
+		}
+	}
+
+	@Test
+	public void testGetSetLongWithInts() {
+		int[] list = new int[1000000];
+		Random r = new Random(42);
+		int bitsPerNumber = 31;
+
+		for (int i = 0; i < list.length; i++) {
+			list[i] = Math.abs(r.nextInt());
+			if (list[i] < 0)
+				list[i] = 0;
+		}
+
+		BitMap bm = new BitMap(list.length * bitsPerNumber * 2);
+
+		for (int i = 0; i < list.length; i++) {
+			bm.setLong(i * bitsPerNumber, list[i], bitsPerNumber);
+		}
+
+		for (int i = 0; i < list.length; i++) {
+			long actual = bm.getLong(i * bitsPerNumber, bitsPerNumber);
+			assertEquals(list[i], actual, "index: " + i);
+		}
+	}
+
+	@Test
+	public void testGetSetLong() {
+		long[] list = new long[1000000];
+		Random r = new Random(42);
+		int bitsPerNumber = 63;
+
+		for (int i = 0; i < list.length; i++) {
+			list[i] = Math.abs(r.nextLong());
+			if (list[i] < 0)
+				list[i] = 0;
+		}
+
+		BitMap bm = new BitMap(list.length * bitsPerNumber * 2);
+
+		for (int i = 0; i < list.length; i++) {
+			bm.setLong(i * bitsPerNumber, list[i], bitsPerNumber);
+		}
+
+		for (int i = 0; i < list.length; i++) {
+			long actual = bm.getLong(i * bitsPerNumber, bitsPerNumber);
+			assertEquals(list[i], actual);
+		}
+	}
+
+	@Test
+	public void testDifferentLengths() {
+		Random r = new Random(42);
+		for (int bitsPerNumber = 1; bitsPerNumber < 31; bitsPerNumber++) {
+			int[] list = new int[10000];
+
+			for (int i = 0; i < list.length; i++) {
+				list[i] = Math.abs(r.nextInt(1 << bitsPerNumber));
+				if (list[i] < 0)
+					list[i] = 0;
+			}
+
+			BitMap bm = new BitMap(list.length * bitsPerNumber * 2);
+
+			for (int i = 0; i < list.length; i++) {
+				bm.setLong(i * bitsPerNumber, list[i], bitsPerNumber);
+			}
+
+			for (int i = 0; i < list.length; i++) {
+				long actual = bm.getLong(i * bitsPerNumber, bitsPerNumber);
+				assertEquals(list[i], actual, "bpn: " + bitsPerNumber + ", index: " + i);
+			}
+		}
+	}
 }

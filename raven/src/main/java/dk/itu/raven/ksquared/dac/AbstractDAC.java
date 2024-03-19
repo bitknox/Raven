@@ -8,8 +8,10 @@ import java.util.TreeMap;
 import dk.itu.raven.ksquared.IntRank;
 import dk.itu.raven.util.BitMap;
 import dk.itu.raven.util.GoodLongArrayList;
+import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.LongArrayWrapper;
 import dk.itu.raven.util.PrimitiveArrayWrapper;
+import dk.itu.raven.util.Logger.LogLevel;
 
 public abstract class AbstractDAC implements Serializable {
     protected List<IntRank> B;
@@ -19,7 +21,7 @@ public abstract class AbstractDAC implements Serializable {
     protected int originalBitSize;
     protected int[] blockSizes;
     protected int[] blockSizesPrefixSum;
-    protected List<PrimitiveArrayWrapper> A;
+    protected List<BitMap> A;
     protected long maxValue;
 
     protected static final int FACT_RANK = 20;
@@ -43,15 +45,15 @@ public abstract class AbstractDAC implements Serializable {
             this.vByteBitSize += 8 * Math.ceil(Math.log(values.get(i) + 1) / (Math.log(2) * 7.0));
         }
 
-        // TODO: store A in bitarray
         for (int level = 0; level < levels; level++) {
             int blockSize = blockSizes[level];
-            PrimitiveArrayWrapper Ai = getWrapper(values.length());
+            BitMap Ai = new BitMap(values.length() * blockSize + 32);
             PrimitiveArrayWrapper Aj = getWrapper(values.length());
 
             for (int i = 0; i < values.length(); i++) {
                 long x = values.get(i);
-                Ai.set(i, x & ((1L << blockSize) - 1)); // TODO: if blockSize is 64 this breaks
+                Ai.setLong(i * blockSize, x & ((1L << blockSize) - 1), blockSize); // TODO: if blockSize is 64 this
+                // breaks
                 Aj.set(i, x >> blockSize);
             }
 
@@ -79,13 +81,31 @@ public abstract class AbstractDAC implements Serializable {
 
             values = new LongArrayWrapper(vals);
         }
+        long sum = 0;
+        Logger.log("bs: " + blockSizes.length * 32, LogLevel.DEBUG);
+        sum += blockSizes.length * 32;
+        Logger.log("bsps: " + blockSizesPrefixSum.length * 32, LogLevel.DEBUG);
+        sum += blockSizesPrefixSum.length * 32;
+        Logger.log("B:", LogLevel.DEBUG);
+        for (IntRank rank : B) {
+            Logger.log("  - " + rank.memorySize(), LogLevel.DEBUG);
+            sum += rank.memorySize();
+        }
+        Logger.log("A:", LogLevel.DEBUG);
+        for (BitMap bm : A) {
+            Logger.log("  - " + bm.getMap().length * 32, LogLevel.DEBUG);
+            sum += bm.getMap().length * 32;
+        }
+        Logger.log("sum:" + sum, LogLevel.DEBUG);
+        Logger.log(LogLevel.DEBUG);
     }
 
     public long get(int index) {
         long item = 0;
 
         for (int level = 0; level < this.A.size(); level++) {
-            item += this.A.get(level).get(index) << this.blockSizesPrefixSum[level];
+            item += this.A.get(level).getLong(index * blockSizes[level],
+                    blockSizes[level]) << this.blockSizesPrefixSum[level];
             if (level >= this.B.size()) {
                 break;
             }
