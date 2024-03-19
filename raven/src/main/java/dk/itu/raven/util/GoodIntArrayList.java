@@ -43,13 +43,13 @@ public class GoodIntArrayList implements Iterable<Integer>, Iterator<Integer> {
     }
 
     public void set(int index, int element) {
-        size = index > size ? index : size;
+        size = index + 1 > size ? index + 1 : size;
         ensureExplicitCapacity(index + 1);
         array[index] = element;
     }
 
     public void add(int element) {
-        this.set(size++, element);
+        this.set(size, element);
     }
 
     @Override

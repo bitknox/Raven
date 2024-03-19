@@ -18,10 +18,10 @@ public abstract class AbstractK2Raster implements Serializable {
     protected int n; // the size of the matrix, always a power of k
     protected IntRank prefixSum; // a prefix sum of the tree
     // TODO: use DACs
-    protected PrimitiveArrayWrapper lMin;// stores the difference between the minimum value stored in a node and the
-                                         // minimum value of its parent node
-    protected PrimitiveArrayWrapper lMax;// stores the difference between the maximum value stored in a node and the
-                                         // maximum value of its parent node
+    protected DAC lMin;// stores the difference between the minimum value stored in a node and the
+                       // minimum value of its parent node
+    protected DAC lMax;// stores the difference between the maximum value stored in a node and the
+                       // maximum value of its parent node
 
     public AbstractK2Raster(int k, long minVal, long maxVal, BitMap tree, int n, IntRank prefixSum,
             PrimitiveArrayWrapper lMin, PrimitiveArrayWrapper lMax) {
@@ -31,8 +31,8 @@ public abstract class AbstractK2Raster implements Serializable {
         this.tree = tree;
         this.n = n;
         this.prefixSum = prefixSum;
-        this.lMin = lMin;
-        this.lMax = lMax;
+        this.lMin = new DAC(lMin);
+        this.lMax = new DAC(lMax);
     }
 
     private int treeRank(int idx) {

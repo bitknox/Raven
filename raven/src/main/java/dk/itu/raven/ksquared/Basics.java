@@ -6,7 +6,7 @@ package dk.itu.raven.ksquared;
 */
 
 public abstract class Basics {
-    public static int bits(int n) {
+    public static int bits(long n) {
         int b = 0;
         while (n > 0) {
             b++;
