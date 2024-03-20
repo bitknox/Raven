@@ -42,7 +42,7 @@ for test in data:
     test["sorted times"].sort()
 
 names = [test["name"] for test in data]
-# NOTE: ignores first entry in all time lists to account for cold starts
+# NOTE: ignores 'thrown_away' entries in all time lists to account for cold starts
 times = [sum(test["times"]) / (test["iterations"]) for test in data]
 errors_lo = [times[i] - data[i]["sorted times"][0] for i in range(len(data))]
 errors_hi = [data[i]["sorted times"][-1] - times[i] for i in range(len(data))]
@@ -58,7 +58,6 @@ errors_hi_95p = [
     data[i]["sorted times"][-index - 1] - times[i] for i in range(len(data))
 ]
 
-_, ax = plt.subplots(figsize=(8, 6))
 
 ax.grid(axis="y", which="major", linewidth=1, alpha=0.3, linestyle="dashed")
 plt.grid(
@@ -95,20 +94,17 @@ plt.savefig(sys.argv[2] + "/big " + sys.argv[3] + ".png", bbox_inches="tight")
 plt.clf()
 
 for test in data:
-    fig, ax = plt.subplots(figsize=(8, 6))
-    plt.figure(figsize=(10, 6))
+    fig, ax = plt.subplots()
     plt.plot(test["times"], linestyle="dotted")
     plt.ylabel("Join time (ms)")
     plt.xlabel("Iteration")
-    # plt.xticks(range(0,len(test["times"])),range(1,len(test["times"])+1))
     plt.locator_params(axis="x", nbins=10, tight=True)
     plt.tick_params(axis="x", rotation=30)
     ax.margins(x=0)
     plt.title("Join Times for " + test["name"])
     plt.ylim(bottom=0)
     write_labels(ax, test["labels"])
-    # plt.autoscale()
-    # plt.show()
+
     plt.savefig(
         sys.argv[2] + "/" + test["name"] + " " + sys.argv[3] + ".png",
         bbox_inches="tight",
