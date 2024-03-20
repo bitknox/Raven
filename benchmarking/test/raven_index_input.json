@@ -1,86 +1,89 @@
-[
-    {
-        "name": "BST",
-        "iterations": 500,
-        "command": {
-            "path": "java",
-            "args": [
-                "-jar",
-                "/home/raven-runner-BST.jar",
-                "-iv",
-                "/home/boundaries/ne_10m_admin_0_countries.shp",
-                "-ir",
-                "/home/Tiff",
-                "-t",
-                "parallel",
-                "-ts",
-                "2048",
-                "-fl",
-                "22",
-                "-fh",
-                "22"
-            ]
+{
+    "name": "Average Join Time",
+    "benchmarks": [
+        {
+            "name": "BST",
+            "iterations": 500,
+            "command": {
+                "path": "java",
+                "args": [
+                    "-jar",
+                    "/home/raven-runner-BST.jar",
+                    "-iv",
+                    "/home/boundaries/ne_10m_admin_0_countries.shp",
+                    "-ir",
+                    "/home/Tiff",
+                    "-t",
+                    "parallel",
+                    "-ts",
+                    "2048",
+                    "-fl",
+                    "22",
+                    "-fh",
+                    "22"
+                ]
+            },
+            "environment_options": {
+                "environment_type": "docker",
+                "docker_file_path": "./runners/raven-runner/",
+                "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+            }
         },
-        "environment_options": {
-            "environment_type": "docker",
-            "docker_file_path": "./runners/raven-runner/",
-            "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
-        }
-    },
-    {
-        "name": "BL",
-        "iterations": 500,
-        "command": {
-            "path": "java",
-            "args": [
-                "-jar",
-                "/home/raven-runner-BIG.jar",
-                "-iv",
-                "/home/boundaries/ne_10m_admin_0_countries.shp",
-                "-ir",
-                "/home/Tiff",
-                "-t",
-                "parallel",
-                "-ts",
-                "2048",
-                "-fl",
-                "22",
-                "-fh",
-                "22"
-            ]
+        {
+            "name": "BL",
+            "iterations": 500,
+            "command": {
+                "path": "java",
+                "args": [
+                    "-jar",
+                    "/home/raven-runner-BIG.jar",
+                    "-iv",
+                    "/home/boundaries/ne_10m_admin_0_countries.shp",
+                    "-ir",
+                    "/home/Tiff",
+                    "-t",
+                    "parallel",
+                    "-ts",
+                    "2048",
+                    "-fl",
+                    "22",
+                    "-fh",
+                    "22"
+                ]
+            },
+            "environment_options": {
+                "environment_type": "docker",
+                "docker_file_path": "./runners/raven-runner/",
+                "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+            }
         },
-        "environment_options": {
-            "environment_type": "docker",
-            "docker_file_path": "./runners/raven-runner/",
-            "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+        {
+            "name": "TM",
+            "iterations": 500,
+            "command": {
+                "path": "java",
+                "args": [
+                    "-jar",
+                    "/home/raven-runner-TM.jar",
+                    "-iv",
+                    "/home/boundaries/ne_10m_admin_0_countries.shp",
+                    "-ir",
+                    "/home/Tiff",
+                    "-t",
+                    "parallel",
+                    "-ts",
+                    "2048",
+                    "-fl",
+                    "22",
+                    "-fh",
+                    "22"
+                ]
+            },
+            "environment_options": {
+                "environment_type": "docker",
+                "docker_file_path": "./runners/raven-runner/",
+                "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+            }
         }
-    },
-    {
-        "name": "TM",
-        "iterations": 500,
-        "command": {
-            "path": "java",
-            "args": [
-                "-jar",
-                "/home/raven-runner-TM.jar",
-                "-iv",
-                "/home/boundaries/ne_10m_admin_0_countries.shp",
-                "-ir",
-                "/home/Tiff",
-                "-t",
-                "parallel",
-                "-ts",
-                "2048",
-                "-fl",
-                "22",
-                "-fh",
-                "22"
-            ]
-        },
-        "environment_options": {
-            "environment_type": "docker",
-            "docker_file_path": "./runners/raven-runner/",
-            "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
-        }
-    }
-]
+    ]
+}

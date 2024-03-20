@@ -26,7 +26,8 @@ colours = ["darkred", "darkgreen", "darkblue", "darkorange", "indigo", "dimgray"
 
 file = open(sys.argv[1], "r")
 
-data = json.loads(file.read())
+experiment = json.loads(file.read())
+data = experiment["data"]
 file.close()
 
 font = {"family": "DejaVu Sans", "weight": "bold", "size": 15}
@@ -58,7 +59,7 @@ errors_hi_95p = [
     data[i]["sorted times"][-index - 1] - times[i] for i in range(len(data))
 ]
 
-_, ax = plt.subplots()
+_, ax = plt.subplots(figsize=(10, 5))
 
 ax.grid(axis="y", which="major", linewidth=1, alpha=0.3, linestyle="dashed")
 plt.grid(
@@ -66,10 +67,13 @@ plt.grid(
 )
 ax.minorticks_on()
 ax.set_axisbelow(True)
+plt.tick_params(axis="x", rotation=30)
 
 plt.bar(names, times, color=colours)
 plt.ylabel("Join time (ms)")
-plt.title("Average Join Times")
+
+plt.title(experiment["title"])
+
 plt.errorbar(
     names,
     times,
