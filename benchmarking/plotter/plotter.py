@@ -12,6 +12,7 @@ def write_labels(ax,labels):
         plt.text(0.5, -0.05, text[0:-1], transform=plt.gcf().transFigure, fontsize=14,
         verticalalignment='top', horizontalalignment="center", bbox=props)
         
+colours = ["darkred","darkgreen","darkblue","darkorange","indigo","dimgray"]
 
 file = open(sys.argv[1],"r")
 
@@ -54,11 +55,11 @@ plt.grid(color='gray', linestyle='dashed', linewidth=1, alpha=0.3, axis='y',whic
 ax.minorticks_on()
 ax.set_axisbelow(True)
 
-plt.bar(names,times,color="darkturquoise")
+plt.bar(names,times,color=colours)
 plt.ylabel("Join time (ms)")
 plt.title("Average Join Times")
-plt.errorbar(names,times, yerr=[errors_lo,errors_hi], marker=" ", fmt="o", capsize=5, elinewidth=0, color="darkslategray")
-eb = plt.errorbar(names,times, yerr=[errors_lo_95p,errors_hi_95p], marker=" ", fmt="o", capsize=10, elinewidth=2, color="darkslategray")
+plt.errorbar(names,times, yerr=[errors_lo,errors_hi], marker=" ", fmt="o", capsize=5, elinewidth=0, color="black")
+eb = plt.errorbar(names,times, yerr=[errors_lo_95p,errors_hi_95p], marker=" ", fmt="o", capsize=10, elinewidth=2, color="black")
 
 plt.savefig(sys.argv[2]+"/big " + sys.argv[3] +".png", bbox_inches="tight")
 plt.clf()
