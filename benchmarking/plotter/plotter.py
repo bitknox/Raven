@@ -58,6 +58,7 @@ errors_hi_95p = [
     data[i]["sorted times"][-index - 1] - times[i] for i in range(len(data))
 ]
 
+_, ax = plt.subplots(figsize=(10, 6))
 
 ax.grid(axis="y", which="major", linewidth=1, alpha=0.3, linestyle="dashed")
 plt.grid(
