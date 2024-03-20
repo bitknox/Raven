@@ -246,7 +246,6 @@ public class RavenJoin extends AbstractRavenJoin {
 			Rectangle bounding, IRasterFilterFunction function, long min, long max) {
 		long vMinMBR = min;
 		long vMaxMBR = max;
-		Logger.log(vMinMBR + ", " + vMaxMBR, Logger.LogLevel.DEBUG);
 		int returnedK2Index = k2Index;
 		Square returnedrasterBounding = rasterBounding;
 		Stack<Tuple4<Integer, Square, Long, Long>> k2Nodes = new Stack<>();
@@ -269,10 +268,7 @@ public class RavenJoin extends AbstractRavenJoin {
 			}
 		}
 
-		Logger.log(vMinMBR + ", " + vMaxMBR, Logger.LogLevel.DEBUG);
-
 		if (!function.containsOutside(vMinMBR, vMaxMBR)) {
-			Logger.log("total overlap for " + returnedrasterBounding + " with mbr " + bounding, Logger.LogLevel.DEBUG);
 			return new Tuple5<>(QuadOverlapType.TotalOverlap, returnedK2Index, returnedrasterBounding, vMinMBR,
 					vMaxMBR);
 		} else if (!function.containsWithin(vMinMBR, vMaxMBR)) {
@@ -416,7 +412,6 @@ public class RavenJoin extends AbstractRavenJoin {
 								break;
 							case PartialOverlap:
 								extractCells((Leaf<String, Geometry>) p.a, checked.b, rect, prob);
-								Logger.log(p.a.geometry().mbr(), Logger.LogLevel.DEBUG);
 								break;
 							case NoOverlap:
 								// ignored

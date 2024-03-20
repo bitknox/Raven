@@ -17,10 +17,8 @@ public class AwtRasterMatrix extends Matrix {
         this.sampleSize = raster.getSampleModel().getSampleSize();
         numberOfBands = raster.getNumBands();
 
-        Logger.log("bits:", LogLevel.DEBUG);
         for (int bits : sampleSize) {
             this.bitsUsed += bits;
-            Logger.log("  " + bits, LogLevel.DEBUG);
         }
 
         if (this.bitsUsed > 64) {

@@ -19,6 +19,10 @@ public abstract class AbstractK2RasterBuilder {
     private int k2;
     private int[] nKths;
 
+    private long[] lmaxx;
+    private long[] lminn;
+    private BitMap tt;
+
     /**
      * bulds a K^2 Raster data-structure for an n*m matrix (meaning a 2-dimensional
      * array with {@code n} rows and {@code m} columns)
@@ -43,6 +47,11 @@ public abstract class AbstractK2RasterBuilder {
         }
         this.n = real_h;
 
+        tt = new BitMap(40);
+
+        lmaxx = new long[(int) Math.pow(k2, maxLevel + 1)];
+        lminn = new long[(int) Math.pow(k2, maxLevel)];
+
         t = new ArrayList<>(maxLevel);
         pMax = new int[maxLevel];
         pMin = new int[maxLevel];
@@ -56,12 +65,18 @@ public abstract class AbstractK2RasterBuilder {
         }
         init(maxLevel);
 
+        long startTime = 0;
+        long endTime = 0;
+
         Pair<Long, Long> res = new Pair<Long, Long>(0L, 0L);
         if (this.n == 1) {
             res.first = getMatrixVal(0, 0);
             res.second = getMatrixVal(0, 0);
         } else {
+            startTime = System.currentTimeMillis();
             buildK2(this.n, 1, 0, 0, res);
+            endTime = System.currentTimeMillis();
+            buildK2Iterative(this.n);
         }
         m = null;
         long maxVal = res.first;
@@ -93,6 +108,8 @@ public abstract class AbstractK2RasterBuilder {
             t.get(0).unset(0);
             pMin[0] = 0;
         }
+
+        long startTime2 = System.currentTimeMillis();
 
         int imax = 0, imin = 0;
         // builds the LMax list at the same time as the concatinated tree
@@ -130,6 +147,13 @@ public abstract class AbstractK2RasterBuilder {
             }
         }
 
+        long endTime2 = System.currentTimeMillis();
+
+        Logger.log(
+                Thread.currentThread().getName() + " Time to build LMax and LMin: "
+                        + (endTime2 - startTime2 + endTime - startTime),
+                Logger.LogLevel.DEBUG);
+
         tree.unset(0);
 
         // the +1 is caused by the rank being 0-indexed, while the tree is 1-indexed
@@ -146,6 +170,90 @@ public abstract class AbstractK2RasterBuilder {
         PrimitiveArrayWrapper lMin = LMinList;
 
         return getK2Raster(maxVal, minVal, tree, lMax, lMin, prefixSum);
+    }
+
+    protected void buildK2Iterative(int n) {
+        int bitmapPointer = 0;
+        int lmaxPointer = 0;
+        int lminPointer = 0;
+        long startTime = System.currentTimeMillis();
+        int np = k;
+        int levels = (int) Math.ceil((Math.log(n) / Math.log(k)));
+        long[] minValRet = null;
+        long[] maxValRet = null;
+        for (int level = np; level <= levels; level++) {
+            int step = n / np;
+            int steps = step * step;
+            long[] minValTemp = new long[steps];
+            long[] maxValTemp = new long[steps];
+            if (level == k) {
+                long minVal = Integer.MAX_VALUE;
+                long maxVal = 0;
+                for (int i = 0; i < steps; i++) { // reverse order here
+                    int start = i * k2;
+                    int end = start + k2;
+                    for (int x = start; x < end; x++) { // reverse order here
+                        for (int y = start; y < end; y++) { // reverse order here
+                            long matrixVal = getMatrixVal(x, y);
+                            minVal = minVal > matrixVal ? matrixVal : minVal;
+                            maxVal = maxVal < matrixVal ? matrixVal : maxVal;
+                        }
+                    }
+                    if (minVal != maxVal) {
+                        // set bit in T
+                        tt.set(bitmapPointer++);
+                        for (int x = start; x < end; x++) { // reverse order here
+                            for (int y = start; y < end; y++) { // reverse order here
+                                // Add maxval - val to lMax
+                                // long matrixVal = getMatrixVal(x, y);
+                                lmaxx[lmaxPointer++] = maxVal - 0;
+                            }
+                        }
+                    } else {
+                        tt.unset(bitmapPointer++);
+                        // unset bit in T
+                    }
+                    minValTemp[i] = minVal;
+                    maxValTemp[i] = maxVal;
+                }
+            } else {
+                for (int i = 0; i < steps; i++) { // reverse order here
+                    long minVal = Integer.MAX_VALUE;
+                    long maxVal = 0;
+                    int start = i * k2;
+                    int end = start + k2;
+                    for (int j = start; j < end; j++) { // reverse order here
+                        long min = minValRet[j];
+                        long max = maxValRet[j];
+                        minVal = minVal > min ? min : minVal;
+                        maxVal = maxVal < max ? max : maxVal;
+                    }
+                    if (minVal != maxVal) {
+                        // set bit in T
+                        tt.set(bitmapPointer++);
+                        for (int j = start; j < end; j++) {
+                            long min = minValRet[j];
+                            long max = maxValRet[j];
+                            lminn[lminPointer++] = minVal - min;
+                            lmaxx[lmaxPointer++] = maxVal - max;
+                        }
+                    } else {
+                        // unset bit in T
+                        tt.unset(bitmapPointer++);
+                    }
+                    minValTemp[i] = minVal;
+                    maxValTemp[i] = maxVal;
+                }
+            }
+
+            np = np * k;
+            minValRet = minValTemp;
+            maxValRet = maxValTemp;
+        }
+
+        long endTime = System.currentTimeMillis();
+        Logger.log(Thread.currentThread().getName() + " Iterative Time: " + (endTime - startTime),
+                Logger.LogLevel.DEBUG);
     }
 
     protected void buildK2(int n, int level, int row, int column, Pair<Long, Long> res) {
