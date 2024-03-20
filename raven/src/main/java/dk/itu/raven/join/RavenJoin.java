@@ -104,7 +104,7 @@ public class RavenJoin extends AbstractRavenJoin {
 				int ix = (int) Math.floor(x - rasterBounding.x);
 				if (ix <= 0) {
 					inRanges[y - rasterBounding.y] = !inRanges[y - rasterBounding.y];
-				} else if (ix < rasterBounding.width && ix + rasterBounding.x < imageSize.width) {
+				} else if (ix < rasterBounding.width && ix + rasterBounding.x - globalOffset.getX() < imageSize.width) {
 					BST<Integer, Integer> bst = intersections.get(y - rasterBounding.y);
 					incrementSet(bst, ix);
 				}

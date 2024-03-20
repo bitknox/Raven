@@ -17,13 +17,11 @@ public interface IRasterReader {
 
 	public TFWFormat getG2M();
 
-	public TFWFormat getG2W();
+	public CoordinateReferenceSystem getCRS();
 
 	public Optional<String> getCacheKey();
 
 	public ImageMetadata getImageMetadata() throws IOException;
-
-	public CoordinateReferenceSystem getCRS();
 
 	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
 			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree) throws IOException;

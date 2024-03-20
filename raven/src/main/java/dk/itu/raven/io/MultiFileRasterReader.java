@@ -21,7 +21,6 @@ public class MultiFileRasterReader implements IRasterReader {
 
 	private Stream<ImageIORasterReader> readers;
 	private TFWFormat g2m = new TFWFormat(0, 0, 0, 0, Integer.MAX_VALUE, Integer.MIN_VALUE);
-	private TFWFormat g2w = new TFWFormat(0, 0, 0, 0, Integer.MAX_VALUE, Integer.MIN_VALUE);
 	private ImageMetadata metadata;
 	private CoordinateReferenceSystem crs;
 	private String cacheKey;
@@ -32,7 +31,6 @@ public class MultiFileRasterReader implements IRasterReader {
 		List<File> files = Arrays.asList(directory.listFiles());
 		ImageIORasterReader reader = new ImageIORasterReader(files.get(0));
 		this.g2m = reader.getG2M();
-		this.g2w = reader.getG2W();
 		this.crs = reader.getCRS();
 		this.metadata = reader.getImageMetadata();
 		Stream<ImageIORasterReader> singleStream = Stream.of(reader);
@@ -80,10 +78,6 @@ public class MultiFileRasterReader implements IRasterReader {
 
 	public TFWFormat getG2M() {
 		return g2m;
-	}
-
-	public TFWFormat getG2W() {
-		return g2w;
 	}
 
 	public CoordinateReferenceSystem getCRS() {
