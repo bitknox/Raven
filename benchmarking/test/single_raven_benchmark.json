@@ -3,7 +3,7 @@
     "benchmarks": [
         {
             "name": "Raven",
-            "iterations": 5,
+            "iterations": 100,
             "command": {
                 "path": "java",
                 "args": [
@@ -16,7 +16,9 @@
                     "-t",
                     "parallel",
                     "-ts",
-                    "2048"
+                    "2048",
+                    "-c",
+                    "false"
                 ]
             },
             "environment_options": {
