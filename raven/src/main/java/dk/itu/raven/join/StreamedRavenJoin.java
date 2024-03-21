@@ -12,7 +12,13 @@ public class StreamedRavenJoin extends AbstractRavenJoin {
 
     @Override
     protected StreamedJoinResult joinImplementation(IRasterFilterFunction function) {
-        return new StreamedJoinResult(ravenJoins.map(rj -> rj.joinImplementation(function)));
+        return new StreamedJoinResult(ravenJoins.map(rj -> {
+            long start = System.currentTimeMillis();
+            var res = rj.joinImplementation(function);
+            long end = System.currentTimeMillis();
+            System.out.println("joined in: " + (end - start) + "ms");
+            return res;
+        }));
     }
 
     public Stream<RavenJoin> getRavenJoins() {

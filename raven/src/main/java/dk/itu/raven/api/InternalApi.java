@@ -65,7 +65,10 @@ public class InternalApi {
                 if (chunk.getCacheKey().isPresent()) {
                     Logger.log("Using cached raster structure " + chunk.getCacheKey().get(), LogLevel.DEBUG);
                     try {
+                        long start = System.currentTimeMillis();
                         CachedRasterStructure c = cache.readItem(chunk.getCacheKey().get());
+                        long end = System.currentTimeMillis();
+                        System.out.println("loaded cache in: " + (end - start) + "ms");
                         return new JoinChunk(c.raster, c.offset, rtree);
                     } catch (Exception e) {
                         Logger.log("Item was in cache index, but not found on disk", LogLevel.ERROR);
