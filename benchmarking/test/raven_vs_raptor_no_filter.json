@@ -58,7 +58,7 @@
                     "-ir",
                     "/home/glc2000",
                     "-t",
-                    "parallel",
+                    "streamed",
                     "-ts",
                     "2048"
                 ]
