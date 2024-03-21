@@ -94,7 +94,10 @@ public class InternalApi {
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
                     Optional.empty(), rtree);
             return rasterStream.map(chunk -> {
+                long start = System.currentTimeMillis();
                 AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix());
+                long end = System.currentTimeMillis();
+                System.out.println("built in: " + (end - start) + "ms");
                 return new JoinChunk(raster, chunk.getOffset(), rtree);
             });
         }

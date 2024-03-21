@@ -74,8 +74,11 @@ public abstract class RasterReader {
 					chunk.setCacheKey(key);
 					return chunk;
 				}
-
+				long start = System.currentTimeMillis();
 				chunk.setMatrix(readRasters(w));
+				long end = System.currentTimeMillis();
+				System.out.println("loaded raster in: " + (end - start) + "ms");
+
 				return chunk;
 			} catch (Exception e) {
 				e.printStackTrace();

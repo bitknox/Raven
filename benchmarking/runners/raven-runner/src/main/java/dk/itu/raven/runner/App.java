@@ -47,6 +47,7 @@ public class App {
             long end = System.currentTimeMillis();
             long time = end - start;
             benchResult.addEntry(time);
+            System.out.println();
         }
 
         Gson gson = new Gson();

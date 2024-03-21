@@ -41,6 +41,8 @@ func (d *DockerEnvironment) RunCommand(cmd Command) (string, error) {
 
 	out, err := command.Output()
 
+	fmt.Println(string(out))
+
 	if err != nil {
 		return "", fmt.Errorf("failed to get command output: %s", err)
 	}
