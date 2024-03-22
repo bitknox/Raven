@@ -126,9 +126,6 @@ public class IntRank implements Serializable {
             throw new IndexOutOfBoundsException("Invalid index: " + index);
         }
 
-        // int blockIndex = index >> 5;
-        // int mask = vector[blockIndex] & (1 << (index % BLOCK_SIZE));
-        // return mask != 0;
         int windex = index >> 5;
         int mask = 0x80000000 >>> (index & 0x1F);
         int word = vector[windex];
