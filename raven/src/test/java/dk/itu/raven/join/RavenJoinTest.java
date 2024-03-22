@@ -6,11 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 
@@ -85,69 +82,6 @@ public class RavenJoinTest {
         }
     }
 
-    @RepeatedTest(100)
-    public void testCombineLists() {
-        Random r = new Random();
-        Matrix matrix = new RandomMatrix(100, 100, 100);
-        int lo = 25;
-        int hi = 75;
-        AbstractK2Raster k2Raster = new K2RasterBuilder().build(matrix, 2);
-        RavenJoin join = new RavenJoin(k2Raster, null, new Size(100, 100));
-        JoinResult def = new JoinResult();
-        JoinResult prob = new JoinResult();
-        List<PixelRange> initialDef = new ArrayList<>();
-        def.add(new JoinResultItem(null, new ArrayList<>()));
-        prob.add(new JoinResultItem(null, new ArrayList<>()));
-        for (int i = 0; i < matrix.getHeight(); i++) {
-            int start = r.nextInt(25);
-            int end = 75 + r.nextInt(25);
-            PixelRange range = new PixelRange(i, start, end);
-
-            if (i % 2 == 0) {
-                def.get(0).pixelRanges.add(range);
-                initialDef.add(range);
-            } else {
-                prob.get(0).pixelRanges.add(range);
-            }
-        }
-
-        join.combineLists(def, prob, JoinFilterFunctions.rangeFilter(lo, hi));
-
-        for (PixelRange range : initialDef) {
-            assertTrue(def.get(0).pixelRanges.contains(range));
-        }
-
-        HashSet<Long> seen = new HashSet<>();
-        // check that all ranges in def are within the range of lo and hi
-        for (int j = 1; j < def.size(); j++) {
-            JoinResultItem item = def.get(j);
-            for (PixelRange range : item.pixelRanges) {
-                for (int i = range.x1; i <= range.x2; i++) {
-                    long hash = range.row;
-                    hash <<= 32;
-                    hash += i;
-                    seen.add(hash);
-                    int val = matrix.get(range.row, i);
-                    assertTrue(val >= lo && val <= hi);
-                }
-            }
-        }
-
-        // check that all pixels in prob with a value in the range are present in def
-        for (PixelRange range : prob.get(0).pixelRanges) {
-            for (int i = range.x1; i <= range.x2; i++) {
-                int val = matrix.get(range.row, i);
-                if (val <= hi && val >= lo) {
-                    long hash = range.row;
-                    hash <<= 32;
-                    hash += i;
-                    assertTrue(seen.contains(hash));
-                }
-            }
-        }
-
-    }
-
     @Test
     public void testRavenJoin() {
         int[][] matrix = new int[16][16];
@@ -215,55 +149,6 @@ public class RavenJoinTest {
             for (int i = 0; i < 16; i++) {
                 for (int j = 0; j < 16; j++) {
                     assertEquals(expected2[i][j], actual2[i][j], "index: " + i + ", " + j);
-                }
-            }
-        }
-    }
-
-    @Test
-    public void testCombineListExtremePixelRanges() {
-        Matrix matrix = new RandomMatrix(64, 64, 100);
-        AbstractK2Raster k2Raster = new K2RasterBuilder().build(matrix, 2);
-        RavenJoin join = new RavenJoin(k2Raster, null, new Size(64, 64));
-        JoinResult def = new JoinResult();
-        JoinResult prob = new JoinResult();
-        List<PixelRange> initialDef = new ArrayList<>();
-        def.add(new JoinResultItem(null, new ArrayList<>()));
-        prob.add(new JoinResultItem(null, new ArrayList<>()));
-        for (int i = 0; i < matrix.getHeight(); i++) {
-            int start = 0;
-            int end = 63;
-            PixelRange range = new PixelRange(i, start, end);
-
-            if (i % 2 == 0) {
-                def.get(0).pixelRanges.add(range);
-                initialDef.add(range);
-            } else {
-                prob.get(0).pixelRanges.add(range);
-            }
-        }
-
-        IRasterFilterFunction function = JoinFilterFunctions.rangeFilter(0, 50);
-
-        join.combineLists(def, prob, function);
-
-        for (PixelRange range : initialDef) {
-            assertTrue(def.get(0).pixelRanges.contains(range));
-        }
-
-        boolean[][] actual = new boolean[64][64];
-        for (JoinResultItem item : def) {
-            for (PixelRange range : item.pixelRanges) {
-                for (int x = range.x1; x <= range.x2; x++) {
-                    actual[x][range.row] = function.containsWithin(matrix.get(range.row, x), matrix.get(range.row, x));
-                }
-            }
-        }
-
-        for (PixelRange range : prob.get(0).pixelRanges) {
-            for (int x = range.x1; x <= range.x2; x++) {
-                if (function.containsWithin(matrix.get(range.row, x), matrix.get(range.row, x))) {
-                    assertTrue(actual[x][range.row], "index: " + x + ", " + range.row);
                 }
             }
         }

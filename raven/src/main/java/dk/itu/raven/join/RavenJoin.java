@@ -443,33 +443,4 @@ public class RavenJoin extends AbstractRavenJoin {
 
 		return def;
 	}
-
-	/**
-	 * Combines the pixelranges of the prob list into the def list
-	 * 
-	 * @param def  the difinitive list
-	 * @param prob the list of pixelranges to be combined into def
-	 * @param lo   the minimum pixel-value that should be included in the join
-	 * @param hi   the maximum pixel-value that should be included in the join
-	 */
-	protected void combineLists(JoinResult def,
-			JoinResult prob, IRasterFilterFunction function) {
-		Logger.log("def: " + def.size() + ", prob: " + prob.size(), Logger.LogLevel.DEBUG);
-		for (JoinResultItem item : prob) {
-			JoinResultItem result = new JoinResultItem(item.geometry, new ArrayList<>());
-			for (PixelRange range : item.pixelRanges) {
-				PixelRange[] values = k2Raster.searchValuesInWindow(range.row - offset.getY(),
-						range.row - offset.getY(),
-						range.x1 - offset.getX(),
-						range.x2 - offset.getX(), function);
-				for (PixelRange filteredRange : values) {
-					result.pixelRanges
-							.add(new PixelRange(filteredRange.row + offset.getY(),
-									filteredRange.x1 + offset.getX(),
-									filteredRange.x2 + offset.getX()));
-				}
-			}
-			def.add(result);
-		}
-	}
 }
