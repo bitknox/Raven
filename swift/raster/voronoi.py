@@ -76,6 +76,7 @@ class RegionAlgorithm:
         return points
 
 
+
 class DistanceAlgorithm:
     def euclidean(x, y, xn, yn):
         """Calculate the image regions (up to a distance) using euclidean distance."""
@@ -353,3 +354,7 @@ def generate(
 
     else:
         return pil_image
+    
+#Generate voronoi diagram image
+def generate_random_color():
+		return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))

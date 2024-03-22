@@ -6,9 +6,6 @@ from util import generate_tfw
 
 import click
 
-#Generate voronoi diagram image
-def generate_random_color():
-		return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
 
 @click.command()
