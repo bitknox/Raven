@@ -41,8 +41,10 @@ public abstract class AbstractDAC implements Serializable {
         this.levels = blockSizes.length;
         this.originalBitSize = values.length() * Math.max(1, Basics.bits(maxValue));
         this.vByteBitSize = 0;
+
+        double factor = 8.0 / (Math.log(2) * 7.0);
         for (int i = 0; i < values.length(); i++) {
-            this.vByteBitSize += 8 * Math.ceil(Math.log(values.get(i) + 1) / (Math.log(2) * 7.0));
+            this.vByteBitSize += Math.ceil(Math.log(values.get(i) + 1)) * factor;
         }
 
         for (int level = 0; level < levels; level++) {
@@ -50,16 +52,16 @@ public abstract class AbstractDAC implements Serializable {
             BitMap Ai = new BitMap(values.length() * blockSize + 32);
             PrimitiveArrayWrapper Aj = getWrapper(values.length());
 
+            BitMap continuation_bits = new BitMap(values.length());
+            GoodLongArrayList vals = new GoodLongArrayList();
             for (int i = 0; i < values.length(); i++) {
                 long x = values.get(i);
                 Ai.setLong(i * blockSize, x & ((1L << blockSize) - 1), blockSize); // TODO: if blockSize is 64 this
                 // breaks
+                long val = x >> blockSize;
                 Aj.set(i, x >> blockSize);
-            }
-
-            BitMap continuation_bits = new BitMap(Aj.length());
-            for (int i = 0; i < Aj.length(); i++) {
-                if (Aj.get(i) > 0) {
+                if (val > 0) {
+                    vals.add(Aj.get(i));
                     continuation_bits.set(i);
                 } else {
                     continuation_bits.unset(i);
@@ -71,16 +73,11 @@ public abstract class AbstractDAC implements Serializable {
                 this.B.add(new IntRank(continuation_bits.getMap(), continuation_bits.size()));
             }
 
-            GoodLongArrayList vals = new GoodLongArrayList();
-
-            for (int i = 0; i < Aj.length(); i++) {
-                if (Aj.get(i) > 0) {
-                    vals.add(Aj.get(i));
-                }
-            }
-
             values = new LongArrayWrapper(vals);
         }
+    }
+
+    private void printMemoryUsage() {
         long sum = 0;
         Logger.log("bs: " + blockSizes.length * 32, LogLevel.DEBUG);
         sum += blockSizes.length * 32;
