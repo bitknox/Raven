@@ -44,7 +44,7 @@ public class RavenJoinTest {
         Matrix matrix = new RandomMatrix(20, 30, 2);
         AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
         RavenJoin join = new RavenJoin(k2, null, new Size(20, 30));
-        Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, rect);
+        Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, rect, false);
 
         assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 0 && pr.x2 == 1));
         assertFalse(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 2));
@@ -62,7 +62,7 @@ public class RavenJoinTest {
         Matrix matrix = new RandomMatrix(10, 10, 2);
         AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
         RavenJoin join = new RavenJoin(k2, null, new Size(11, 11));
-        Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, rect);
+        Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, rect, false);
 
         assertEquals(9, ranges.size());
         assertTrue(ranges.stream().anyMatch(pr -> pr.row == 1));
