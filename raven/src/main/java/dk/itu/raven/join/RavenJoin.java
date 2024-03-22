@@ -61,20 +61,7 @@ public class RavenJoin extends AbstractRavenJoin {
 	}
 
 	private void extractRange(Collection<PixelRange> ranges, int y, int x1, int x2, boolean prob) {
-		if (prob) {
-			PixelRange[] matching = this.k2Raster.searchValuesInWindow(
-					y - offset.getY(),
-					y - offset.getY(),
-					x1 - offset.getX(),
-					x2 - offset.getX(),
-					function);
-			for (PixelRange range : matching) {
-				range.translate(offset.getX(), offset.getY());
-				ranges.add(range);
-			}
-		} else {
-			ranges.add(new PixelRange(y, x1, x2));
-		}
+		ranges.add(new PixelRange(y, x1, x2));
 	}
 
 	/**
@@ -388,6 +375,7 @@ public class RavenJoin extends AbstractRavenJoin {
 	protected JoinResult joinImplementation(IRasterFilterFunction function) {
 		this.function = function;
 		JoinResult def = new JoinResult();
+		JoinResult prob = new JoinResult();
 		Stack<Tuple5<Node<String, Geometry>, Integer, Square, Long, Long>> S = new Stack<>();
 
 		Pair<Long, Long> minMax = k2Raster.getValueRange();
@@ -441,7 +429,7 @@ public class RavenJoin extends AbstractRavenJoin {
 								extractCells((Leaf<String, Geometry>) p.a, checked.b, rect, def, false);
 								break;
 							case PartialOverlap:
-								extractCells((Leaf<String, Geometry>) p.a, checked.b, rect, def, true);
+								extractCells((Leaf<String, Geometry>) p.a, checked.b, rect, prob, true);
 								Logger.log(p.a.geometry().mbr(), Logger.LogLevel.DEBUG);
 								break;
 							case NoOverlap:
@@ -456,6 +444,10 @@ public class RavenJoin extends AbstractRavenJoin {
 			}
 		}
 
+		long start = System.nanoTime();
+		combineLists(def, prob, function);
+		long end = System.nanoTime();
+		System.out.println("Combining lists time: " + (end - start) + "ms");
 		return def;
 	}
 
