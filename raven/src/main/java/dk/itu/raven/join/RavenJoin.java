@@ -2,6 +2,7 @@ package dk.itu.raven.join;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -57,18 +58,14 @@ public class RavenJoin extends AbstractRavenJoin {
 		this(k2Raster, tree, new Offset<>(0, 0), imageSize);
 	}
 
-	private void extractRange(Collection<PixelRange> ranges, int y, int x1, int x2, boolean prob) {
+	private void extractRange(List<PixelRange> ranges, int y, int x1, int x2, boolean prob) {
 		if (prob) {
-			PixelRange[] matching = this.k2Raster.searchValuesInWindow(
+			this.k2Raster.searchValuesInWindow(
 					y - offset.getY(),
 					y - offset.getY(),
 					x1 - offset.getX(),
 					x2 - offset.getX(),
-					function);
-			for (PixelRange range : matching) {
-				range.translate(offset.getX(), offset.getY());
-				ranges.add(range);
-			}
+					function, ranges);
 		} else {
 			ranges.add(new PixelRange(y, x1, x2));
 		}
@@ -133,7 +130,7 @@ public class RavenJoin extends AbstractRavenJoin {
 			old = next;
 		}
 
-		Collection<PixelRange> ranges = new ArrayList<>();
+		List<PixelRange> ranges = new ArrayList<>();
 		int oldY = 0;
 		boolean inRange = inRanges[0];
 		int start = 0;

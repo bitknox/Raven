@@ -1,6 +1,7 @@
 package dk.itu.raven.ksquared;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import dk.itu.raven.geometry.PixelRange;
@@ -246,7 +247,7 @@ public abstract class AbstractK2Raster implements Serializable {
     public abstract PrimitiveArrayWrapper getWindow(int r1, int r2, int c1, int c2);
 
     protected void searchValuesInWindow(int n, int r1, int r2, int c1, int c2, IRasterFilterFunction function,
-            long maxVal, long minVal, int z, PixelRange[] out, IntPointer index, int baseX, int baseY) {
+            long maxVal, long minVal, int z, List<PixelRange> out, int baseX, int baseY) {
         int nKths = (n / k); // childsize
         int rank = treeRank(z);
         z = rank * k * k;
@@ -300,29 +301,25 @@ public abstract class AbstractK2Raster implements Serializable {
                             continue;
                         } else {
                             searchValuesInWindow(nKths, r1p, r2p, c1p, c2p, function, maxValp, minValp, zp,
-                                    out, index, baseXp, baseYp);
+                                    out, baseXp, baseYp);
                         }
                     }
                 }
 
                 if (addCells) {
                     for (int r = r1p + baseYp; r <= r2p + baseYp; r++) {
-                        out[index.val++] = new PixelRange(r, c1p + baseXp, c2p + baseXp);
+                        out.add(new PixelRange(r, c1p + baseXp, c2p + baseXp));
                     }
                 }
             }
         }
     }
 
-    protected PixelRange[] searchValuesInWindow(int r1, int r2, int c1, int c2, IRasterFilterFunction function,
-            PixelRange[] out) {
-        IntPointer index = new IntPointer();
+    public void searchValuesInWindow(int r1, int r2, int c1, int c2, IRasterFilterFunction function,
+            List<PixelRange> out) {
         searchValuesInWindow(this.n, r1, r2, c1, c2, function,
                 this.maxVal, this.minVal, -1, out,
-                index, 0, 0);
-        PixelRange[] resized = new PixelRange[index.val];
-        System.arraycopy(out, 0, resized, 0, index.val);
-        return resized;
+                0, 0);
     }
 
     /**
@@ -336,8 +333,9 @@ public abstract class AbstractK2Raster implements Serializable {
      * @return a window of the matrix with only the values {@code v} that satisfy
      *         {@code vb <= v <= ve}
      */
-    public PixelRange[] searchValuesInWindow(int r1, int r2, int c1, int c2, IRasterFilterFunction function) {
-        PixelRange[] out = new PixelRange[getSize(r1, r2, c1, c2)];
-        return searchValuesInWindow(r1, r2, c1, c2, function, out);
+    public List<PixelRange> searchValuesInWindow(int r1, int r2, int c1, int c2, IRasterFilterFunction function) {
+        List<PixelRange> out = new ArrayList<>();
+        searchValuesInWindow(r1, r2, c1, c2, function, out);
+        return out;
     }
 }
