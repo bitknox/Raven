@@ -1,4 +1,4 @@
-package dk.itu.raven.runner;
+package dk.itu.raven.raptor;
 
 import com.beust.jcommander.Parameter;
 
@@ -16,18 +16,6 @@ public class CommandLineArgs {
         @Parameter(names = { "-fh",
                         "--filter-high" }, description = "Upper value for the filter range")
         public long filterHigh = (long) Integer.MAX_VALUE;
-
-        @Parameter(names = { "-ts",
-                        "--tile-size" }, description = "The size of the tiles (only used if the join is streamed)")
-        public int tileSize = 2048;
-
-        @Parameter(names = { "-t",
-                        "--join-type" }, description = "The type of join to perform", required = true)
-        public JoinType joinType = null;
-
-        @Parameter(names = { "-c",
-                        "--cached" }, description = "Whether to use cached structures", arity=1)
-        public boolean cached = true;
 
         @Parameter(names = { "-i",
                         "--iterations" }, description = "The number of tests performed using these settings", required = true)

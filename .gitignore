@@ -9,6 +9,7 @@ dependency-reduced-pom.xml
 *.tiff
 !**/src/test/java/dk/itu/raven/data/*
 *.png
+*.raven
 *.jpg
 *.jpeg
 *.exe

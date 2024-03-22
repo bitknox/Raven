@@ -241,6 +241,33 @@ public class KSquaredTest {
 		}
 	}
 
+	@Test
+	public void testDifferentKValuesGivesSameResult() {
+		int width = 1000;
+		int height = 1000;
+		Matrix mat = new RandomMatrix(42, width, height, 100);
+		AbstractK2Raster k2_2 = new K2RasterBuilder().build(mat, 2);
+		AbstractK2Raster k2_3 = new K2RasterBuilder().build(mat, 3);
+		AbstractK2Raster k2_4 = new K2RasterBuilder().build(mat, 4);
+		AbstractK2Raster k2_5 = new K2RasterBuilder().build(mat, 5);
+
+		for (int i = 0; i < height; i++) {
+			PrimitiveArrayWrapper expected = k2_2.getWindow(i, i, 0, width - 1);
+			PrimitiveArrayWrapper actual3 = k2_3.getWindow(i, i, 0, width - 1);
+			PrimitiveArrayWrapper actual4 = k2_4.getWindow(i, i, 0, width - 1);
+			PrimitiveArrayWrapper actual5 = k2_5.getWindow(i, i, 0, width - 1);
+			assertEquals(expected.length(), actual3.length());
+			assertEquals(expected.length(), actual4.length());
+			assertEquals(expected.length(), actual5.length());
+			for (int j = 0; j < width; j++) {
+				assertEquals(expected.get(j), actual3.get(j));
+				assertEquals(expected.get(j), actual4.get(j));
+				assertEquals(expected.get(j), actual5.get(j));
+			}
+		}
+
+	}
+
 	@AfterAll
 	public static void tearDown() {
 		File file = new File("serializeTest.txt");

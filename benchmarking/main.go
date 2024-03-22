@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/bitknox/Raven/benchmarking/executor"
+	"github.com/bitknox/Raven/benchmarking/model"
 	"github.com/bitknox/Raven/benchmarking/parsing"
 	"github.com/bitknox/Raven/benchmarking/plotter"
 	"github.com/urfave/cli/v2"
@@ -32,14 +33,14 @@ func main() {
 		Usage: "benchmarking tool for raven project",
 		Action: func(c *cli.Context) error {
 			plotter.VerifyEnvironment()
-			benchmarks, err := parsing.ParseInput(c.String("input"))
+			suite, err := parsing.ParseInput(c.String("input"))
 
 			if err != nil {
 				fmt.Println(err)
 				return err
 			}
 			//use executor to run the benchmars
-			results := executor.ExecuteBenchmarks(benchmarks)
+			results := executor.ExecuteBenchmarks(suite.Benchmarks)
 
 			resultOutputDirectory := c.String("output")
 
@@ -52,8 +53,12 @@ func main() {
 
 			resultsPath := fmt.Sprintf("%s/results %s.json", resultOutputDirectory, timestamp)
 
+			var experiment = model.BenchmarkSuiteResult{}
+			experiment.Results = results
+			experiment.Name = suite.Name
+
 			//write results to file
-			err = parsing.WriteResults(results, resultsPath)
+			err = parsing.WriteResults(&experiment, resultsPath)
 
 			if err != nil {
 				fmt.Println(err)

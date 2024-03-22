@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import org.locationtech.jts.geom.Geometry;
 
+import edu.ucr.cs.bdlab.beast.common.BeastOptions;
 import edu.ucr.cs.bdlab.beast.geolite.IFeature;
 import edu.ucr.cs.bdlab.beast.geolite.ITile;
 import edu.ucr.cs.bdlab.beast.geolite.RasterMetadata;
@@ -25,7 +26,7 @@ public class RaptorJoin {
     private Stream<List<PixelRange>> extractCellsBeast(int rid, Geometry[] geometries, RasterMetadata metadata) {
         Map<Integer, List<PixelRange>> ranges = new HashMap<>();
         Intersections intersections = new Intersections();
-        intersections.compute(geometries, metadata);
+        intersections.compute(geometries, metadata, new BeastOptions());
         for (int i = 0; i < intersections.getNumIntersections(); i++) {
             List<PixelRange> rangeList = ranges.get(intersections.getTileID(i));
             if (rangeList == null) {

@@ -47,7 +47,7 @@ public class SpatialDataChunk {
     }
 
     public String getCacheKeyName() {
-        return offset.getX() + "-" + offset.getY();
+        return offset.getX() + "-" + offset.getY() + ".raven";
     }
 
     public Optional<String> getCacheKey() {
