@@ -25,6 +25,10 @@ public class CommandLineArgs {
                         "--join-type" }, description = "The type of join to perform", required = true)
         public JoinType joinType = null;
 
+        @Parameter(names = { "-c",
+                        "--cached" }, description = "Whether to use cached structures", arity=1)
+        public boolean cached = true;
+
         @Parameter(names = { "-i",
                         "--iterations" }, description = "The number of tests performed using these settings", required = true)
         public long iterations = -1;

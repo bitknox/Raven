@@ -18,7 +18,7 @@ func ParseResult(jsonInput string) (*model.BenchmarkResult, error) {
 	return &result, nil
 }
 
-func WriteResults(results []*model.BenchmarkResult, path string) error {
+func WriteResults(results *model.BenchmarkSuiteResult, path string) error {
 	file, err := json.Marshal(results)
 	if err != nil {
 		return err
