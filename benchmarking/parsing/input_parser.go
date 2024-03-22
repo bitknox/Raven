@@ -7,17 +7,17 @@ import (
 	"github.com/bitknox/Raven/benchmarking/model"
 )
 
-func ParseInput(jsonPath string) ([]*model.Benchmark, error) {
+func ParseInput(jsonPath string) (*model.BenchmarkSuite, error) {
 	file, err := os.ReadFile(jsonPath)
 	if err != nil {
 		return nil, err
 	}
 
-	var benchmarks []*model.Benchmark
-	err = json.Unmarshal(file, &benchmarks)
+	var suite model.BenchmarkSuite
+	err = json.Unmarshal(file, &suite)
 	if err != nil {
 		return nil, err
 	}
 
-	return benchmarks, nil
+	return &suite, nil
 }
