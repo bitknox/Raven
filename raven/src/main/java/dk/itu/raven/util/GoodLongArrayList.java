@@ -37,9 +37,13 @@ public class GoodLongArrayList {
     }
 
     public void set(int index, long element) {
-        size = index > size ? index : size;
+        size = index + 1 > size ? index + 1 : size;
         ensureExplicitCapacity(index + 1);
         array[index] = element;
+    }
+
+    public void add(long element) {
+        set(this.size, element);
     }
 
     private void ensureExplicitCapacity(int minCapacity) {
