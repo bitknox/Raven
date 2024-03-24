@@ -3,6 +3,7 @@ package dk.itu.raven.ksquared;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.join.IRasterFilterFunction;
@@ -337,5 +338,88 @@ public abstract class AbstractK2Raster implements Serializable {
         List<PixelRange> out = new ArrayList<>();
         searchValuesInWindow(r1, r2, c1, c2, function, out);
         return out;
+    }
+
+    public void searchValuesInRanges(Map<Integer, List<PixelRange>> ranges, List<PixelRange> out, int r1, int r2,
+            int c1,
+            int c2, IRasterFilterFunction function) {
+        searchValuesInRanges(ranges, out, r1, r2, c1, c2, -1, function, 0, 0, this.minVal, this.maxVal, this.n);
+    }
+
+    private void searchValuesInRanges(Map<Integer, List<PixelRange>> ranges, List<PixelRange> out, int r1, int r2,
+            int c1,
+            int c2, int z, IRasterFilterFunction function, int baseX, int baseY, long minVal, long maxVal, int n) {
+        int nKths = (n / k); // childsize
+        int rank = treeRank(z);
+        z = rank * k * k;
+        int initialI = r1 / nKths;
+        int lastI = r2 / nKths;
+        int initialJ = c1 / nKths;
+        int lastJ = c2 / nKths;
+
+        int r1p, r2p, c1p, c2p, zp;
+        long maxValp, minValp;
+
+        for (int i = initialI; i <= lastI; i++) {
+            if (i == initialI)
+                r1p = r1 % nKths;
+            else
+                r1p = 0;
+
+            if (i == lastI)
+                r2p = r2 % nKths;
+            else
+                r2p = nKths - 1;
+            for (int j = initialJ; j <= lastJ; j++) {
+                if (j == initialJ)
+                    c1p = c1 % nKths;
+                else
+                    c1p = 0;
+
+                if (j == lastJ)
+                    c2p = c2 % nKths;
+                else
+                    c2p = nKths - 1;
+                zp = z + i * k + j;
+                maxValp = computeVMax(maxVal, zp + 1);
+
+                boolean addCells = false;
+                int baseXp = baseX + j * nKths;
+                int baseYp = baseY + i * nKths;
+                if (!hasChildren(zp + 1)) {
+                    minValp = maxValp;
+                    if (!function.containsOutside(minValp, maxValp)) {
+                        addCells = true;
+                        /* all cells meet the condition in this branch */
+                    }
+                } else {
+                    minValp = computeVMin(maxVal, minVal, zp + 1);
+                    if (!function.containsOutside(minValp, maxValp)) {
+                        addCells = true;
+                        /* all cells meet the condition in this branch */
+                    } else {
+                        if (!function.containsWithin(minValp, maxValp)) {
+                            continue;
+                        } else {
+                            searchValuesInRanges(ranges, out, r1p, r2p, c1p, c2p, zp, function, baseXp, baseYp, minValp,
+                                    maxValp, nKths);
+                        }
+                    }
+                }
+
+                if (addCells) {
+                    for (int r = r1p + baseYp; r <= r2p + baseYp; r++) {
+                        if (ranges.containsKey(r)) {
+                            for (PixelRange range : ranges.get(r)) {
+                                if (range.x2 < c1p + baseXp || range.x1 > c2p + baseXp)
+                                    continue;
+                                out.add(new PixelRange(r, Math.max(range.x1, c1p + baseXp),
+                                        Math.min(range.x2, c2p + baseXp)));
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
