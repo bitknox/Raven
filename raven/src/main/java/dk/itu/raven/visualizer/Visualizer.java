@@ -269,6 +269,58 @@ public class Visualizer {
 
 	}
 
+	public BufferedImage drawAllVectorData(IJoinResult results, ShapefileReader shapeFileReader,
+			VisualizerOptions options) throws IOException {
+		var pair = getFeatures(shapeFileReader);
+		List<Polygon> features = pair.first;
+		ShapeFileBounds bounds = pair.second;
+
+		int width = this.width;
+
+		double scale = width / (bounds.maxX - bounds.minX);
+
+		int height = (int) (scale * (bounds.maxY - bounds.minY));
+
+		int format = BufferedImage.TYPE_BYTE_INDEXED;
+		BufferedImage image = new BufferedImage(width, height, format);
+		Graphics2D graphics = image.createGraphics();
+
+		setColor(graphics, options.background);
+		graphics.fillRect(0, 0, width, height); // give the whole image a white background
+
+		for (var item : results) {
+			for (PixelRange range : item.pixelRanges) {
+				setColor(graphics, options.primaryColor);
+				graphics.drawLine(
+						(int) (range.x1 * scale - bounds.minX * scale),
+						(int) (range.row * scale - bounds.minY * scale),
+						(int) (range.x2 * scale - bounds.minX * scale),
+						(int) (range.row * scale - bounds.minY * scale));
+			}
+		}
+
+		Color color = options.secondaryColor;
+
+		for (Polygon poly : features) {
+			setColor(graphics, color);
+			Point old = poly.getFirst();
+			for (Point next : poly) {
+				int sx = (int) (old.x() * scale - bounds.minX * scale);
+				int sy = (int) (old.y() * scale - bounds.minY * scale);
+				int ex = (int) (next.x() * scale - bounds.minX * scale);
+				int ey = (int) (next.y() * scale - bounds.minY * scale);
+				graphics.drawLine(sx, sy, ex, ey);
+				old = next;
+			}
+		}
+
+		if (options.useOutput) {
+			writeImage(image, options.outputPath, options.outputFormat);
+		}
+
+		return image;
+	}
+
 	/**
 	 * 
 	 * @param image        A buffered image to write

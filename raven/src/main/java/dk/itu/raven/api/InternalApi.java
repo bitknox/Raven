@@ -147,7 +147,6 @@ public class InternalApi {
             throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
         Size imageSize = new Size(metadata.getWidth(), metadata.getHeight());
-        System.out.println("Image size: " + imageSize.width + " " + imageSize.height);
         var structures = streamStructures(vectorReader, rasterReader, widthStep, heightStep, isCaching);
         Stream<RavenJoin> stream = structures.filter(chunk -> {
             return chunk.getRtree().root().isPresent();

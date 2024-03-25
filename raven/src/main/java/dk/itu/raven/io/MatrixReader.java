@@ -1,13 +1,12 @@
 package dk.itu.raven.io;
 
+import java.awt.Rectangle;
 import java.io.IOException;
 
 import org.geotools.api.referencing.FactoryException;
 import org.geotools.api.referencing.NoSuchAuthorityCodeException;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.referencing.CRS;
-
-import java.awt.Rectangle;
 
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
@@ -63,11 +62,5 @@ public class MatrixReader extends RasterReader {
 	public TFWFormat getG2M() {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'getG2M'");
-	}
-
-	@Override
-	public TFWFormat getG2W() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getG2W'");
 	}
 }

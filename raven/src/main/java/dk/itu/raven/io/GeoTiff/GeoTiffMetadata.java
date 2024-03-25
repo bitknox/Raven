@@ -2,13 +2,10 @@ package dk.itu.raven.io.GeoTiff;
 
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.checkerframework.checker.units.qual.g;
 import org.geotools.coverage.grid.io.imageio.geotiff.GeoKeyEntry;
 import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder;
 import org.geotools.coverage.grid.io.imageio.geotiff.PixelScale;

@@ -3,27 +3,21 @@ package dk.itu.raven.io;
 import java.io.File;
 import java.io.IOException;
 
-import org.geotools.api.data.DataSourceException;
-import org.geotools.api.referencing.FactoryException;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-import org.geotools.api.referencing.operation.MathTransform;
-import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.coverage.grid.io.imageio.geotiff.PixelScale;
 import org.geotools.coverage.grid.io.imageio.geotiff.TiePoint;
 import org.geotools.gce.geotiff.GeoTiffReader;
-import org.geotools.referencing.CRS;
 
 import dk.itu.raven.io.GeoTiff.GeoTiffMetadata;
 import dk.itu.raven.io.GeoTiff.GeoTiffMetadata2CRSAdapter;
+import dk.itu.raven.util.Logger;
 
 public abstract class FileRasterReader extends RasterReader {
 	File tiff;
 	File tfw;
 
 	CoordinateReferenceSystem crs;
-
 	TFWFormat g2m;
-	TFWFormat g2w;
 
 	public FileRasterReader(File directory) throws IOException {
 		for (File file : directory.listFiles()) {
@@ -39,70 +33,59 @@ public abstract class FileRasterReader extends RasterReader {
 		if (tiff == null) {
 			throw new IOException("Missing tiff file");
 		}
+
 		this.setCacheKey(tiff.getName());
 
-		GeoTiffReader gtiffreader = null;
+		GeoTiffMetadata metadata = readGeoTiffMetadata();
+
+		setCRS(metadata);
+		setG2M(metadata);
+	}
+
+	private GeoTiffMetadata readGeoTiffMetadata() {
 		GeoTiffMetadata metadata = null;
+		try {
+			metadata = new GeoTiffMetadata(new GeoTiffReader(tiff));
+		} catch (Exception e) {
+			Logger.log("Cannot read metadata from " + tiff.getName(), Logger.LogLevel.DEBUG);
+			// e.printStackTrace();
+		}
+		return metadata;
+	}
+
+	private void setCRS(GeoTiffMetadata metadata) {
 		var adapter = new GeoTiffMetadata2CRSAdapter(null);
 		try {
-			gtiffreader = new GeoTiffReader(tiff);
-			metadata = new GeoTiffMetadata(gtiffreader);
-			this.crs = adapter.createCoordinateSystem(metadata);
-			// metadata = gtiffreader.getMetadata();
-			// this.crs = gtiffreader.getCoordinateReferenceSystem();
-		} catch (DataSourceException e) {
-			// TODO: handle exception
+			crs = adapter.createCoordinateSystem(metadata);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Logger.log("Cannot create CRS from metadata, using default CRS", Logger.LogLevel.DEBUG);
+			crs = adapter.DefaultCRS;
 		}
+	}
 
-		if (tfw != null) {
-			g2w = TFWFormat.read(tfw);
-		} else if (metadata != null) {
-
-			// TODO: Use this for reprojection
-
+	private void setG2M(GeoTiffMetadata metadata) throws IOException {
+		if (metadata != null && metadata.hasPixelScales() && metadata.hasTiePoints()) {
 			PixelScale pixelScale = metadata.getModelPixelScales();
 			TiePoint[] tiePoint = metadata.getModelTiePoints();
 
-			if (pixelScale == null || tiePoint == null || tiePoint.length < 1) {
-				throw new UnsupportedOperationException("no side-car or inline TFW data found");
-			}
+			double sx = pixelScale.getScaleX();
+			double sy = pixelScale.getScaleY();
 
-			if (tiePoint[0].getValueAt(0) != 0 || tiePoint[0].getValueAt(1) != 0) {
-				throw new UnsupportedOperationException("first tie point is not the top left coordinates");
-			}
+			double tx = tiePoint[0].getValueAt(3) - tiePoint[0].getValueAt(0);
+			double ty = tiePoint[0].getValueAt(4) - tiePoint[0].getValueAt(1);
 
-			g2w = new TFWFormat(pixelScale.getScaleX(), 0, 0, -pixelScale.getScaleY(), tiePoint[0].getValueAt(3),
-					tiePoint[0].getValueAt(4));
+			g2m = new TFWFormat(sx, 0, 0, -sy, tx, ty);
+		} else if (tfw != null) {
+			Logger.log("Reading TFW file because the metadata had no model to grid information", Logger.LogLevel.DEBUG);
+			g2m = TFWFormat.read(tfw);
+		} else {
+			throw new UnsupportedOperationException("no side-car or inline TFW data found");
 		}
 
-		try {
-			MathTransform mt = CRS.findMathTransform(crs, adapter.DefaultCRS, true);
-			double[] tl = new double[2];
-			double[] pixelXY = new double[2];
-			double[] ref = new double[2];
-			mt.transform(new double[] { g2w.topLeftX, g2w.topLeftY }, 0, tl, 0, 1);
-			mt.transform(new double[] { 0, 0 }, 0, ref, 0, 1);
-			mt.transform(new double[] { g2w.pixelLengthX, g2w.pixelLengthY }, 0, pixelXY, 0, 1);
-			g2m = new TFWFormat(pixelXY[0] - ref[0], 0, 0, pixelXY[1] - ref[1], tl[0],
-					tl[1]);
-		} catch (FactoryException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TransformException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	public TFWFormat getG2M() {
 		return g2m;
-	}
-
-	public TFWFormat getG2W() {
-		return g2w;
 	}
 
 	public CoordinateReferenceSystem getCRS() {

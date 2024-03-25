@@ -1,6 +1,5 @@
 package dk.itu.raven.io;
 
-import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,7 +11,6 @@ import org.geotools.api.data.SimpleFeatureSource;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.geometry.MismatchedDimensionException;
-import org.geotools.api.referencing.FactoryException;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.api.referencing.operation.TransformException;
@@ -20,8 +18,6 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
-import org.geotools.referencing.operation.transform.ConcatenatedTransform;
-import org.geotools.referencing.operation.transform.ProjectiveTransform;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
@@ -34,14 +30,14 @@ import dk.itu.raven.util.Pair;
 public class ShapefileReader {
 
 	private TFWFormat transform;
-	private CoordinateReferenceSystem crs;
+	private CoordinateReferenceSystem targetCRS;
 	private File file;
 	protected ShapeFileBounds bounds;
 
-	public ShapefileReader(String path, TFWFormat transform, CoordinateReferenceSystem crs) {
+	public ShapefileReader(String path, TFWFormat transform, CoordinateReferenceSystem targetCRS) {
 		this.file = new File(path);
 		this.transform = transform;
-		this.crs = crs;
+		this.targetCRS = targetCRS;
 		this.bounds = new ShapeFileBounds();
 	}
 
@@ -78,8 +74,13 @@ public class ShapefileReader {
 		bounds.reset();
 		List<Polygon> features = new ArrayList<>();
 		FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures();
-
-		MathTransform w2g = calculateTransform(myData.getSchema().getCoordinateReferenceSystem());
+		MathTransform w2g;
+		CoordinateReferenceSystem sourceCRS = source.getSchema().getCoordinateReferenceSystem();
+		if (CRS.equalsIgnoreMetadata(sourceCRS, targetCRS)) {
+			w2g = Reprojector.model2Grid(transform);
+		} else {
+			w2g = Reprojector.calculateFullTransform(sourceCRS, this.targetCRS, this.transform);
+		}
 
 		try (FeatureIterator<SimpleFeature> featuresItr = collection.features()) {
 			while (featuresItr.hasNext()) {
@@ -136,7 +137,6 @@ public class ShapefileReader {
 				}
 			} else {
 				p = Geometries.point(coord.x, coord.y);
-
 				minX = Math.min(minX, p.x());
 				maxX = Math.max(maxX, p.x());
 				minY = Math.min(minY, p.y());
@@ -144,30 +144,5 @@ public class ShapefileReader {
 				points.add(p);
 			}
 		}
-	}
-
-	private MathTransform calculateTransform(CoordinateReferenceSystem source) {
-		MathTransform transform = null;
-		AffineTransform g2w = this.transform.getAffineTransform();
-
-		try {
-			g2w.invert();
-		} catch (java.awt.geom.NoninvertibleTransformException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		if (crs == null) {
-			return ProjectiveTransform.create(g2w);
-		}
-
-		try {
-			transform = CRS.findMathTransform(source, crs, true);
-		} catch (FactoryException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return ConcatenatedTransform.create(transform, ProjectiveTransform.create(g2w));
 	}
 }
