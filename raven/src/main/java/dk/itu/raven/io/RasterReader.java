@@ -41,11 +41,6 @@ public abstract class RasterReader implements IRasterReader {
 
 	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
 			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree) throws IOException {
-		return rasterPartitionStream(widthStep, heightStep, new Offset<Integer>(0, 0), cache, rtree);
-	}
-
-	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep, Offset<Integer> globalOffset,
-			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree) throws IOException {
 		ImageMetadata metadata = getImageMetadata();
 
 		// Limit to image size.
@@ -63,8 +58,8 @@ public abstract class RasterReader implements IRasterReader {
 		}
 
 		return windows.stream().filter(w -> {
-			int x = w.x + globalOffset.getX();
-			int y = w.y + globalOffset.getY();
+			int x = w.x;
+			int y = w.y;
 			var rect = Geometries.rectangle(x, y, x + w.width, y + w.height);
 			boolean intersects = TreeExtensions.intersectsOne(rtree.root().get(), rect);
 			return intersects;
@@ -73,7 +68,6 @@ public abstract class RasterReader implements IRasterReader {
 				Offset<Integer> offset = new Offset<>(w.x, w.y);
 				SpatialDataChunk chunk = new SpatialDataChunk();
 				chunk.setOffset(offset);
-				chunk.setGlobalOffset(globalOffset);
 				String key = chunk.getCacheKeyName();
 				if (cache.isPresent() && cache.get().contains(key)) {
 					chunk.setCacheKey(key);

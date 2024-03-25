@@ -42,25 +42,4 @@ public class MatrixReader extends RasterReader {
 		return new ImageMetadata(matrix.getWidth(), matrix.getHeight(), matrix.getBitsUsed(),
 				matrix.getSampleSize());
 	}
-
-	@Override
-	public CoordinateReferenceSystem getCRS() {
-		// TODO Auto-generated method stub
-		try {
-			return CRS.decode("EPSG:4326");
-		} catch (NoSuchAuthorityCodeException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (FactoryException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	@Override
-	public TFWFormat getG2M() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getG2M'");
-	}
 }

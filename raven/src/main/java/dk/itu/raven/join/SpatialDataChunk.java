@@ -2,9 +2,12 @@ package dk.itu.raven.join;
 
 import java.util.Optional;
 
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+
 import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.io.ShapefileReader;
+import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.Matrix;
 
@@ -14,7 +17,8 @@ public class SpatialDataChunk {
     private Optional<String> cacheKey = Optional.empty();
 
     private Offset<Integer> offset;
-    private Offset<Integer> globalOffset;
+    private CoordinateReferenceSystem crs;
+    private TFWFormat g2m;
 
     public SpatialDataChunk() {
     }
@@ -35,8 +39,12 @@ public class SpatialDataChunk {
         this.offset = offset;
     }
 
-    public void setGlobalOffset(Offset<Integer> globalOffset) {
-        this.globalOffset = globalOffset;
+    public void setCrs(CoordinateReferenceSystem crs) {
+        this.crs = crs;
+    }
+
+    public void setG2m(TFWFormat g2m) {
+        this.g2m = g2m;
     }
 
     public Matrix getMatrix() {
@@ -51,15 +59,19 @@ public class SpatialDataChunk {
         return offset;
     }
 
-    public Offset<Integer> getGlobalOffset() {
-        return this.globalOffset;
-    }
-
     public String getCacheKeyName() {
         return offset.getX() + "-" + offset.getY() + ".raven";
     }
 
     public Optional<String> getCacheKey() {
         return cacheKey;
+    }
+
+    public CoordinateReferenceSystem getCrs() {
+        return crs;
+    }
+
+    public TFWFormat getG2m() {
+        return g2m;
     }
 }

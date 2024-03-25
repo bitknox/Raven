@@ -10,14 +10,9 @@ import org.geotools.api.data.FileDataStoreFinder;
 import org.geotools.api.data.SimpleFeatureSource;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
-import org.geotools.api.geometry.MismatchedDimensionException;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-import org.geotools.api.referencing.operation.MathTransform;
-import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
-import org.geotools.geometry.jts.JTS;
-import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
@@ -25,19 +20,14 @@ import com.github.davidmoten.rtree2.geometry.Geometries;
 import com.github.davidmoten.rtree2.geometry.Point;
 
 import dk.itu.raven.geometry.Polygon;
-import dk.itu.raven.util.Pair;
 
 public class ShapefileReader {
 
-	private TFWFormat transform;
-	private CoordinateReferenceSystem targetCRS;
 	private File file;
 	protected ShapeFileBounds bounds;
 
-	public ShapefileReader(String path, TFWFormat transform, CoordinateReferenceSystem targetCRS) {
+	public ShapefileReader(String path) {
 		this.file = new File(path);
-		this.transform = transform;
-		this.targetCRS = targetCRS;
 		this.bounds = new ShapeFileBounds();
 	}
 
@@ -67,38 +57,35 @@ public class ShapefileReader {
 		return this.bounds;
 	}
 
-	public Pair<List<Polygon>, ShapeFileBounds> readShapefile()
+	public VectorData readShapefile()
 			throws IOException {
 		FileDataStore myData = FileDataStoreFinder.getDataStore(file);
 		SimpleFeatureSource source = myData.getFeatureSource();
 		bounds.reset();
 		List<Polygon> features = new ArrayList<>();
 		FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures();
-		MathTransform w2g;
-		CoordinateReferenceSystem sourceCRS = source.getSchema().getCoordinateReferenceSystem();
-		if (CRS.equalsIgnoreMetadata(sourceCRS, targetCRS)) {
-			w2g = Reprojector.model2Grid(transform);
-		} else {
-			w2g = Reprojector.calculateFullTransform(sourceCRS, this.targetCRS, this.transform);
-		}
+
+		CoordinateReferenceSystem crs = source.getSchema().getCoordinateReferenceSystem();
+		// System.out.println(sourceCRS.toWKT());
+		// System.out.println(targetCRS.toWKT());
+
+		// try {
+		// System.out.println(CRS.lookupEpsgCode(sourceCRS, true));
+		// System.out.println(CRS.lookupEpsgCode(targetCRS, true));
+		// } catch (Exception e) {
+		// // TODO: handle exception
+		// }
 
 		try (FeatureIterator<SimpleFeature> featuresItr = collection.features()) {
 			while (featuresItr.hasNext()) {
 				SimpleFeature feature = featuresItr.next();
 				Geometry geom = (Geometry) feature.getDefaultGeometry();
-				geom = JTS.transform(geom, w2g);
 				extractGeometries(geom, features);
 			}
-		} catch (MismatchedDimensionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TransformException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} finally {
 			myData.dispose();
 		}
-		return new Pair<>(features, bounds);
+		return new VectorData(features, bounds, crs);
 	}
 
 	private void extractGeometries(Geometry geometry,

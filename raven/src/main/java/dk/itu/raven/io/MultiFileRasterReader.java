@@ -7,12 +7,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
-import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.io.cache.CachedRasterStructure;
 import dk.itu.raven.io.cache.RasterCache;
 import dk.itu.raven.join.SpatialDataChunk;
@@ -20,18 +17,12 @@ import dk.itu.raven.join.SpatialDataChunk;
 public class MultiFileRasterReader implements IRasterReader {
 
 	private Stream<ImageIORasterReader> readers;
-	private TFWFormat g2m = new TFWFormat(0, 0, 0, 0, Integer.MAX_VALUE, Integer.MIN_VALUE);
-	private ImageMetadata metadata;
-	private CoordinateReferenceSystem crs;
 	private String cacheKey;
+	private ImageMetadata metadata;
 
 	public MultiFileRasterReader(File directory) throws IOException {
-		cacheKey = directory.getName() + "-cache";
-		// find all tiff files in directory and subdirectories
 		List<File> files = Arrays.asList(directory.listFiles());
 		ImageIORasterReader reader = new ImageIORasterReader(files.get(0));
-		this.g2m = reader.getG2M();
-		this.crs = reader.getCRS();
 		this.metadata = reader.getImageMetadata();
 		Stream<ImageIORasterReader> singleStream = Stream.of(reader);
 		Stream<ImageIORasterReader> stream = files.subList(1, files.size()).stream().map(f -> {
@@ -47,27 +38,26 @@ public class MultiFileRasterReader implements IRasterReader {
 		});
 
 		this.readers = Stream.concat(singleStream, stream);
-
 	}
 
 	public Optional<String> getCacheKey() {
 		return Optional.of(cacheKey);
 	}
 
+	// TODO: update signature to take a list of all polygons instead of an RTREE
 	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
 			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree) throws IOException {
 		return readers.map(reader -> {
 			try {
-				TFWFormat transform = reader.getG2M();
 
-				Offset<Integer> offset = new Offset<Integer>(
-						(int) ((transform.topLeftX - this.g2m.topLeftX) / transform.pixelLengthX),
-						(int) ((transform.topLeftY - this.g2m.topLeftY) / transform.pixelLengthY));
+				// TODO: use reader.getCRS() and reader.getG2M() to remove non-overlapping
+				// TODO: vector data and transform the vector data the correct crs
 
-				System.out.println("Offset: " + offset.getX() + " " + offset.getY());
+				reader.getCRS();
+				reader.getG2M();
 
 				return reader.rasterPartitionStream(widthStep, heightStep,
-						offset, cache, rtree).parallel();
+						cache, rtree).parallel();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -76,16 +66,8 @@ public class MultiFileRasterReader implements IRasterReader {
 		}).reduce(Stream::concat).orElse(Stream.empty());
 	}
 
-	public TFWFormat getG2M() {
-		return g2m;
-	}
-
-	public CoordinateReferenceSystem getCRS() {
-		return crs;
-	}
-
-	public ImageMetadata getImageMetadata() {
-		// we assume that all the tiff files must have the same metadata
-		return metadata;
+	@Override
+	public ImageMetadata getImageMetadata() throws IOException {
+		return this.metadata;
 	}
 }

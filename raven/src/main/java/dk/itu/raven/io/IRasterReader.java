@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
@@ -14,11 +12,6 @@ import dk.itu.raven.io.cache.RasterCache;
 import dk.itu.raven.join.SpatialDataChunk;
 
 public interface IRasterReader {
-
-	public TFWFormat getG2M();
-
-	public CoordinateReferenceSystem getCRS();
-
 	public Optional<String> getCacheKey();
 
 	public ImageMetadata getImageMetadata() throws IOException;

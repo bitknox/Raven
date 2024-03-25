@@ -42,21 +42,19 @@ public class RavenJoin extends AbstractRavenJoin {
 	private AbstractK2Raster k2Raster;
 	private RTree<String, Geometry> tree;
 	private Offset<Integer> offset;
-	private Offset<Integer> globalOffset;
 	private Size imageSize;
 	private IRasterFilterFunction function;
 
 	public RavenJoin(AbstractK2Raster k2Raster, RTree<String, Geometry> tree,
-			Offset<Integer> offset, Offset<Integer> globalOffset, Size imageSize) {
+			Offset<Integer> offset, Size imageSize) {
 		this.k2Raster = k2Raster;
 		this.tree = tree;
 		this.offset = offset;
-		this.globalOffset = globalOffset;
 		this.imageSize = imageSize;
 	}
 
 	public RavenJoin(AbstractK2Raster k2Raster, RTree<String, Geometry> tree, Size imageSize) {
-		this(k2Raster, tree, new Offset<>(0, 0), new Offset<>(0, 0), imageSize);
+		this(k2Raster, tree, new Offset<>(0, 0), imageSize);
 	}
 
 	private void extractRange(Collection<PixelRange> ranges, int y, int x1, int x2, boolean prob) {
@@ -358,9 +356,9 @@ public class RavenJoin extends AbstractRavenJoin {
 	private java.awt.Rectangle getRectangle(Square rasterBounding) {
 		return new java.awt.Rectangle(rasterBounding.getTopX(), rasterBounding.getTopY(),
 				Math.min(rasterBounding.getSize(),
-						Math.max(0, imageSize.width + globalOffset.getX() - rasterBounding.getTopX())),
+						Math.max(0, imageSize.width - rasterBounding.getTopX())),
 				Math.min(rasterBounding.getSize(), Math.max(0,
-						imageSize.height + globalOffset.getX() - rasterBounding.getTopY())));
+						imageSize.height - rasterBounding.getTopY())));
 	}
 
 	private boolean intersects(java.awt.Rectangle movedRasterWindow, Rectangle mbr) {
@@ -389,15 +387,15 @@ public class RavenJoin extends AbstractRavenJoin {
 
 		for (Node<String, Geometry> node : TreeExtensions.getChildren(tree.root().get())) {
 			S.push(new Tuple5<>(node, 0,
-					new Square(offset.getX() + globalOffset.getX(), offset.getY() + globalOffset.getY(),
+					new Square(offset.getX(), offset.getY(),
 							k2Raster.getSize()),
 					minMax.first, minMax.second));
 		}
 
 		// Used for early termination. If the vector data does not overlap with BOTH the
 		// image and the square k2Raster there will never be an intersection.
-		java.awt.Rectangle movedRasterWindow = new java.awt.Rectangle(offset.getX() + globalOffset.getX(),
-				offset.getY() + globalOffset.getY(),
+		java.awt.Rectangle movedRasterWindow = new java.awt.Rectangle(offset.getX(),
+				offset.getY(),
 				Math.min(imageSize.width, k2Raster.getSize()), Math.min(imageSize.height, k2Raster.getSize()));
 
 		while (!S.empty()) {

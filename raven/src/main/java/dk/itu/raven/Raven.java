@@ -17,6 +17,7 @@ import dk.itu.raven.join.IRasterFilterFunction;
 import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
+import dk.itu.raven.visualizer.RandomColor;
 import dk.itu.raven.visualizer.Visualizer;
 import dk.itu.raven.visualizer.VisualizerOptions;
 import dk.itu.raven.visualizer.VisualizerOptionsBuilder;
@@ -43,8 +44,8 @@ public class Raven {
         RavenApi api = new RavenApi();
 
         IRasterReader rasterReader = new MultiFileRasterReader(new File(jct.inputRaster));
-        ShapefileReader shapefileReader = api.createShapefileReader(jct.inputVector,
-                rasterReader.getG2M(), rasterReader.getCRS());
+        ShapefileReader shapefileReader = api.createShapefileReader(jct.inputVector);
+        // rasterReader.getG2M(), rasterReader.getCRS()
 
         ImageMetadata metadata = rasterReader.getImageMetadata();
 
@@ -103,10 +104,13 @@ public class Raven {
             builder.setOutputPath(jct.outputPath);
             builder.setUseOutput(true);
             builder.setCropToVector(jct.cropToVector);
+            builder.setSecondaryColor(new RandomColor());
 
             VisualizerOptions options = builder.build();
 
-            visual.drawResult(result, shapefileReader, options);
+            // visual.drawResult(result, shapefileReader, options);
+            visual.drawAllVectorData(result, shapefileReader, options);
+
         }
 
         Logger.log("Done joining", LogLevel.INFO);

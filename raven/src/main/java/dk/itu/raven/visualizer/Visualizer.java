@@ -25,11 +25,11 @@ import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.io.ShapefileReader;
+import dk.itu.raven.io.VectorData;
 import dk.itu.raven.io.ShapefileReader.ShapeFileBounds;
 import dk.itu.raven.join.IJoinResult;
 import dk.itu.raven.join.Square;
 import dk.itu.raven.ksquared.K2Raster;
-import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.TreeExtensions;
 
 /**
@@ -53,7 +53,7 @@ public class Visualizer {
 		this.r = new Random();
 	}
 
-	private Pair<List<Polygon>, ShapeFileBounds> getFeatures(ShapefileReader shapeFileReader)
+	private VectorData getFeatures(ShapefileReader shapeFileReader)
 			throws IOException {
 		return shapeFileReader.readShapefile();
 
@@ -73,8 +73,8 @@ public class Visualizer {
 	public BufferedImage drawResult(IJoinResult results, ShapefileReader shapeFileReader,
 			VisualizerOptions options) throws IOException {
 		var pair = getFeatures(shapeFileReader);
-		List<Polygon> features = pair.first;
-		ShapeFileBounds bounds = pair.second;
+		List<Polygon> features = pair.getFeatures();
+		ShapeFileBounds bounds = pair.getBounds();
 
 		int width = this.width;
 		int height = this.height;
@@ -139,7 +139,7 @@ public class Visualizer {
 	 *         {@code features}
 	 */
 	public BufferedImage drawShapefile(ShapefileReader shapeFileReader, VisualizerOptions options) throws IOException {
-		List<Polygon> features = getFeatures(shapeFileReader).first;
+		List<Polygon> features = getFeatures(shapeFileReader).getFeatures();
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D vectorGraphics = image.createGraphics();
 
@@ -243,7 +243,7 @@ public class Visualizer {
 	 */
 	public BufferedImage drawVectorRasterOverlap(ShapefileReader shapeFileReader, RTree<String, Geometry> tree,
 			K2Raster k2Raster, int k2RecursionDepth, VisualizerOptions options) throws IOException {
-		Iterable<Polygon> features = getFeatures(shapeFileReader).first;
+		Iterable<Polygon> features = getFeatures(shapeFileReader).getFeatures();
 
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics = image.createGraphics();
@@ -272,8 +272,8 @@ public class Visualizer {
 	public BufferedImage drawAllVectorData(IJoinResult results, ShapefileReader shapeFileReader,
 			VisualizerOptions options) throws IOException {
 		var pair = getFeatures(shapeFileReader);
-		List<Polygon> features = pair.first;
-		ShapeFileBounds bounds = pair.second;
+		List<Polygon> features = pair.getFeatures();
+		ShapeFileBounds bounds = pair.getBounds();
 
 		int width = this.width;
 
@@ -301,7 +301,8 @@ public class Visualizer {
 
 		Color color = options.secondaryColor;
 
-		for (Polygon poly : features) {
+		for (Geometry geom : features) {
+			Polygon poly = (Polygon) geom;
 			setColor(graphics, color);
 			Point old = poly.getFirst();
 			for (Point next : poly) {
@@ -328,7 +329,7 @@ public class Visualizer {
 	 * @param outputFormat The image format
 	 */
 	private void writeImage(BufferedImage image, String outputPath, String outputFormat) throws IOException {
-		ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
+		ImageWriter writer = ImageIO.getImageWritersByFormatName("png").next();
 		ImageWriteParam param = writer.getDefaultWriteParam();
 		param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
 		param.setCompressionQuality(0.5f); // Adjust the quality parameter as needed

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.geotools.api.referencing.operation.MathTransform;
+import org.geotools.api.referencing.operation.TransformException;
 import org.locationtech.jts.geom.Coordinate;
 
 import com.github.davidmoten.rtree2.geometry.Geometries;
@@ -144,5 +146,14 @@ public class Polygon implements Geometry, Iterator<Point>, Iterable<Point> {
         }
         coords[this.points.size()] = new Coordinate(this.points.get(0).x(), this.points.get(0).y());
         return coords;
+    }
+
+    // TODO: Possibly need to create a new Polygon object with the new points.
+    public void transform(MathTransform transform) throws TransformException {
+        for (int i = 0; i < points.size(); i++) {
+            double[] point = new double[] { points.get(i).x(), points.get(i).y() };
+            transform.transform(point, 0, point, 0, 1);
+            points.set(i, Geometries.point(point[0], point[1]));
+        }
     }
 }
