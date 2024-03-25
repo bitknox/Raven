@@ -15,6 +15,12 @@ public class PixelRange {
         this.x2 = x2;
     }
 
+    public void translate(int dx, int dy) {
+        this.row += dy;
+        this.x1 += dx;
+        this.x2 += dx;
+    }
+
     @Override
     public String toString() {
         return String.format("PixelRange(row=%d, x1=%d, x2=%d)", row, x1, x2);
