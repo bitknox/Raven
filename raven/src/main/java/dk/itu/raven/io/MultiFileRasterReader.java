@@ -27,7 +27,7 @@ public class MultiFileRasterReader implements IRasterReader {
 	private String cacheKey;
 
 	public MultiFileRasterReader(File directory) throws IOException {
-		cacheKey = directory.getName() + "-" + "cache";
+		cacheKey = directory.getName() + "-cache";
 		// find all tiff files in directory and subdirectories
 		List<File> files = Arrays.asList(directory.listFiles());
 		ImageIORasterReader reader = new ImageIORasterReader(files.get(0));
