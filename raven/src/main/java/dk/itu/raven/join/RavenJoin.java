@@ -114,22 +114,50 @@ public class RavenJoin extends AbstractRavenJoin {
 			int maxY = (int) Math.min(rasterBounding.y + rasterBounding.height,
 					Math.max(rasterBounding.y, Math.round(Math.max(old.y(), next.y()))));
 
-			// compute all intersections between the line segment and horizontal pixel lines
-			for (int y = minY; y < maxY; y++) {
-				double x = (c - b * (y + 0.5)) * aInv;
-				int ix = (int) Math.floor(x - rasterBounding.x);
-				if (ix <= 0) {
-					inRanges[y - rasterBounding.y] = !inRanges[y - rasterBounding.y];
-				} else if (ix < rasterBounding.width && ix + rasterBounding.x < imageSize.width) {
+			// // compute all intersections between the line segment and horizontal pixel
+			// lines
+			// for (int y = minY; y < maxY; y++) {
+			// double x = (c - b * (y + 0.5)) * aInv;
+			// int ix = (int) Math.floor(x - rasterBounding.x);
+			// if (ix <= 0) {
+			// inRanges[y - rasterBounding.y] = !inRanges[y - rasterBounding.y];
+			// } else if (ix < rasterBounding.width && ix + rasterBounding.x <
+			// imageSize.width) {
+			// // pack the y and x ordinates together into one long. Sorting a list of these
+			// // longs will sort the intersections by y, and secondarily by x.
+			// long yComp = y - rasterBounding.y;
+			// yComp <<= 32;
+			// long key = yComp + ix;
+			// int val = intersections.getOrDefault(key, 0);
+			// intersections.put(key, val + 1);
+			// }
+			// }
+
+			int x0 = (int) Math.floor(old.x());
+			int y0 = (int) Math.round(old.y());
+			int x1 = (int) Math.floor(next.x());
+			int y1 = (int) Math.round(next.y());
+
+			LinePlotter.plotLine((x, y) -> {
+				x -= rasterBounding.x;
+				y -= rasterBounding.y;
+				if (y == minY)
+					return;
+				if (x <= 0) {
+					inRanges[y] = !inRanges[y];
+				} else if (x < rasterBounding.width && x + rasterBounding.x < imageSize.width) {
 					// pack the y and x ordinates together into one long. Sorting a list of these
 					// longs will sort the intersections by y, and secondarily by x.
-					long yComp = y - rasterBounding.y;
+					long yComp = y;
 					yComp <<= 32;
-					long key = yComp + ix;
+					long key = yComp + x;
 					int val = intersections.getOrDefault(key, 0);
 					intersections.put(key, val + 1);
 				}
-			}
+
+			}, x0, y0, x1, y1, Integer.MIN_VALUE + 1, minY, rasterBounding.width,
+					maxY);
+
 			old = next;
 		}
 

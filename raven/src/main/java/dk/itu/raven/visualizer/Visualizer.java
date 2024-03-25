@@ -117,9 +117,9 @@ public class Visualizer {
 	private void drawFeatures(Graphics2D graphics, Iterable<Polygon> features, Color color) {
 
 		for (Polygon poly : features) {
-			setColor(graphics, color);
 			Point old = poly.getFirst();
 			for (Point next : poly) {
+				setColor(graphics, new Color(r.nextInt(255), r.nextInt(255), r.nextInt(255)));
 				graphics.drawLine((int) old.x(), (int) old.y(), (int) next.x(), (int) next.y());
 				old = next;
 			}
