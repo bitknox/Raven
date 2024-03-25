@@ -22,7 +22,7 @@ public class Offset<T extends Number> implements Serializable {
     public boolean equals(Object obj) {
         if (!(obj instanceof Offset))
             return false;
-        Offset other = (Offset) obj;
+        Offset<T> other = (Offset<T>) obj;
         return offsetX.equals(other.offsetX) && offsetY.equals(other.offsetY);
 
     }

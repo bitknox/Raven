@@ -2,6 +2,16 @@ package model
 
 import "github.com/bitknox/Raven/benchmarking/environments"
 
+type BenchmarkSuiteResult struct {
+	Results []*BenchmarkResult `json:"data"`
+	Name    string             `json:"title"`
+}
+
+type BenchmarkSuite struct {
+	Benchmarks []*Benchmark `json:"benchmarks"`
+	Name       string       `json:"name"`
+}
+
 type BenchmarkResult struct {
 	// The name of the benchmark
 	Name string `json:"name"`

@@ -1,14 +1,16 @@
 package dk.itu.raven.util;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * A simple implementation of an ArrayList for integers. (Avoids copying the
  * entire array when resizing)
  */
-public class GoodIntArrayList {
+public class GoodIntArrayList implements Iterable<Integer>, Iterator<Integer> {
     int size;
     int[] array;
+    int idx;
 
     public GoodIntArrayList(int initialCapacity) {
         if (initialCapacity > 0) {
@@ -24,6 +26,10 @@ public class GoodIntArrayList {
         this(0);
     }
 
+    public void sort() {
+        Arrays.sort(array, 0, size);
+    }
+
     public int size() {
         return size;
     }
@@ -37,9 +43,29 @@ public class GoodIntArrayList {
     }
 
     public void set(int index, int element) {
-        size = index > size ? index : size;
+        size = index + 1 > size ? index + 1 : size;
         ensureExplicitCapacity(index + 1);
         array[index] = element;
+    }
+
+    public void add(int element) {
+        this.set(size, element);
+    }
+
+    @Override
+    public Iterator<Integer> iterator() {
+        this.idx = 0;
+        return this;
+    }
+
+    @Override
+    public boolean hasNext() {
+        return idx < size;
+    }
+
+    @Override
+    public Integer next() {
+        return this.array[idx++];
     }
 
     private void ensureExplicitCapacity(int minCapacity) {

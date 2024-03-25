@@ -2,8 +2,9 @@ package dk.itu.raven.join;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Map;
 import java.util.Stack;
+import java.util.TreeMap;
 
 import com.github.davidmoten.rtree2.Entry;
 import com.github.davidmoten.rtree2.Leaf;
@@ -19,7 +20,6 @@ import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.ksquared.AbstractK2Raster;
-import dk.itu.raven.util.BST;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.TreeExtensions;
@@ -44,6 +44,7 @@ public class RavenJoin extends AbstractRavenJoin {
 	private Offset<Integer> offset;
 	private Offset<Integer> globalOffset;
 	private Size imageSize;
+	private IRasterFilterFunction function;
 
 	public RavenJoin(AbstractK2Raster k2Raster, RTree<String, Geometry> tree,
 			Offset<Integer> offset, Offset<Integer> globalOffset, Size imageSize) {
@@ -58,6 +59,23 @@ public class RavenJoin extends AbstractRavenJoin {
 		this(k2Raster, tree, new Offset<>(0, 0), new Offset<>(0, 0), imageSize);
 	}
 
+	private void extractRange(Collection<PixelRange> ranges, int y, int x1, int x2, boolean prob) {
+		if (prob) {
+			PixelRange[] matching = this.k2Raster.searchValuesInWindow(
+					y - offset.getY(),
+					y - offset.getY(),
+					x1 - offset.getX(),
+					x2 - offset.getX(),
+					function);
+			for (PixelRange range : matching) {
+				range.translate(offset.getX(), offset.getY());
+				ranges.add(range);
+			}
+		} else {
+			ranges.add(new PixelRange(y, x1, x2));
+		}
+	}
+
 	/**
 	 * 
 	 * @param polygon        the vector shape
@@ -67,18 +85,18 @@ public class RavenJoin extends AbstractRavenJoin {
 	 * @return A collection of pixels that are contained in the vector shape
 	 *         described by {@code polygon}
 	 */
-	protected Collection<PixelRange> extractCellsPolygon(Polygon polygon, int pk,
-			java.awt.Rectangle rasterBounding) {
+	protected Collection<PixelRange> extractCellsPolygon(Polygon polygon, int pk, java.awt.Rectangle rasterBounding,
+			boolean prob) {
 		// 1 on index i * rasterBounding.geetSize() + j if an intersection between a
 		// line of the polygon and the line y=j happens at point (i,j)
 		// 1 on index i if the left-most pixel of row i intersects the polygon, 0
 		// otherwise
 
-		boolean[] inRanges = new boolean[rasterBounding.height];
-		List<BST<Integer, Integer>> intersections = new ArrayList<BST<Integer, Integer>>(rasterBounding.height);
-		for (int i = 0; i <= rasterBounding.height; i++) {
-			intersections.add(i, new BST<>());
-		}
+		boolean[] inRanges = new boolean[rasterBounding.height + 1]; // we add one to the length to prevent an
+																		// out-of-bounds exeption at the end of this
+																		// method. This way saves us an if statement.
+
+		Map<Long, Integer> intersections = new TreeMap<>();
 
 		// a line is of the form a*x + b*y = c
 		Point old = polygon.getFirst();
@@ -89,6 +107,7 @@ public class RavenJoin extends AbstractRavenJoin {
 			Point next = polygon.getPoint(i);
 			// compute the standard form of the line segment between the points old and next
 			double a = (next.y() - old.y());
+			double aInv = 1.0 / a;
 			double b = (old.x() - next.x());
 			double c = a * old.x() + b * old.y();
 
@@ -99,83 +118,94 @@ public class RavenJoin extends AbstractRavenJoin {
 
 			// compute all intersections between the line segment and horizontal pixel lines
 			for (int y = minY; y < maxY; y++) {
-				double x = (c - b * (y + 0.5)) / a;
-				// assert x - rasterBounding.getTopX() >= 0;
+				double x = (c - b * (y + 0.5)) * aInv;
 				int ix = (int) Math.floor(x - rasterBounding.x);
 				if (ix <= 0) {
 					inRanges[y - rasterBounding.y] = !inRanges[y - rasterBounding.y];
 				} else if (ix < rasterBounding.width && ix + rasterBounding.x < imageSize.width) {
-					BST<Integer, Integer> bst = intersections.get(y - rasterBounding.y);
-					incrementSet(bst, ix);
+					// pack the y and x ordinates together into one long. Sorting a list of these
+					// longs will sort the intersections by y, and secondarily by x.
+					long yComp = y - rasterBounding.y;
+					yComp <<= 32;
+					long key = yComp + ix;
+					int val = intersections.getOrDefault(key, 0);
+					intersections.put(key, val + 1);
 				}
 			}
 			old = next;
 		}
 
 		Collection<PixelRange> ranges = new ArrayList<>();
-		for (int y = 0; y < Math.min(rasterBounding.height,
-				imageSize.height + globalOffset.getY() - rasterBounding.y); y++) {
-			BST<Integer, Integer> bst = intersections.get(y);
-			boolean inRange = inRanges[y];
-			int start = 0;
-			for (int x : bst.keys()) {
-				if ((bst.get(x) % 2) == 0) { // an even number of intersections happen at this point
-					if (!inRange) {
-						// if a range is ongoing, ignore these intersections, otherwise add this single
-						// pixel as a range. If there is an even number of intersections at the edge of
-						// the viewport, it should not be added as a single pixel, as that means a
-						// vector-shape has both started and ended outside the image.
-						ranges.add(new PixelRange(y + rasterBounding.y,
-								x + rasterBounding.x,
-								x + rasterBounding.x));
-					}
-				} else {
+		int oldY = 0;
+		boolean inRange = inRanges[0];
+		int start = 0;
+		for (var kv : intersections.entrySet()) {
+			long k = kv.getKey();
+			int v = kv.getValue();
+			// reconstruct x and y from packed value
+			int x = (int) k;
+			int y = (int) (k >>> 32);
+			if (y != oldY) { // new pixel-line
+				// start by finding out for all pixel-lines between old and new y if it should
+				// be joined or not
+				for (int j = oldY + 1; j <= y; j++) {
 					if (inRange) {
-						inRange = false;
-						ranges.add(new PixelRange(y + rasterBounding.y,
-								start + rasterBounding.x,
-								x + rasterBounding.x - 1));
-					} else {
-						inRange = true;
-						start = x;
+						extractRange(ranges, oldY + rasterBounding.y, start + rasterBounding.x,
+								Math.min(rasterBounding.width - 1 + rasterBounding.x,
+										imageSize.width - 1),
+								prob);
 					}
+					// start a new pixel-line
+					oldY = j;
+					inRange = inRanges[j];
+					start = 0;
 				}
 			}
-			if (inRange) {
-				ranges.add(new PixelRange(y + rasterBounding.y,
-						start + rasterBounding.x,
-						Math.min(rasterBounding.width - 1 + rasterBounding.x,
-								imageSize.width + globalOffset.getX() - 1)));
+			if ((v % 2) == 0) { // an even number of intersections happen at this point
+				if (!inRange) {
+					// if a range is ongoing, ignore these intersections, otherwise add this single
+					// pixel as a range. If there is an even number of intersections at the edge of
+					// the viewport, it should not be added as a single pixel, as that means a
+					// vector-shape has both started and ended outside the image.
+					extractRange(ranges, y + rasterBounding.y, x + rasterBounding.x,
+							x + rasterBounding.x, prob);
+				}
+			} else {
+				if (inRange) {
+					inRange = false;
+					extractRange(ranges, y + rasterBounding.y, start + rasterBounding.x,
+							x + rasterBounding.x - 1, prob);
+				} else {
+					inRange = true;
+					start = x;
+				}
 			}
+		}
+		// perform one last check to handle all pixel-lines below the bottom-most
+		// intersection
+		for (int j = oldY + 1; j <= Math.min(rasterBounding.height, imageSize.height - rasterBounding.y); j++) {
+			if (inRange) {
+				extractRange(ranges, oldY + rasterBounding.y, start + rasterBounding.x,
+						Math.min(rasterBounding.width - 1 + rasterBounding.x,
+								imageSize.width - 1),
+						prob);
+			}
+			oldY = j;
+			inRange = inRanges[j];
+			start = 0;
 		}
 
 		return ranges;
 	}
 
-	/**
-	 * increments the stored number of intersections that happen at the given
-	 * x-ordinate
-	 * 
-	 * @param bst a set of intersections
-	 * @param key an x-ordinate of an intersection
-	 */
-	private void incrementSet(BST<Integer, Integer> bst, Integer key) {
-		Integer num = bst.get(key);
-		if (num == null) {
-			bst.put(key, 1);
-		} else {
-			bst.put(key, num + 1);
-		}
-	}
-
 	// based loosely on:
 	// https://bitbucket.org/bdlabucr/beast/src/master/raptor/src/main/java/edu/ucr/cs/bdlab/raptor/Intersections.java
 	private void extractCells(Leaf<String, Geometry> pr, int pk, java.awt.Rectangle rasterBounding,
-			JoinResult def) {
+			JoinResult def, boolean prob) {
 		for (Entry<String, Geometry> entry : ((Leaf<String, Geometry>) pr).entries()) {
 			// all geometries we store are polygons
 			def.add(new JoinResultItem(entry.geometry(),
-					extractCellsPolygon((Polygon) entry.geometry(), pk, rasterBounding)));
+					extractCellsPolygon((Polygon) entry.geometry(), pk, rasterBounding, prob)));
 		}
 	}
 
@@ -189,12 +219,12 @@ public class RavenJoin extends AbstractRavenJoin {
 	 * @param def            the list all the pixelranges should be added to
 	 */
 	private void addDescendantsLeaves(NonLeaf<String, Geometry> pr, int pk, java.awt.Rectangle rasterBounding,
-			JoinResult def) {
+			JoinResult def, boolean prob) {
 		for (Node<String, Geometry> n : pr.children()) {
 			if (TreeExtensions.isLeaf(n)) {
-				extractCells((Leaf<String, Geometry>) n, pk, rasterBounding, def);
+				extractCells((Leaf<String, Geometry>) n, pk, rasterBounding, def, prob);
 			} else {
-				addDescendantsLeaves((NonLeaf<String, Geometry>) n, pk, rasterBounding, def);
+				addDescendantsLeaves((NonLeaf<String, Geometry>) n, pk, rasterBounding, def, prob);
 			}
 		}
 	}
@@ -232,7 +262,6 @@ public class RavenJoin extends AbstractRavenJoin {
 			Rectangle bounding, IRasterFilterFunction function, long min, long max) {
 		long vMinMBR = min;
 		long vMaxMBR = max;
-		Logger.log(vMinMBR + ", " + vMaxMBR, Logger.LogLevel.DEBUG);
 		int returnedK2Index = k2Index;
 		Square returnedrasterBounding = rasterBounding;
 		Stack<Tuple4<Integer, Square, Long, Long>> k2Nodes = new Stack<>();
@@ -254,8 +283,6 @@ public class RavenJoin extends AbstractRavenJoin {
 				}
 			}
 		}
-
-		Logger.log(vMinMBR + ", " + vMaxMBR, Logger.LogLevel.DEBUG);
 
 		if (!function.containsOutside(vMinMBR, vMaxMBR)) {
 			Logger.log("total overlap for " + returnedrasterBounding + " with mbr " + bounding, Logger.LogLevel.DEBUG);
@@ -283,8 +310,7 @@ public class RavenJoin extends AbstractRavenJoin {
 	 * @param max            the current maximum pixel-value
 	 * @return one of {@code TotalOverlap, PartialOverlap, NoOverlap}
 	 */
-	private MBROverlapType checkMBR(int k2Index, Square rasterBounding, Rectangle bounding,
-			IRasterFilterFunction function, long min, long max) {
+	private MBROverlapType checkMBR(int k2Index, Square rasterBounding, Rectangle bounding, long min, long max) {
 		long vMinMBR = Long.MAX_VALUE;
 		long vMaxMBR = Long.MIN_VALUE;
 
@@ -355,7 +381,8 @@ public class RavenJoin extends AbstractRavenJoin {
 	 */
 	@Override
 	protected JoinResult joinImplementation(IRasterFilterFunction function) {
-		JoinResult def = new JoinResult(), prob = new JoinResult();
+		this.function = function;
+		JoinResult def = new JoinResult();
 		Stack<Tuple5<Node<String, Geometry>, Integer, Square, Long, Long>> S = new Stack<>();
 
 		Pair<Long, Long> minMax = k2Raster.getValueRange();
@@ -385,9 +412,9 @@ public class RavenJoin extends AbstractRavenJoin {
 				case TotalOverlap:
 					if (TreeExtensions.isLeaf(p.a)) {
 
-						extractCells((Leaf<String, Geometry>) p.a, checked.b, rect, def);
+						extractCells((Leaf<String, Geometry>) p.a, checked.b, rect, def, false);
 					} else {
-						addDescendantsLeaves((NonLeaf<String, Geometry>) p.a, checked.b, rect, def);
+						addDescendantsLeaves((NonLeaf<String, Geometry>) p.a, checked.b, rect, def, false);
 					}
 					break;
 				case PossibleOverlap:
@@ -398,14 +425,14 @@ public class RavenJoin extends AbstractRavenJoin {
 									checked.d, checked.e));
 						}
 					} else {
-						MBROverlapType overlap = checkMBR(checked.b, checked.c, p.a.geometry().mbr(), function,
+						MBROverlapType overlap = checkMBR(checked.b, checked.c, p.a.geometry().mbr(),
 								checked.d, checked.e);
 						switch (overlap) {
 							case TotalOverlap:
-								extractCells((Leaf<String, Geometry>) p.a, checked.b, rect, def);
+								extractCells((Leaf<String, Geometry>) p.a, checked.b, rect, def, false);
 								break;
 							case PartialOverlap:
-								extractCells((Leaf<String, Geometry>) p.a, checked.b, rect, prob);
+								extractCells((Leaf<String, Geometry>) p.a, checked.b, rect, def, true);
 								Logger.log(p.a.geometry().mbr(), Logger.LogLevel.DEBUG);
 								break;
 							case NoOverlap:
@@ -420,37 +447,6 @@ public class RavenJoin extends AbstractRavenJoin {
 			}
 		}
 
-		combineLists(def, prob, function);
-
 		return def;
-	}
-
-	/**
-	 * Combines the pixelranges of the prob list into the def list
-	 * 
-	 * @param def  the difinitive list
-	 * @param prob the list of pixelranges to be combined into def
-	 * @param lo   the minimum pixel-value that should be included in the join
-	 * @param hi   the maximum pixel-value that should be included in the join
-	 */
-	protected void combineLists(JoinResult def,
-			JoinResult prob, IRasterFilterFunction function) {
-		Logger.log("def: " + def.size() + ", prob: " + prob.size(), Logger.LogLevel.DEBUG);
-		for (JoinResultItem item : prob) {
-			JoinResultItem result = new JoinResultItem(item.geometry, new ArrayList<>());
-			for (PixelRange range : item.pixelRanges) {
-				PixelRange[] values = k2Raster.searchValuesInWindow(range.row - offset.getY() - globalOffset.getY(),
-						range.row - offset.getY() - globalOffset.getY(),
-						range.x1 - offset.getX() - globalOffset.getX(),
-						range.x2 - offset.getX() - globalOffset.getX(), function);
-				for (PixelRange filteredRange : values) {
-					result.pixelRanges
-							.add(new PixelRange(filteredRange.row + offset.getY() + globalOffset.getY(),
-									filteredRange.x1 + offset.getX() + globalOffset.getX(),
-									filteredRange.x2 + offset.getX() + globalOffset.getX()));
-				}
-			}
-			def.add(result);
-		}
 	}
 }
