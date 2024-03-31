@@ -85,10 +85,10 @@ public class RavenJoin extends AbstractRavenJoin {
 		// a line is of the form a*x + b*y = c
 		Point old = polygon.getFirst();
 
-		int minXInterseection = Integer.MAX_VALUE;
-		int minYInterseection = Integer.MAX_VALUE;
-		int maxXInterseection = Integer.MIN_VALUE;
-		int maxYInterseection = Integer.MIN_VALUE;
+		int minXInterseection = rasterBounding.x;
+		int minYInterseection = rasterBounding.y;
+		int maxXInterseection = rasterBounding.x + rasterBounding.width;
+		int maxYInterseection = rasterBounding.y + rasterBounding.height;
 
 		// we run the loop to polygon.size() + 1 because we want to wrap around end at
 		// the first point
@@ -246,9 +246,8 @@ public class RavenJoin extends AbstractRavenJoin {
 			return new ArrayList<>();
 		}
 
-		k2Raster.searchValuesInRanges(allRanges, rowStarts, out, offset, rasterBounding.y - offset.getY(),
-				rasterBounding.y + rasterBounding.height - offset.getY(), rasterBounding.x - offset.getX(),
-				rasterBounding.x + rasterBounding.width - offset.getX(),
+		k2Raster.searchValuesInRanges(allRanges, rowStarts, out, offset, minYInterseection - offset.getY(),
+				maxYInterseection - offset.getY(), minXInterseection - offset.getX(), maxXInterseection - offset.getX(),
 				function);
 
 		return out;
