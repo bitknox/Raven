@@ -276,14 +276,11 @@ public class RavenJoin extends AbstractRavenJoin {
 	// https://bitbucket.org/bdlabucr/beast/src/master/raptor/src/main/java/edu/ucr/cs/bdlab/raptor/Intersections.java
 	private void extractCells(Leaf<String, Geometry> pr, int pk, java.awt.Rectangle rasterBounding,
 			JoinResult def, boolean prob) {
-		long start = System.nanoTime();
 		for (Entry<String, Geometry> entry : ((Leaf<String, Geometry>) pr).entries()) {
 			// all geometries we store are polygons
 			def.add(new JoinResultItem(entry.geometry(),
 					extractCellsPolygon((Polygon) entry.geometry(), pk, rasterBounding, prob)));
 		}
-		long end = System.nanoTime();
-		System.out.println("Extract cells time: " + (end - start) + "ms");
 	}
 
 	/**
@@ -477,12 +474,9 @@ public class RavenJoin extends AbstractRavenJoin {
 			Tuple5<Node<String, Geometry>, Integer, Square, Long, Long> p = S.pop();
 			if (!intersects(movedRasterWindow, p.a.geometry().mbr()))
 				continue;
-			long start = System.nanoTime();
 			Tuple5<QuadOverlapType, Integer, Square, Long, Long> checked = checkQuadrant(p.b, p.c, p.a.geometry().mbr(),
 					function, p.d,
 					p.e);
-			long end = System.nanoTime();
-			System.out.println("Quadrant checking time: " + (end - start) + "ms");
 			java.awt.Rectangle rect = getRectangle(checked.c);
 			switch (checked.a) {
 				case TotalOverlap:
@@ -501,11 +495,8 @@ public class RavenJoin extends AbstractRavenJoin {
 									checked.d, checked.e));
 						}
 					} else {
-						long start2 = System.nanoTime();
 						MBROverlapType overlap = checkMBR(checked.b, checked.c, p.a.geometry().mbr(),
 								checked.d, checked.e);
-						long end2 = System.nanoTime();
-						System.out.println("MBR checking time: " + (end2 - start2) + "ms");
 						switch (overlap) {
 							case TotalOverlap:
 								extractCells((Leaf<String, Geometry>) p.a, checked.b, rect, def, false);
