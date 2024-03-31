@@ -340,15 +340,15 @@ public abstract class AbstractK2Raster implements Serializable {
         return out;
     }
 
-    public void searchValuesInRanges(Map<Integer, List<PixelRange>> ranges, List<PixelRange> out, int r1, int r2,
-            int c1,
-            int c2, IRasterFilterFunction function) {
-        searchValuesInRanges(ranges, out, r1, r2, c1, c2, -1, function, 0, 0, this.minVal, this.maxVal, this.n);
+    public void searchValuesInRanges(List<PixelRange> ranges, Map<Integer, Pair<Integer, Integer>> rowStarts,
+            List<PixelRange> out, int r1, int r2, int c1, int c2, IRasterFilterFunction function) {
+        searchValuesInRanges(ranges, rowStarts, out, r1, r2, c1, c2, -1, function, 0, 0, this.minVal, this.maxVal,
+                this.n);
     }
 
-    private void searchValuesInRanges(Map<Integer, List<PixelRange>> ranges, List<PixelRange> out, int r1, int r2,
-            int c1,
-            int c2, int z, IRasterFilterFunction function, int baseX, int baseY, long minVal, long maxVal, int n) {
+    private void searchValuesInRanges(List<PixelRange> ranges, Map<Integer, Pair<Integer, Integer>> rowStarts,
+            List<PixelRange> out, int r1, int r2, int c1, int c2, int z, IRasterFilterFunction function, int baseX,
+            int baseY, long minVal, long maxVal, int n) {
         int nKths = (n / k); // childsize
         int rank = treeRank(z);
         z = rank * k * k;
@@ -401,16 +401,17 @@ public abstract class AbstractK2Raster implements Serializable {
                         if (!function.containsWithin(minValp, maxValp)) {
                             continue;
                         } else {
-                            searchValuesInRanges(ranges, out, r1p, r2p, c1p, c2p, zp, function, baseXp, baseYp, minValp,
-                                    maxValp, nKths);
+                            searchValuesInRanges(ranges, rowStarts, out, r1p, r2p, c1p, c2p, zp, function, baseXp,
+                                    baseYp, minValp, maxValp, nKths);
                         }
                     }
                 }
 
                 if (addCells) {
                     for (int r = r1p + baseYp; r <= r2p + baseYp; r++) {
-                        if (ranges.containsKey(r)) {
-                            for (PixelRange range : ranges.get(r)) {
+                        if (rowStarts.containsKey(r)) {
+                            for (int idx = rowStarts.get(r).first; idx <= rowStarts.get(r).second; idx++) {
+                                PixelRange range = ranges.get(idx);
                                 if (range.x2 < c1p + baseXp || range.x1 > c2p + baseXp)
                                     continue;
                                 out.add(new PixelRange(r, Math.max(range.x1, c1p + baseXp),
