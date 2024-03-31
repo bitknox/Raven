@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.join.IRasterFilterFunction;
 import dk.itu.raven.ksquared.dac.AbstractDAC;
@@ -341,14 +342,15 @@ public abstract class AbstractK2Raster implements Serializable {
     }
 
     public void searchValuesInRanges(List<PixelRange> ranges, Map<Integer, Pair<Integer, Integer>> rowStarts,
-            List<PixelRange> out, int r1, int r2, int c1, int c2, IRasterFilterFunction function) {
-        searchValuesInRanges(ranges, rowStarts, out, r1, r2, c1, c2, -1, function, 0, 0, this.minVal, this.maxVal,
-                this.n);
+            List<PixelRange> out, Offset<Integer> offset, int r1, int r2, int c1, int c2,
+            IRasterFilterFunction function) {
+        searchValuesInRanges(ranges, rowStarts, out, offset, r1, r2, c1, c2, -1, function, 0, 0, this.minVal,
+                this.maxVal, this.n);
     }
 
     private void searchValuesInRanges(List<PixelRange> ranges, Map<Integer, Pair<Integer, Integer>> rowStarts,
-            List<PixelRange> out, int r1, int r2, int c1, int c2, int z, IRasterFilterFunction function, int baseX,
-            int baseY, long minVal, long maxVal, int n) {
+            List<PixelRange> out, Offset<Integer> offset, int r1, int r2, int c1, int c2, int z,
+            IRasterFilterFunction function, int baseX, int baseY, long minVal, long maxVal, int n) {
         int nKths = (n / k); // childsize
         int rank = treeRank(z);
         z = rank * k * k;
@@ -401,8 +403,8 @@ public abstract class AbstractK2Raster implements Serializable {
                         if (!function.containsWithin(minValp, maxValp)) {
                             continue;
                         } else {
-                            searchValuesInRanges(ranges, rowStarts, out, r1p, r2p, c1p, c2p, zp, function, baseXp,
-                                    baseYp, minValp, maxValp, nKths);
+                            searchValuesInRanges(ranges, rowStarts, out, offset, r1p, r2p, c1p, c2p, zp, function,
+                                    baseXp, baseYp, minValp, maxValp, nKths);
                         }
                     }
                 }
@@ -412,10 +414,11 @@ public abstract class AbstractK2Raster implements Serializable {
                         if (rowStarts.containsKey(r)) {
                             for (int idx = rowStarts.get(r).first; idx <= rowStarts.get(r).second; idx++) {
                                 PixelRange range = ranges.get(idx);
-                                if (range.x2 < c1p + baseXp || range.x1 > c2p + baseXp)
+                                if (range.x2 - offset.getX() < c1p + baseXp || range.x1 - offset.getX() > c2p + baseXp)
                                     continue;
-                                out.add(new PixelRange(r, Math.max(range.x1, c1p + baseXp),
-                                        Math.min(range.x2, c2p + baseXp)));
+                                out.add(new PixelRange(r + offset.getY(),
+                                        Math.max(range.x1, c1p + baseXp + offset.getX()),
+                                        Math.min(range.x2, c2p + baseXp + offset.getX())));
                             }
                         }
                     }
