@@ -156,10 +156,10 @@ public class RavenJoin extends AbstractRavenJoin {
 							rowStarts.get(r - offset.getY()).second++;
 						}
 						allRanges.add(new PixelRange(r, x1, x2));
-						minXInterseection = Math.min(minXInterseection, x1);
-						minYInterseection = Math.min(minYInterseection, r);
-						maxXInterseection = Math.max(maxXInterseection, x2);
-						maxYInterseection = Math.max(maxYInterseection, r);
+						// minXInterseection = Math.min(minXInterseection, x1);
+						// minYInterseection = Math.min(minYInterseection, r);
+						// maxXInterseection = Math.max(maxXInterseection, x2);
+						// maxYInterseection = Math.max(maxYInterseection, r);
 					}
 					// start a new pixel-line
 					oldY = j;
@@ -183,10 +183,10 @@ public class RavenJoin extends AbstractRavenJoin {
 						rowStarts.get(r - offset.getY()).second++;
 					}
 					allRanges.add(new PixelRange(r, x1, x2));
-					minXInterseection = Math.min(minXInterseection, x1);
-					minYInterseection = Math.min(minYInterseection, r);
-					maxXInterseection = Math.max(maxXInterseection, x2);
-					maxYInterseection = Math.max(maxYInterseection, r);
+					// minXInterseection = Math.min(minXInterseection, x1);
+					// minYInterseection = Math.min(minYInterseection, r);
+					// maxXInterseection = Math.max(maxXInterseection, x2);
+					// maxYInterseection = Math.max(maxYInterseection, r);
 				}
 			} else {
 				if (inRange) {
@@ -200,10 +200,10 @@ public class RavenJoin extends AbstractRavenJoin {
 						rowStarts.get(r - offset.getY()).second++;
 					}
 					allRanges.add(new PixelRange(r, x1, x2));
-					minXInterseection = Math.min(minXInterseection, x1);
-					minYInterseection = Math.min(minYInterseection, r);
-					maxXInterseection = Math.max(maxXInterseection, x2);
-					maxYInterseection = Math.max(maxYInterseection, r);
+					// minXInterseection = Math.min(minXInterseection, x1);
+					// minYInterseection = Math.min(minYInterseection, r);
+					// maxXInterseection = Math.max(maxXInterseection, x2);
+					// maxYInterseection = Math.max(maxYInterseection, r);
 				} else {
 					inRange = true;
 					start = x;
@@ -226,10 +226,10 @@ public class RavenJoin extends AbstractRavenJoin {
 				}
 				allRanges.add(new PixelRange(r, x1, x2));
 
-				minXInterseection = Math.min(minXInterseection, x1);
-				minYInterseection = Math.min(minYInterseection, r);
-				maxXInterseection = Math.max(maxXInterseection, x2);
-				maxYInterseection = Math.max(maxYInterseection, r);
+				// minXInterseection = Math.min(minXInterseection, x1);
+				// minYInterseection = Math.min(minYInterseection, r);
+				// maxXInterseection = Math.max(maxXInterseection, x2);
+				// maxYInterseection = Math.max(maxYInterseection, r);
 			}
 			oldY = j;
 			inRange = inRanges[j];
@@ -246,8 +246,9 @@ public class RavenJoin extends AbstractRavenJoin {
 			return new ArrayList<>();
 		}
 
-		k2Raster.searchValuesInRanges(allRanges, rowStarts, out, offset, minYInterseection - offset.getY(),
-				maxYInterseection - offset.getY(), minXInterseection - offset.getX(), maxXInterseection - offset.getX(),
+		k2Raster.searchValuesInRanges(allRanges, rowStarts, out, offset, rasterBounding.y - offset.getY(),
+				rasterBounding.y + rasterBounding.height - offset.getY(), rasterBounding.x - offset.getX(),
+				rasterBounding.x + rasterBounding.width - offset.getX(),
 				function);
 
 		return out;
