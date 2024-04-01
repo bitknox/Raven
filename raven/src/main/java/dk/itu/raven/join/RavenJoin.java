@@ -85,10 +85,14 @@ public class RavenJoin extends AbstractRavenJoin {
 		// a line is of the form a*x + b*y = c
 		Point old = polygon.getFirst();
 
-		int minXInterseection = rasterBounding.x;
-		int minYInterseection = rasterBounding.y;
-		int maxXInterseection = rasterBounding.x + rasterBounding.width;
-		int maxYInterseection = rasterBounding.y + rasterBounding.height;
+		int minXInterseection = (int) Math.min(rasterBounding.x + rasterBounding.width,
+				Math.max(rasterBounding.x, Math.round(polygon.mbr().x1())));
+		int minYInterseection = (int) Math.min(rasterBounding.y + rasterBounding.height,
+				Math.max(rasterBounding.y, Math.round(polygon.mbr().y1())));
+		int maxXInterseection = (int) Math.min(rasterBounding.x + rasterBounding.width,
+				Math.max(rasterBounding.x, Math.round(polygon.mbr().x2())));
+		int maxYInterseection = (int) Math.min(rasterBounding.y + rasterBounding.height,
+				Math.max(rasterBounding.y, Math.round(polygon.mbr().y2())));
 
 		// we run the loop to polygon.size() + 1 because we want to wrap around end at
 		// the first point
