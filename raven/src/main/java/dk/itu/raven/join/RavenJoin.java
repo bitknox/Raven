@@ -81,6 +81,7 @@ public class RavenJoin extends AbstractRavenJoin {
 		// line of the polygon and the line y=j happens at point (i,j)
 		// 1 on index i if the left-most pixel of row i intersects the polygon, 0
 		// otherwise
+
 		boolean[] inRanges = new boolean[rasterBounding.height + 1]; // we add one to the length to prevent an
 																		// out-of-bounds exeption at the end of this
 																		// method. This way saves us an if statement.
@@ -90,14 +91,10 @@ public class RavenJoin extends AbstractRavenJoin {
 		// a line is of the form a*x + b*y = c
 		Point old = polygon.getFirst();
 
-		int minXInterseection = (int) Math.min(rasterBounding.x + rasterBounding.width,
-				Math.max(rasterBounding.x, Math.round(polygon.mbr().x1())));
-		int minYInterseection = (int) Math.min(rasterBounding.y + rasterBounding.height,
-				Math.max(rasterBounding.y, Math.round(polygon.mbr().y1())));
-		int maxXInterseection = (int) Math.min(rasterBounding.x + rasterBounding.width,
-				Math.max(rasterBounding.x, Math.round(polygon.mbr().x2())));
-		int maxYInterseection = (int) Math.min(rasterBounding.y + rasterBounding.height,
-				Math.max(rasterBounding.y, Math.round(polygon.mbr().y2())));
+		int minXInterseection = Integer.MAX_VALUE;
+		int minYInterseection = Integer.MAX_VALUE;
+		int maxXInterseection = Integer.MIN_VALUE;
+		int maxYInterseection = Integer.MIN_VALUE;
 
 		// we run the loop to polygon.size() + 1 because we want to wrap around end at
 		// the first point
@@ -165,10 +162,10 @@ public class RavenJoin extends AbstractRavenJoin {
 							rowStarts.get(r - offset.getY()).second++;
 						}
 						allRanges.add(new PixelRange(r, x1, x2));
-						// minXInterseection = Math.min(minXInterseection, x1);
-						// minYInterseection = Math.min(minYInterseection, r);
-						// maxXInterseection = Math.max(maxXInterseection, x2);
-						// maxYInterseection = Math.max(maxYInterseection, r);
+						minXInterseection = Math.min(minXInterseection, x1);
+						minYInterseection = Math.min(minYInterseection, r);
+						maxXInterseection = Math.max(maxXInterseection, x2);
+						maxYInterseection = Math.max(maxYInterseection, r);
 					}
 					// start a new pixel-line
 					oldY = j;
@@ -192,10 +189,10 @@ public class RavenJoin extends AbstractRavenJoin {
 						rowStarts.get(r - offset.getY()).second++;
 					}
 					allRanges.add(new PixelRange(r, x1, x2));
-					// minXInterseection = Math.min(minXInterseection, x1);
-					// minYInterseection = Math.min(minYInterseection, r);
-					// maxXInterseection = Math.max(maxXInterseection, x2);
-					// maxYInterseection = Math.max(maxYInterseection, r);
+					minXInterseection = Math.min(minXInterseection, x1);
+					minYInterseection = Math.min(minYInterseection, r);
+					maxXInterseection = Math.max(maxXInterseection, x2);
+					maxYInterseection = Math.max(maxYInterseection, r);
 				}
 			} else {
 				if (inRange) {
@@ -209,10 +206,10 @@ public class RavenJoin extends AbstractRavenJoin {
 						rowStarts.get(r - offset.getY()).second++;
 					}
 					allRanges.add(new PixelRange(r, x1, x2));
-					// minXInterseection = Math.min(minXInterseection, x1);
-					// minYInterseection = Math.min(minYInterseection, r);
-					// maxXInterseection = Math.max(maxXInterseection, x2);
-					// maxYInterseection = Math.max(maxYInterseection, r);
+					minXInterseection = Math.min(minXInterseection, x1);
+					minYInterseection = Math.min(minYInterseection, r);
+					maxXInterseection = Math.max(maxXInterseection, x2);
+					maxYInterseection = Math.max(maxYInterseection, r);
 				} else {
 					inRange = true;
 					start = x;
@@ -235,10 +232,10 @@ public class RavenJoin extends AbstractRavenJoin {
 				}
 				allRanges.add(new PixelRange(r, x1, x2));
 
-				// minXInterseection = Math.min(minXInterseection, x1);
-				// minYInterseection = Math.min(minYInterseection, r);
-				// maxXInterseection = Math.max(maxXInterseection, x2);
-				// maxYInterseection = Math.max(maxYInterseection, r);
+				minXInterseection = Math.min(minXInterseection, x1);
+				minYInterseection = Math.min(minYInterseection, r);
+				maxXInterseection = Math.max(maxXInterseection, x2);
+				maxYInterseection = Math.max(maxYInterseection, r);
 			}
 			oldY = j;
 			inRange = inRanges[j];
