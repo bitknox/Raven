@@ -71,11 +71,16 @@ public class RavenJoin extends AbstractRavenJoin {
 	 */
 	protected Collection<PixelRange> extractCellsPolygon(Polygon polygon, int pk, java.awt.Rectangle rasterBounding,
 			boolean prob) {
+
+		if (polygon.mbr().x1() > rasterBounding.x + rasterBounding.width
+				|| polygon.mbr().y1() > rasterBounding.y + rasterBounding.height
+				|| polygon.mbr().x2() < rasterBounding.x || polygon.mbr().y2() < rasterBounding.y)
+			return new ArrayList<>();
+
 		// 1 on index i * rasterBounding.geetSize() + j if an intersection between a
 		// line of the polygon and the line y=j happens at point (i,j)
 		// 1 on index i if the left-most pixel of row i intersects the polygon, 0
 		// otherwise
-
 		boolean[] inRanges = new boolean[rasterBounding.height + 1]; // we add one to the length to prevent an
 																		// out-of-bounds exeption at the end of this
 																		// method. This way saves us an if statement.
