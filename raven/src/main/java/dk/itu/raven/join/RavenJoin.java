@@ -25,6 +25,7 @@ import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.TreeExtensions;
 import dk.itu.raven.util.Tuple4;
 import dk.itu.raven.util.Tuple5;
+import dk.itu.raven.util.Logger.LogLevel;
 
 public class RavenJoin extends AbstractRavenJoin {
 	private enum QuadOverlapType {
@@ -444,6 +445,8 @@ public class RavenJoin extends AbstractRavenJoin {
 					break;
 			}
 		}
+
+		Logger.log("Result size: " + def.size(), LogLevel.DEBUG);
 
 		return def;
 	}

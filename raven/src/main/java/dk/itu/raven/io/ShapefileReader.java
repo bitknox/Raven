@@ -48,8 +48,8 @@ public class ShapefileReader {
 		public void reset() {
 			minX = Double.MAX_VALUE;
 			minY = Double.MAX_VALUE;
-			maxX = Double.MIN_VALUE;
-			maxY = Double.MIN_VALUE;
+			maxX = Double.NEGATIVE_INFINITY;
+			maxY = Double.NEGATIVE_INFINITY;
 		}
 	}
 
@@ -66,15 +66,6 @@ public class ShapefileReader {
 		FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures();
 
 		CoordinateReferenceSystem crs = source.getSchema().getCoordinateReferenceSystem();
-		// System.out.println(sourceCRS.toWKT());
-		// System.out.println(targetCRS.toWKT());
-
-		// try {
-		// System.out.println(CRS.lookupEpsgCode(sourceCRS, true));
-		// System.out.println(CRS.lookupEpsgCode(targetCRS, true));
-		// } catch (Exception e) {
-		// // TODO: handle exception
-		// }
 
 		try (FeatureIterator<SimpleFeature> featuresItr = collection.features()) {
 			while (featuresItr.hasNext()) {
@@ -104,7 +95,7 @@ public class ShapefileReader {
 			List<Polygon> features) {
 		List<Point> points = new ArrayList<>();
 		double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
-		double maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
+		double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
 		Coordinate start = coordinates[0];
 		Point p;
 
@@ -117,8 +108,8 @@ public class ShapefileReader {
 				points = new ArrayList<>();
 				minX = Double.MAX_VALUE;
 				minY = Double.MAX_VALUE;
-				maxX = Double.MIN_VALUE;
-				maxY = Double.MIN_VALUE;
+				maxX = Double.NEGATIVE_INFINITY;
+				maxY = Double.NEGATIVE_INFINITY;
 				if (i + 1 < coordinates.length) {
 					start = coordinates[i + 1];
 				}

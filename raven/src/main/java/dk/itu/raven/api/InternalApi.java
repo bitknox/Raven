@@ -59,14 +59,14 @@ public class InternalApi {
             RasterCache<CachedRasterStructure> cache = new RasterCache<CachedRasterStructure>(
                     rasterReader.getCacheKey().get() + widthStep + "-" + heightStep);
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
-                    Optional.of(cache), rtree);
+                    Optional.of(cache), rtree, geometries);
             return rasterStream.map(chunk -> {
                 // if the chunk is already cached, read it from cache
                 if (chunk.getCacheKey().isPresent()) {
                     Logger.log("Using cached raster structure " + chunk.getCacheKey().get(), LogLevel.DEBUG);
                     try {
                         CachedRasterStructure c = cache.readItem(chunk.getCacheKey().get());
-                        return new JoinChunk(c.raster, c.offset, rtree);
+                        return new JoinChunk(c.raster, c.offset, chunk.getTree());
                     } catch (Exception e) {
                         Logger.log("Item was in cache index, but not found on disk", LogLevel.ERROR);
                         System.exit(-1);
@@ -85,14 +85,14 @@ public class InternalApi {
                 }
 
                 // create the raster structure an potentially cache it
-                return new JoinChunk(raster, chunk.getOffset(), rtree);
+                return new JoinChunk(raster, chunk.getOffset(), chunk.getTree());
             });
         } else {
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
-                    Optional.empty(), rtree);
+                    Optional.empty(), rtree, geometries);
             return rasterStream.map(chunk -> {
                 AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix());
-                return new JoinChunk(raster, chunk.getOffset(), rtree);
+                return new JoinChunk(raster, chunk.getOffset(), chunk.getTree());
             });
         }
 
@@ -146,7 +146,8 @@ public class InternalApi {
             throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
         Size imageSize = new Size(metadata.getWidth(), metadata.getHeight());
-        System.out.println("Image size: " + imageSize.width + " " + imageSize.height);
+        // System.out.println("Image size: " + imageSize.width + " " +
+        // imageSize.height);
         var structures = streamStructures(vectorReader, rasterReader, widthStep, heightStep, isCaching);
         Stream<RavenJoin> stream = structures.filter(chunk -> {
             return chunk.getRtree().root().isPresent();

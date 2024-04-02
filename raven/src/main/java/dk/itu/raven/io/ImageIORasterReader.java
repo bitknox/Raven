@@ -12,6 +12,7 @@ import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.stream.FileImageInputStream;
 
 import dk.itu.raven.util.Logger;
+import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.util.matrix.AwtRasterMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 
@@ -55,9 +56,12 @@ public class ImageIORasterReader extends FileRasterReader {
         int samplesPerPixel = imageType.getNumBands();
         int[] bitsPerSample = new int[samplesPerPixel];
 
+        Logger.log("bits:", LogLevel.DEBUG);
         for (int i = 0; i < samplesPerPixel; i++) {
             bitsPerSample[i] = imageType.getBitsPerBand(i);
+            Logger.log("  " + bitsPerSample[i], LogLevel.DEBUG);
         }
+
 
         long end = System.currentTimeMillis();
         Logger.log("Read tiff in " + (end - start) + "ms", Logger.LogLevel.INFO);

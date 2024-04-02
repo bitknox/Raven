@@ -84,4 +84,12 @@ public class TFWFormat {
 				+ topLeftX + ", topLeftY=" + topLeftY + ", inveresePixelLengthX=" + inveresePixelLengthX
 				+ ", inveresePixelLengthY=" + inveresePixelLengthY + "]";
 	}
+
+	public double getTopLeftX() {
+		return this.topLeftX;
+	}
+
+	public double getTopLeftY() {
+		return this.topLeftY;
+	}
 }

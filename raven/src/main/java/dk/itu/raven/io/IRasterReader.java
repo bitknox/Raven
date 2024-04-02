@@ -17,5 +17,6 @@ public interface IRasterReader {
 	public ImageMetadata getImageMetadata() throws IOException;
 
 	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
-			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree) throws IOException;
+			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree, VectorData vectorData)
+			throws IOException;
 }

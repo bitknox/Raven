@@ -43,7 +43,7 @@ public class Raven {
 
         RavenApi api = new RavenApi();
 
-        IRasterReader rasterReader = new MultiFileRasterReader(new File(jct.inputRaster));
+        MultiFileRasterReader rasterReader = new MultiFileRasterReader(new File(jct.inputRaster));
         ShapefileReader shapefileReader = api.createShapefileReader(jct.inputVector);
         // rasterReader.getG2M(), rasterReader.getCRS()
 
@@ -105,11 +105,12 @@ public class Raven {
             builder.setUseOutput(true);
             builder.setCropToVector(jct.cropToVector);
             builder.setSecondaryColor(new RandomColor());
+            builder.setDrawFeatures(false);
 
             VisualizerOptions options = builder.build();
 
             // visual.drawResult(result, shapefileReader, options);
-            visual.drawAllVectorData(result, shapefileReader, options);
+            visual.drawResult(result, shapefileReader, options);
 
         }
 

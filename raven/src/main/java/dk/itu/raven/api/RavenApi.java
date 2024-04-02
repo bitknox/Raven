@@ -3,12 +3,9 @@ package dk.itu.raven.api;
 import java.io.File;
 import java.io.IOException;
 
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-
 import dk.itu.raven.io.IRasterReader;
 import dk.itu.raven.io.MultiFileRasterReader;
 import dk.itu.raven.io.ShapefileReader;
-import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.StreamedRavenJoin;
 

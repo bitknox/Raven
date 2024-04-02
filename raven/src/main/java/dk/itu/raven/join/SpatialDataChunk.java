@@ -4,16 +4,16 @@ import java.util.Optional;
 
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
+import com.github.davidmoten.rtree2.RTree;
+import com.github.davidmoten.rtree2.geometry.Geometry;
+
 import dk.itu.raven.geometry.Offset;
-import dk.itu.raven.geometry.Polygon;
-import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.TFWFormat;
-import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.Matrix;
 
 public class SpatialDataChunk {
     private Matrix matrix;
-    private Pair<Iterable<Polygon>, ShapefileReader.ShapeFileBounds> geometries;
+    private RTree<String, Geometry> tree;
     private Optional<String> cacheKey = Optional.empty();
 
     private Offset<Integer> offset;
@@ -31,8 +31,8 @@ public class SpatialDataChunk {
         this.matrix = matrix;
     }
 
-    public void setGeometries(Pair<Iterable<Polygon>, ShapefileReader.ShapeFileBounds> geometries) {
-        this.geometries = geometries;
+    public void setTree(RTree<String, Geometry> tree) {
+        this.tree = tree;
     }
 
     public void setOffset(Offset<Integer> offset) {
@@ -51,8 +51,8 @@ public class SpatialDataChunk {
         return matrix;
     }
 
-    public Pair<Iterable<Polygon>, ShapefileReader.ShapeFileBounds> getGeometries() {
-        return geometries;
+    public RTree<String, Geometry> getTree() {
+        return tree;
     }
 
     public Offset<Integer> getOffset() {

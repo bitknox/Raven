@@ -27,7 +27,7 @@ public class Polygon implements Geometry, Iterator<Point>, Iterable<Point> {
     public Polygon(List<Point> points) {
         this.points = points;
         double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
-        double maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
+        double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
         for (Point p : points) {
             minX = Math.min(minX, p.x());
             maxX = Math.max(maxX, p.x());
@@ -40,7 +40,7 @@ public class Polygon implements Geometry, Iterator<Point>, Iterable<Point> {
     public Polygon(Coordinate[] coordinates) {
         this.points = new ArrayList<>();
         double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
-        double maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
+        double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
         for (Coordinate coord : coordinates) {
             Point p = Geometries.point(coord.x, coord.y);
             minX = Math.min(minX, p.x());
@@ -55,7 +55,7 @@ public class Polygon implements Geometry, Iterator<Point>, Iterable<Point> {
     public Polygon(Coordinate[] coordinates, TFWFormat tfw) {
         this.points = new ArrayList<>();
         double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
-        double maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
+        double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
         for (Coordinate coord : coordinates) {
             Point p = tfw.transFromCoordinateToPixel(coord.x, coord.y);
             minX = Math.min(minX, p.x());
@@ -148,12 +148,19 @@ public class Polygon implements Geometry, Iterator<Point>, Iterable<Point> {
         return coords;
     }
 
-    // TODO: Possibly need to create a new Polygon object with the new points.
-    public void transform(MathTransform transform) throws TransformException {
+    public Polygon transform(MathTransform transform) throws TransformException {
+        List<Point> transformedPoints = new ArrayList<>();
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+        double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < points.size(); i++) {
             double[] point = new double[] { points.get(i).x(), points.get(i).y() };
             transform.transform(point, 0, point, 0, 1);
-            points.set(i, Geometries.point(point[0], point[1]));
+            transformedPoints.add(Geometries.point(point[0], point[1]));
+            minX = Math.min(minX, point[0]);
+            maxX = Math.max(maxX, point[0]);
+            minY = Math.min(minY, point[1]);
+            maxY = Math.max(maxY, point[1]);
         }
+        return new Polygon(transformedPoints, Geometries.rectangle(minX, minY, maxX, maxY));
     }
 }
