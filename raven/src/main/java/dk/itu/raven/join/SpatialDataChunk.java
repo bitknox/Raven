@@ -1,7 +1,5 @@
 package dk.itu.raven.join;
 
-import java.util.Optional;
-
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import com.github.davidmoten.rtree2.RTree;
@@ -14,17 +12,13 @@ import dk.itu.raven.util.matrix.Matrix;
 public class SpatialDataChunk {
     private Matrix matrix;
     private RTree<String, Geometry> tree;
-    private Optional<String> cacheKey = Optional.empty();
 
+    private String name;
     private Offset<Integer> offset;
     private CoordinateReferenceSystem crs;
     private TFWFormat g2m;
 
     public SpatialDataChunk() {
-    }
-
-    public void setCacheKey(String cacheKey) {
-        this.cacheKey = Optional.of(cacheKey);
     }
 
     public void setMatrix(Matrix matrix) {
@@ -47,6 +41,10 @@ public class SpatialDataChunk {
         this.g2m = g2m;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public Matrix getMatrix() {
         return matrix;
     }
@@ -59,19 +57,19 @@ public class SpatialDataChunk {
         return offset;
     }
 
-    public String getCacheKeyName() {
-        return offset.getX() + "-" + offset.getY() + ".raven";
-    }
-
-    public Optional<String> getCacheKey() {
-        return cacheKey;
-    }
-
     public CoordinateReferenceSystem getCrs() {
         return crs;
     }
 
     public TFWFormat getG2m() {
         return g2m;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getCacheKeyName() {
+        return name + "-" + offset.getX() + "-" + offset.getY() + ".raven";
     }
 }

@@ -12,11 +12,12 @@ import dk.itu.raven.io.cache.RasterCache;
 import dk.itu.raven.join.SpatialDataChunk;
 
 public interface IRasterReader {
-	public Optional<String> getCacheKey();
 
 	public ImageMetadata getImageMetadata() throws IOException;
 
 	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
 			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree, VectorData vectorData)
 			throws IOException;
+
+	public Optional<String> getDirectory();
 }

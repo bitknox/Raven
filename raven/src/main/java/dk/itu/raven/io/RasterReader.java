@@ -19,7 +19,6 @@ import dk.itu.raven.util.matrix.Matrix;
 
 public abstract class RasterReader implements IRasterReader {
 	ImageMetadata metadata;
-	private Optional<String> cacheKey = Optional.empty();
 
 	public abstract Matrix readRasters(Rectangle rect) throws IOException;
 
@@ -30,14 +29,6 @@ public abstract class RasterReader implements IRasterReader {
 			this.metadata = readImageMetadata();
 		return this.metadata;
 	};
-
-	public void setCacheKey(String cacheKey) {
-		this.cacheKey = Optional.of(cacheKey);
-	}
-
-	public Optional<String> getCacheKey() {
-		return cacheKey;
-	}
 
 	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
 			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree, VectorData vectorData)
@@ -70,10 +61,12 @@ public abstract class RasterReader implements IRasterReader {
 				SpatialDataChunk chunk = new SpatialDataChunk();
 				chunk.setOffset(offset);
 				chunk.setTree(rtree);
-				String key = chunk.getCacheKeyName();
-				if (cache.isPresent() && cache.get().contains(key)) {
-					chunk.setCacheKey(key);
-					return chunk;
+				if (metadata.getDirectoryName().isPresent()) {
+					chunk.setName(metadata.getDirectoryName().get());
+
+					if (cache.isPresent() && cache.get().contains(chunk.getCacheKeyName())) {
+						return chunk;
+					}
 				}
 
 				chunk.setMatrix(readRasters(w));
@@ -84,6 +77,11 @@ public abstract class RasterReader implements IRasterReader {
 				return null; // unreachable
 			}
 		});
+	}
+
+	@Override
+	public Optional<String> getDirectory() {
+		return Optional.empty();
 	}
 
 }

@@ -45,7 +45,7 @@ public class InternalApi {
             int heightStep, boolean isCaching)
             throws IOException {
         if (isCaching)
-            isCaching = rasterReader.getCacheKey().isPresent();
+            isCaching = rasterReader.getDirectory().isPresent();
 
         // load geometries from shapefile
         VectorData geometries = featureReader.readShapefile();
@@ -54,18 +54,19 @@ public class InternalApi {
         RTree<String, Geometry> rtree = generateRTree(geometries.getFeatures());
 
         if (isCaching) {
-            String key = rasterReader.getCacheKey().get();
-            Logger.log("Set cache key " + key, LogLevel.DEBUG);
+            // create a cache for the raster structures
+            // the cache key is the name of the dataset directory and the width and height
+            // step
             RasterCache<CachedRasterStructure> cache = new RasterCache<CachedRasterStructure>(
-                    rasterReader.getCacheKey().get() + widthStep + "-" + heightStep);
+                    rasterReader.getDirectory().get() + "-" + widthStep + "-" + heightStep);
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
                     Optional.of(cache), rtree, geometries);
             return rasterStream.map(chunk -> {
                 // if the chunk is already cached, read it from cache
-                if (chunk.getCacheKey().isPresent()) {
-                    Logger.log("Using cached raster structure " + chunk.getCacheKey().get(), LogLevel.DEBUG);
+                if (cache.contains(chunk.getCacheKeyName())) {
+                    Logger.log("Using cached raster structure " + chunk.getCacheKeyName(), LogLevel.DEBUG);
                     try {
-                        CachedRasterStructure c = cache.readItem(chunk.getCacheKey().get());
+                        CachedRasterStructure c = cache.readItem(chunk.getCacheKeyName());
                         return new JoinChunk(c.raster, c.offset, chunk.getTree());
                     } catch (Exception e) {
                         Logger.log("Item was in cache index, but not found on disk", LogLevel.ERROR);
@@ -79,7 +80,7 @@ public class InternalApi {
                 // write the structure to the cache
                 try {
                     cache.addRasterToCache(chunk.getCacheKeyName(),
-                            new CachedRasterStructure(raster, chunk.getOffset()));
+                            new CachedRasterStructure(raster, chunk.getOffset(), chunk.getName()));
                 } catch (IOException e) {
                     Logger.log("Failed to write to cache: " + e.getMessage(), LogLevel.ERROR);
                 }

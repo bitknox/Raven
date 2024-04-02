@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.geotools.api.metadata.extent.GeographicBoundingBox;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.api.referencing.operation.TransformException;
@@ -28,11 +27,11 @@ import dk.itu.raven.util.Logger.LogLevel;
 public class MultiFileRasterReader implements IRasterReader {
 
 	private Stream<ImageIORasterReader> readers;
-	private String cacheKey;
 	private ImageMetadata metadata;
+	private String dirName;
 
 	public MultiFileRasterReader(File directory) throws IOException {
-		cacheKey = directory.getName() + "-" + "cache";
+		this.dirName = directory.getName();
 		List<File> files = Arrays.asList(directory.listFiles());
 		ImageIORasterReader reader = new ImageIORasterReader(files.get(0));
 		this.metadata = reader.getImageMetadata();
@@ -52,19 +51,12 @@ public class MultiFileRasterReader implements IRasterReader {
 		this.readers = Stream.concat(singleStream, stream);
 	}
 
-	public Optional<String> getCacheKey() {
-		return Optional.of(cacheKey);
-	}
-
 	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
 			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree, VectorData vectorData)
 			throws IOException {
 		return readers
 				.map(reader -> {
 					try {
-						// double[] topLeft = new double[] { reader.g2m.getTopLeftX(),
-						// reader.g2m.getTopLeftY() };
-
 						CoordinateReferenceSystem targetCRS = reader.getCRS();
 						TFWFormat g2m = reader.getG2M();
 						MathTransform transform = Reprojector.calculateFullTransform(vectorData.getCRS(), targetCRS,
@@ -114,5 +106,10 @@ public class MultiFileRasterReader implements IRasterReader {
 	@Override
 	public ImageMetadata getImageMetadata() throws IOException {
 		return this.metadata;
+	}
+
+	@Override
+	public Optional<String> getDirectory() {
+		return Optional.of(dirName);
 	}
 }

@@ -2,6 +2,7 @@ package dk.itu.raven.io;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.io.imageio.geotiff.PixelScale;
@@ -15,11 +16,13 @@ import dk.itu.raven.util.Logger;
 public abstract class FileRasterReader extends RasterReader {
 	File tiff;
 	File tfw;
+	String dirName;
 
 	CoordinateReferenceSystem crs;
 	TFWFormat g2m;
 
 	public FileRasterReader(File directory) throws IOException {
+		this.dirName = directory.getName();
 		for (File file : directory.listFiles()) {
 
 			if (file.getName().endsWith(".tif") ||
@@ -33,8 +36,6 @@ public abstract class FileRasterReader extends RasterReader {
 		if (tiff == null) {
 			throw new IOException("Missing tiff file");
 		}
-
-		this.setCacheKey(tiff.getName());
 
 		GeoTiffMetadata metadata = readGeoTiffMetadata();
 
@@ -90,5 +91,10 @@ public abstract class FileRasterReader extends RasterReader {
 
 	public CoordinateReferenceSystem getCRS() {
 		return crs;
+	}
+
+	@Override
+	public Optional<String> getDirectory() {
+		return Optional.of(dirName);
 	}
 }

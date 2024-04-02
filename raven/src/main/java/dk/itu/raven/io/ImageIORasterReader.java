@@ -4,6 +4,7 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
@@ -62,12 +63,11 @@ public class ImageIORasterReader extends FileRasterReader {
             Logger.log("  " + bitsPerSample[i], LogLevel.DEBUG);
         }
 
-
         long end = System.currentTimeMillis();
         Logger.log("Read tiff in " + (end - start) + "ms", Logger.LogLevel.INFO);
 
         reader.dispose();
         stream.close();
-        return new ImageMetadata(width, height, samplesPerPixel, bitsPerSample);
+        return new ImageMetadata(width, height, samplesPerPixel, bitsPerSample, Optional.of(dirName));
     }
 }
