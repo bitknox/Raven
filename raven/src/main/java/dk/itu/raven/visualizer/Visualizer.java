@@ -329,7 +329,7 @@ public class Visualizer {
 	 * @param outputFormat The image format
 	 */
 	private void writeImage(BufferedImage image, String outputPath, String outputFormat) throws IOException {
-		ImageWriter writer = ImageIO.getImageWritersByFormatName("png").next();
+		ImageWriter writer = ImageIO.getImageWritersByFormatName(outputFormat).next();
 		ImageWriteParam param = writer.getDefaultWriteParam();
 		param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
 		param.setCompressionQuality(0.5f); // Adjust the quality parameter as needed
