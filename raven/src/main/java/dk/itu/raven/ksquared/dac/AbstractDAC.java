@@ -56,7 +56,7 @@ public abstract class AbstractDAC implements Serializable {
             GoodLongArrayList vals = new GoodLongArrayList();
             for (int i = 0; i < values.length(); i++) {
                 long x = values.get(i);
-                Ai.setLong(i * blockSize, x & ((1L << blockSize) - 1), blockSize); // TODO: if blockSize is 64 this
+                Ai.setLong(i * blockSize, x & ((1L << blockSize) - 1), blockSize); // FIXME: if blockSize is 64 this
                 // breaks
                 long val = x >> blockSize;
                 Aj.set(i, x >> blockSize);
@@ -138,7 +138,6 @@ public abstract class AbstractDAC implements Serializable {
             m = (int) (Math.log(maxValue) / Math.log(2));
         }
         long[] fc = new long[m + 2];
-        // Basics.bits(m)
 
         for (var entry : hist.entrySet()) {
             int i = entry.getKey();

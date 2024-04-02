@@ -31,16 +31,14 @@ public class TFWFormat {
 		this.inveresePixelLengthY = 1.0 / pixelLengthY;
 	}
 
-	public TFWFormat(AffineTransform transformation) {
-		pixelLengthX = transformation.getScaleX();
-		rotationY = transformation.getShearY();
-		rotationX = transformation.getShearX();
-		pixelLengthYNegative = transformation.getScaleY();
-		pixelLengthY = -pixelLengthYNegative;
-		topLeftX = transformation.getTranslateX();
-		topLeftY = transformation.getTranslateY();
-		inveresePixelLengthX = 1.0 / pixelLengthX;
-		inveresePixelLengthY = 1.0 / pixelLengthY;
+	public AffineTransform getAffineTransform() {
+		return new AffineTransform(pixelLengthX, rotationY, rotationX, pixelLengthY, topLeftX,
+				topLeftY);
+	}
+
+	public TFWFormat() {
+		this.topLeftX = Integer.MAX_VALUE;
+		this.topLeftY = Integer.MAX_VALUE;
 	}
 
 	static TFWFormat read(File file) throws IOException {
@@ -67,11 +65,31 @@ public class TFWFormat {
 		return Geometries.point(xPixel, yPixel);
 	}
 
+	public void applyOther(TFWFormat other) {
+		this.pixelLengthX = other.pixelLengthX;
+		this.rotationY = other.rotationY;
+		this.rotationX = other.rotationX;
+		this.pixelLengthYNegative = other.pixelLengthYNegative;
+		this.pixelLengthY = other.pixelLengthY;
+		this.topLeftX = other.topLeftX;
+		this.topLeftY = other.topLeftY;
+		this.inveresePixelLengthX = other.inveresePixelLengthX;
+		this.inveresePixelLengthY = other.inveresePixelLengthY;
+	}
+
 	@Override
 	public String toString() {
 		return "TFWFormat [pixelLengthX=" + pixelLengthX + ", rotationY=" + rotationY + ", rotationX=" + rotationX
 				+ ", pixelLengthYNegative=" + pixelLengthYNegative + ", pixelLengthY=" + pixelLengthY + ", topLeftX="
 				+ topLeftX + ", topLeftY=" + topLeftY + ", inveresePixelLengthX=" + inveresePixelLengthX
 				+ ", inveresePixelLengthY=" + inveresePixelLengthY + "]";
+	}
+
+	public double getTopLeftX() {
+		return this.topLeftX;
+	}
+
+	public double getTopLeftY() {
+		return this.topLeftY;
 	}
 }

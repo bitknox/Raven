@@ -3,10 +3,9 @@ package dk.itu.raven.api;
 import java.io.File;
 import java.io.IOException;
 
-import dk.itu.raven.io.FileRasterReader;
-import dk.itu.raven.io.ImageIORasterReader;
+import dk.itu.raven.io.IRasterReader;
+import dk.itu.raven.io.MultiFileRasterReader;
 import dk.itu.raven.io.ShapefileReader;
-import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.StreamedRavenJoin;
 
@@ -27,8 +26,8 @@ public class RavenApi {
 	 * @throws IOException
 	 */
 	public AbstractRavenJoin getJoin(String rasterPath, String vectorPath, boolean isCaching) throws IOException {
-		FileRasterReader rasterReader = createRasterReader(rasterPath);
-		ShapefileReader vectorReader = createShapefileReader(vectorPath, rasterReader.getTransform());
+		IRasterReader rasterReader = createRasterReader(rasterPath);
+		ShapefileReader vectorReader = createShapefileReader(vectorPath);
 
 		return InternalApi.getJoin(rasterReader, vectorReader, isCaching);
 	}
@@ -43,8 +42,8 @@ public class RavenApi {
 	 */
 	public StreamedRavenJoin getStreamedJoin(String rasterPath, String vectorPath,
 			int widthStep, int heightStep, boolean parallel, boolean isCaching) throws IOException {
-		FileRasterReader rasterReader = createRasterReader(rasterPath);
-		ShapefileReader vectorReader = createShapefileReader(vectorPath, rasterReader.getTransform());
+		IRasterReader rasterReader = createRasterReader(rasterPath);
+		ShapefileReader vectorReader = createShapefileReader(vectorPath);
 
 		return InternalApi.getStreamedJoin(rasterReader, vectorReader, widthStep, heightStep, parallel, isCaching);
 	}
@@ -56,8 +55,8 @@ public class RavenApi {
 	 * @return the raster reader
 	 * @throws IOException
 	 */
-	public FileRasterReader createRasterReader(String rasterPath) throws IOException {
-		return new ImageIORasterReader(new File(rasterPath));
+	public IRasterReader createRasterReader(String rasterPath) throws IOException {
+		return new MultiFileRasterReader(new File(rasterPath));
 	}
 
 	/**
@@ -67,7 +66,7 @@ public class RavenApi {
 	 * @param transform  the transform to use for the shapefile
 	 * @return the shapefile reader
 	 */
-	public ShapefileReader createShapefileReader(String vectorPath, TFWFormat transform) {
-		return new ShapefileReader(vectorPath, transform);
+	public ShapefileReader createShapefileReader(String vectorPath) {
+		return new ShapefileReader(vectorPath);
 	}
 }

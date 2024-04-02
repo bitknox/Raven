@@ -10,9 +10,10 @@ import com.github.davidmoten.rtree2.geometry.Geometry;
 
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
+import dk.itu.raven.io.IRasterReader;
 import dk.itu.raven.io.ImageMetadata;
-import dk.itu.raven.io.RasterReader;
 import dk.itu.raven.io.ShapefileReader;
+import dk.itu.raven.io.VectorData;
 import dk.itu.raven.io.cache.CachedRasterStructure;
 import dk.itu.raven.io.cache.RasterCache;
 import dk.itu.raven.join.AbstractRavenJoin;
@@ -27,7 +28,6 @@ import dk.itu.raven.ksquared.K2RasterBuilder;
 import dk.itu.raven.ksquared.K2RasterIntBuilder;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
-import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.matrix.Matrix;
 
 public class InternalApi {
@@ -41,32 +41,32 @@ public class InternalApi {
      * @throws IOException
      */
     static Stream<JoinChunk> streamStructures(ShapefileReader featureReader,
-            RasterReader rasterReader, int widthStep,
+            IRasterReader rasterReader, int widthStep,
             int heightStep, boolean isCaching)
             throws IOException {
         if (isCaching)
-            isCaching = rasterReader.getCacheKey().isPresent();
+            isCaching = rasterReader.getDirectory().isPresent();
 
         // load geometries from shapefile
-        Pair<List<Polygon>, ShapefileReader.ShapeFileBounds> geometries = featureReader.readShapefile();
+        VectorData geometries = featureReader.readShapefile();
 
-        // TODO: check if it is faster to just use the original rtree
-        RTree<String, Geometry> rtree = generateRTree(geometries);
+        RTree<String, Geometry> rtree = generateRTree(geometries.getFeatures());
 
         if (isCaching) {
-            String key = rasterReader.getCacheKey().get();
-            Logger.log("Set cache key " + key, LogLevel.DEBUG);
+            // create a cache for the raster structures
+            // the cache key is the name of the dataset directory and the width and height
+            // step
             RasterCache<CachedRasterStructure> cache = new RasterCache<CachedRasterStructure>(
-                    rasterReader.getCacheKey().get() + widthStep + "-" + heightStep);
+                    rasterReader.getDirectory().get() + "-" + widthStep + "-" + heightStep);
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
-                    Optional.of(cache), rtree);
+                    Optional.of(cache), rtree, geometries);
             return rasterStream.map(chunk -> {
                 // if the chunk is already cached, read it from cache
-                if (chunk.getCacheKey().isPresent()) {
-                    Logger.log("Using cached raster structure " + chunk.getCacheKey().get(), LogLevel.DEBUG);
+                if (cache.contains(chunk.getCacheKeyName())) {
+                    Logger.log("Using cached raster structure " + chunk.getCacheKeyName(), LogLevel.DEBUG);
                     try {
-                        CachedRasterStructure c = cache.readItem(chunk.getCacheKey().get());
-                        return new JoinChunk(c.raster, c.offset, rtree);
+                        CachedRasterStructure c = cache.readItem(chunk.getCacheKeyName());
+                        return new JoinChunk(c.raster, c.offset, chunk.getTree());
                     } catch (Exception e) {
                         Logger.log("Item was in cache index, but not found on disk", LogLevel.ERROR);
                         System.exit(-1);
@@ -79,20 +79,20 @@ public class InternalApi {
                 // write the structure to the cache
                 try {
                     cache.addRasterToCache(chunk.getCacheKeyName(),
-                            new CachedRasterStructure(raster, chunk.getOffset()));
+                            new CachedRasterStructure(raster, chunk.getOffset(), chunk.getName()));
                 } catch (IOException e) {
                     Logger.log("Failed to write to cache: " + e.getMessage(), LogLevel.ERROR);
                 }
 
                 // create the raster structure an potentially cache it
-                return new JoinChunk(raster, chunk.getOffset(), rtree);
+                return new JoinChunk(raster, chunk.getOffset(), chunk.getTree());
             });
         } else {
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
-                    Optional.empty(), rtree);
+                    Optional.empty(), rtree, geometries);
             return rasterStream.map(chunk -> {
                 AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix());
-                return new JoinChunk(raster, chunk.getOffset(), rtree);
+                return new JoinChunk(raster, chunk.getOffset(), chunk.getTree());
             });
         }
 
@@ -120,16 +120,15 @@ public class InternalApi {
      * @param geometries
      * @return the R* tree
      */
-    static RTree<String, Geometry> generateRTree(
-            Pair<List<Polygon>, ShapefileReader.ShapeFileBounds> geometries) {
+    static RTree<String, Geometry> generateRTree(List<Polygon> geometries) {
         RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
-        for (Polygon polygon : geometries.first) {
+        for (Polygon polygon : geometries) {
             rtree = rtree.add(null, polygon);
         }
         return rtree;
     }
 
-    static AbstractRavenJoin getJoin(RasterReader rasterReader, ShapefileReader vectorReader, boolean isCaching)
+    static AbstractRavenJoin getJoin(IRasterReader rasterReader, ShapefileReader vectorReader, boolean isCaching)
             throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
         Optional<RavenJoin> streamedJoin = getStreamedJoin(rasterReader, vectorReader, metadata.getWidth(),
@@ -142,7 +141,7 @@ public class InternalApi {
         }
     }
 
-    static StreamedRavenJoin getStreamedJoin(RasterReader rasterReader, ShapefileReader vectorReader, int widthStep,
+    static StreamedRavenJoin getStreamedJoin(IRasterReader rasterReader, ShapefileReader vectorReader, int widthStep,
             int heightStep, boolean parallel, boolean isCaching)
             throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
@@ -151,7 +150,8 @@ public class InternalApi {
         Stream<RavenJoin> stream = structures.filter(chunk -> {
             return chunk.getRtree().root().isPresent();
         }).map(chunk -> {
-            return new RavenJoin(chunk.getRaster(), chunk.getRtree(), chunk.getOffset(), imageSize);
+            return new RavenJoin(chunk.getRaster(), chunk.getRtree(), chunk.getOffset(),
+                    imageSize);
         });
         if (parallel) {
             return new ParallelStreamedRavenJoin(stream);
