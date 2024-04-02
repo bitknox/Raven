@@ -1,5 +1,6 @@
 package dk.itu.raven.io;
 
+import java.awt.geom.NoninvertibleTransformException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -7,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.geotools.api.referencing.FactoryException;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.api.referencing.operation.TransformException;
@@ -41,7 +43,8 @@ public class MultiFileRasterReader implements IRasterReader {
 				try {
 					return new ImageIORasterReader(f);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
+					Logger.log("Could not create reader for" + f.getAbsolutePath() + ". Skipping Image",
+							LogLevel.ERROR);
 					e.printStackTrace();
 				}
 			}
@@ -54,14 +57,13 @@ public class MultiFileRasterReader implements IRasterReader {
 	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
 			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree, VectorData vectorData)
 			throws IOException {
-		return readers
+		return readers.filter(r -> r != null)
 				.map(reader -> {
 					try {
 						CoordinateReferenceSystem targetCRS = reader.getCRS();
 						TFWFormat g2m = reader.getG2M();
 						MathTransform transform = Reprojector.calculateFullTransform(vectorData.getCRS(), targetCRS,
 								g2m);
-
 						MathTransform inverseTransform = transform.inverse();
 
 						double[] topLeftPixel = new double[] { 0, 0 };
@@ -95,12 +97,20 @@ public class MultiFileRasterReader implements IRasterReader {
 						return reader.rasterPartitionStream(widthStep, heightStep,
 								cache, rtree2, null).parallel();
 					} catch (IOException e) {
-						e.printStackTrace();
+						Logger.log("Unable to read raster data, skipping image",
+								LogLevel.ERROR);
 					} catch (TransformException e) {
-						e.printStackTrace();
+						Logger.log("Unable to transform vector data to pixel CRS, skipping image",
+								LogLevel.ERROR);
+					} catch (NoninvertibleTransformException e) {
+						Logger.log("Unable to transform from image CRS to pixel coordinates, skipping image",
+								LogLevel.ERROR);
+					} catch (FactoryException e) {
+						Logger.log("Unable to transform from vector CRS to raster CRS, skipping image",
+								LogLevel.ERROR);
 					}
 					return null;
-				}).reduce(Stream::concat).orElse(Stream.empty());
+				}).filter(c -> c != null).reduce(Stream::concat).orElse(Stream.empty());
 	}
 
 	@Override

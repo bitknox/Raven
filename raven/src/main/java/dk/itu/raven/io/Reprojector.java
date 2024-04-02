@@ -17,21 +17,14 @@ import org.geotools.referencing.operation.transform.ProjectiveTransform;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
 import dk.itu.raven.geometry.Polygon;
-import dk.itu.raven.util.Logger;
 
 public class Reprojector {
 
     private static final MathTransform reverseAxesTransform = new AffineTransform2D(0, 1, 1, 0, 0, 0);
 
     static public MathTransform calculateMathTransform(CoordinateReferenceSystem sourceCRS,
-            CoordinateReferenceSystem targetCRS) {
-        MathTransform t = null;
-        try {
-            t = CRS.findMathTransform(sourceCRS, targetCRS, true);
-        } catch (FactoryException e) {
-            Logger.log("Could not calculate math transform", Logger.LogLevel.ERROR);
-            e.printStackTrace();
-        }
+            CoordinateReferenceSystem targetCRS) throws FactoryException {
+        MathTransform t = CRS.findMathTransform(sourceCRS, targetCRS, true);
         if (CRS.getAxisOrder(sourceCRS) == AxisOrder.NORTH_EAST)
             t = ConcatenatedTransform.create(reverseAxesTransform, t);
         if (CRS.getAxisOrder(targetCRS) == AxisOrder.NORTH_EAST)
@@ -41,7 +34,7 @@ public class Reprojector {
 
     static public MathTransform calculateFullTransform(CoordinateReferenceSystem source,
             CoordinateReferenceSystem target,
-            TFWFormat tfwFormat) {
+            TFWFormat tfwFormat) throws NoninvertibleTransformException, FactoryException {
         MathTransform m2g = model2Grid(tfwFormat);
 
         MathTransform transform = Reprojector.calculateMathTransform(source, target);
@@ -50,23 +43,18 @@ public class Reprojector {
     }
 
     static public MathTransform calculateFullTransform(CoordinateReferenceSystem source,
-            CoordinateReferenceSystem target) {
+            CoordinateReferenceSystem target) throws FactoryException {
         return Reprojector.calculateMathTransform(source, target);
     }
 
-    static public MathTransform model2Grid(TFWFormat tfwFormat) {
+    static public MathTransform model2Grid(TFWFormat tfwFormat) throws NoninvertibleTransformException {
         AffineTransform affine = tfwFormat.getAffineTransform();
-        try {
-            affine.invert();
-        } catch (NoninvertibleTransformException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        affine.invert();
         return ProjectiveTransform.create(affine);
     }
 
     public void reproject(List<Geometry> geoms, CoordinateReferenceSystem source, CoordinateReferenceSystem target,
-            TFWFormat format) throws TransformException {
+            TFWFormat format) throws TransformException, NoninvertibleTransformException, FactoryException {
         MathTransform transform = calculateFullTransform(source, target, format);
         for (Geometry geom : geoms) {
             Polygon polygon = (Polygon) geom;
