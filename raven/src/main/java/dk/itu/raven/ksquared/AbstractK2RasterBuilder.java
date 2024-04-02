@@ -141,7 +141,6 @@ public abstract class AbstractK2RasterBuilder {
         pMax = null;
         t = null;
 
-        // TODO: use DAC
         PrimitiveArrayWrapper lMax = LMaxList;
         PrimitiveArrayWrapper lMin = LMinList;
 

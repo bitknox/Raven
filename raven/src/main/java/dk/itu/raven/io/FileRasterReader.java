@@ -49,7 +49,6 @@ public abstract class FileRasterReader extends RasterReader {
 			metadata = new GeoTiffMetadata(new GeoTiffReader(tiff));
 		} catch (Exception e) {
 			Logger.log("Cannot read metadata from " + tiff.getName(), Logger.LogLevel.DEBUG);
-			// e.printStackTrace();
 		}
 		return metadata;
 	}

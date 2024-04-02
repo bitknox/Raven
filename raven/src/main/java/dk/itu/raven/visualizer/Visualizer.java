@@ -72,9 +72,9 @@ public class Visualizer {
 	 */
 	public BufferedImage drawResult(IJoinResult results, ShapefileReader shapeFileReader,
 			VisualizerOptions options) throws IOException {
-		var pair = getFeatures(shapeFileReader);
-		List<Polygon> features = pair.getFeatures();
-		ShapeFileBounds bounds = pair.getBounds();
+		var vectorData = getFeatures(shapeFileReader);
+		List<Polygon> features = vectorData.getFeatures();
+		ShapeFileBounds bounds = vectorData.getBounds();
 
 		int width = this.width;
 		int height = this.height;
@@ -271,9 +271,9 @@ public class Visualizer {
 
 	public BufferedImage drawAllVectorData(IJoinResult results, ShapefileReader shapeFileReader,
 			VisualizerOptions options) throws IOException {
-		var pair = getFeatures(shapeFileReader);
-		List<Polygon> features = pair.getFeatures();
-		ShapeFileBounds bounds = pair.getBounds();
+		var vectorData = getFeatures(shapeFileReader);
+		List<Polygon> features = vectorData.getFeatures();
+		ShapeFileBounds bounds = vectorData.getBounds();
 
 		int width = this.width;
 

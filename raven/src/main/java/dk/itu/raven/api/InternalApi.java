@@ -50,7 +50,6 @@ public class InternalApi {
         // load geometries from shapefile
         VectorData geometries = featureReader.readShapefile();
 
-        // TODO: check if it is faster to just use the original rtree
         RTree<String, Geometry> rtree = generateRTree(geometries.getFeatures());
 
         if (isCaching) {

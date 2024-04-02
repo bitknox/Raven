@@ -16,7 +16,6 @@ public class JoinChunk {
             RTree<String, Geometry> rtree) {
         this.raster = raster;
         this.offset = offset;
-
         this.rtree = rtree;
     }
 
