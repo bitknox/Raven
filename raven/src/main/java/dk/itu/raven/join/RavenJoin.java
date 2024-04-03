@@ -135,7 +135,9 @@ public class RavenJoin extends AbstractRavenJoin {
 		List<PixelRange> allRanges = new ArrayList<>();
 		Map<Integer, Pair<Integer, Integer>> rowStarts;
 		if (prob) {
-			rowStarts = new HashMap<>();
+			// rowStarts = new HashMap<>();
+			// rowStarts = new TreeMap<>();
+			rowStarts = new ArrayMap<>(rasterBounding.height + 1, rasterBounding.y - offset.getY());
 		} else {
 			rowStarts = new EmptyMap<>();
 		}
