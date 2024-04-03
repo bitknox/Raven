@@ -2,9 +2,36 @@ import json
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import rcParams
 import sys
+import argparse
+
+parser = argparse.ArgumentParser(
+    description="plots results of benchmarks as a bar chart showing average running times, as well as separate charts showing the progressing of running time of each experiment over time.",
+)
+parser.add_argument("-i", "--input")
+parser.add_argument("-o", "--output")
+parser.add_argument("-id", "--identifier")
+parser.add_argument("-sp", "--sub-plots", action="store_true")
+args = parser.parse_args()
 
 
-def write_labels(ax, labels):
+def addlabels(x, y):
+    font = {"family": "DejaVu Sans", "size": 12, "color": "white"}
+    for i in range(len(x)):
+        plt.text(
+            i, y[i] / 2, str(int(y[i])) + "ms", ha="center", va="bottom", fontdict=font
+        )
+        difference = y[i] / y[0]
+        if i == 0:
+            text = "(Ref)"
+        elif difference < 1:
+            text = "(-" + str(int((1 - difference) * 100)) + "%)"
+        else:
+            text = "(+" + str(int(difference * 100)) + "%)"
+
+        plt.text(i, y[i] / 2, text, ha="center", va="top", fontdict=font)
+
+
+def write_labels(labels):
     text = ""
     for label in labels:
         text += label + "\n"
@@ -24,7 +51,7 @@ def write_labels(ax, labels):
 
 colours = ["darkred", "darkgreen", "darkblue", "darkorange", "indigo", "dimgray"]
 
-file = open(sys.argv[1], "r")
+file = open(args.input, "r")
 
 experiment = json.loads(file.read())
 data = experiment["data"]
@@ -59,7 +86,7 @@ errors_hi_95p = [
     data[i]["sorted times"][-index - 1] - times[i] for i in range(len(data))
 ]
 
-_, ax = plt.subplots(figsize=(10, 5))
+_, ax = plt.subplots(figsize=(2 * len(data), 5))
 
 ax.grid(axis="y", which="major", linewidth=1, alpha=0.3, linestyle="dashed")
 plt.grid(
@@ -71,6 +98,8 @@ plt.tick_params(axis="x", rotation=30)
 
 plt.bar(names, times, color=colours)
 plt.ylabel("Join time (ms)")
+
+addlabels(names, times)
 
 plt.title(experiment["title"])
 
@@ -95,8 +124,14 @@ eb = plt.errorbar(
     color="black",
 )
 
-plt.savefig(sys.argv[2] + "/big " + sys.argv[3] + ".png", bbox_inches="tight")
+plt.savefig(
+    args.output + "/" + experiment["title"] + " " + args.identifier + ".png",
+    bbox_inches="tight",
+)
 plt.clf()
+
+if not args.sub_plots:
+    exit(0)
 
 for test in data:
     fig, ax = plt.subplots()
@@ -108,10 +143,10 @@ for test in data:
     ax.margins(x=0)
     plt.title("Join Times for " + test["name"])
     plt.ylim(bottom=0)
-    write_labels(ax, test["labels"])
+    write_labels(test["labels"])
 
     plt.savefig(
-        sys.argv[2] + "/" + test["name"] + " " + sys.argv[3] + ".png",
+        args.output + "/" + test["name"] + " " + args.identifier + ".png",
         bbox_inches="tight",
     )
     plt.clf()
