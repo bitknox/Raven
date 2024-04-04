@@ -1,8 +1,8 @@
 package dk.itu.raven.io;
 
-import java.io.IOException;
-
 import java.awt.Rectangle;
+import java.io.IOException;
+import java.util.Optional;
 
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
@@ -30,18 +30,12 @@ public class MatrixReader extends RasterReader {
 		return arrayMatrix;
 	}
 
-	@Override
-	public TFWFormat getTransform() throws IOException {
-		return transform;
-	}
-
 	/**
 	 * Returns metadata about the matrix instead of a file. Used for testing.
 	 */
 	@Override
 	protected ImageMetadata readImageMetadata() throws IOException {
 		return new ImageMetadata(matrix.getWidth(), matrix.getHeight(), matrix.getBitsUsed(),
-				matrix.getSampleSize());
+				matrix.getSampleSize(), Optional.empty());
 	}
-
 }

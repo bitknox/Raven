@@ -25,7 +25,7 @@ public class SerializableTest {
 		Matrix matrix = new RandomMatrix(1000, 1000, 100);
 		AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, 2);
 
-		CachedRasterStructure crs = new CachedRasterStructure(k2, offset);
+		CachedRasterStructure crs = new CachedRasterStructure(k2, offset, "");
 
 		Serializer.serialize("serializeTest.txt", crs);
 

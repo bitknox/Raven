@@ -9,7 +9,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 
 import com.github.davidmoten.rtree2.Node;
 import com.github.davidmoten.rtree2.RTree;
@@ -21,11 +25,11 @@ import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.io.ShapefileReader;
+import dk.itu.raven.io.VectorData;
 import dk.itu.raven.io.ShapefileReader.ShapeFileBounds;
 import dk.itu.raven.join.IJoinResult;
 import dk.itu.raven.join.Square;
 import dk.itu.raven.ksquared.K2Raster;
-import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.TreeExtensions;
 
 /**
@@ -49,7 +53,7 @@ public class Visualizer {
 		this.r = new Random();
 	}
 
-	private Pair<List<Polygon>, ShapeFileBounds> getFeatures(ShapefileReader shapeFileReader)
+	private VectorData getFeatures(ShapefileReader shapeFileReader)
 			throws IOException {
 		return shapeFileReader.readShapefile();
 
@@ -68,9 +72,9 @@ public class Visualizer {
 	 */
 	public BufferedImage drawResult(IJoinResult results, ShapefileReader shapeFileReader,
 			VisualizerOptions options) throws IOException {
-		var pair = getFeatures(shapeFileReader);
-		List<Polygon> features = pair.first;
-		ShapeFileBounds bounds = pair.second;
+		var vectorData = getFeatures(shapeFileReader);
+		List<Polygon> features = vectorData.getFeatures();
+		ShapeFileBounds bounds = vectorData.getBounds();
 
 		int width = this.width;
 		int height = this.height;
@@ -135,7 +139,7 @@ public class Visualizer {
 	 *         {@code features}
 	 */
 	public BufferedImage drawShapefile(ShapefileReader shapeFileReader, VisualizerOptions options) throws IOException {
-		List<Polygon> features = getFeatures(shapeFileReader).first;
+		List<Polygon> features = getFeatures(shapeFileReader).getFeatures();
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D vectorGraphics = image.createGraphics();
 
@@ -239,7 +243,7 @@ public class Visualizer {
 	 */
 	public BufferedImage drawVectorRasterOverlap(ShapefileReader shapeFileReader, RTree<String, Geometry> tree,
 			K2Raster k2Raster, int k2RecursionDepth, VisualizerOptions options) throws IOException {
-		Iterable<Polygon> features = getFeatures(shapeFileReader).first;
+		Iterable<Polygon> features = getFeatures(shapeFileReader).getFeatures();
 
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics = image.createGraphics();
@@ -265,6 +269,59 @@ public class Visualizer {
 
 	}
 
+	public BufferedImage drawAllVectorData(IJoinResult results, ShapefileReader shapeFileReader,
+			VisualizerOptions options) throws IOException {
+		var vectorData = getFeatures(shapeFileReader);
+		List<Polygon> features = vectorData.getFeatures();
+		ShapeFileBounds bounds = vectorData.getBounds();
+
+		int width = this.width;
+
+		double scale = width / (bounds.maxX - bounds.minX);
+
+		int height = (int) (scale * (bounds.maxY - bounds.minY));
+
+		int format = BufferedImage.TYPE_BYTE_INDEXED;
+		BufferedImage image = new BufferedImage(width, height, format);
+		Graphics2D graphics = image.createGraphics();
+
+		setColor(graphics, options.background);
+		graphics.fillRect(0, 0, width, height); // give the whole image a white background
+
+		for (var item : results) {
+			for (PixelRange range : item.pixelRanges) {
+				setColor(graphics, options.primaryColor);
+				graphics.drawLine(
+						(int) (range.x1 * scale - bounds.minX * scale),
+						(int) (range.row * scale - bounds.minY * scale),
+						(int) (range.x2 * scale - bounds.minX * scale),
+						(int) (range.row * scale - bounds.minY * scale));
+			}
+		}
+
+		Color color = options.secondaryColor;
+
+		for (Geometry geom : features) {
+			Polygon poly = (Polygon) geom;
+			setColor(graphics, color);
+			Point old = poly.getFirst();
+			for (Point next : poly) {
+				int sx = (int) (old.x() * scale - bounds.minX * scale);
+				int sy = (int) (old.y() * scale - bounds.minY * scale);
+				int ex = (int) (next.x() * scale - bounds.minX * scale);
+				int ey = (int) (next.y() * scale - bounds.minY * scale);
+				graphics.drawLine(sx, sy, ex, ey);
+				old = next;
+			}
+		}
+
+		if (options.useOutput) {
+			writeImage(image, options.outputPath, options.outputFormat);
+		}
+
+		return image;
+	}
+
 	/**
 	 * 
 	 * @param image        A buffered image to write
@@ -272,8 +329,17 @@ public class Visualizer {
 	 * @param outputFormat The image format
 	 */
 	private void writeImage(BufferedImage image, String outputPath, String outputFormat) throws IOException {
-		ImageIO.write(image, outputFormat, new File(outputPath));
+		ImageWriter writer = ImageIO.getImageWritersByFormatName(outputFormat).next();
+		ImageWriteParam param = writer.getDefaultWriteParam();
+		param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+		param.setCompressionQuality(0.5f); // Adjust the quality parameter as needed
 
+		File fOutputFile = new File(outputPath);
+		ImageOutputStream ios = ImageIO.createImageOutputStream(fOutputFile);
+		writer.setOutput(ios);
+		writer.write(null, new IIOImage(image, null, null), param);
+		writer.dispose();
+		ios.close();
 	}
 
 }

@@ -3,9 +3,6 @@ package dk.itu.raven.util.matrix;
 import java.awt.image.Raster;
 import java.io.IOException;
 
-import dk.itu.raven.util.Logger;
-import dk.itu.raven.util.Logger.LogLevel;
-
 public class AwtRasterMatrix extends Matrix {
     private Raster raster;
     private int numberOfBands;
@@ -16,12 +13,6 @@ public class AwtRasterMatrix extends Matrix {
 
         this.sampleSize = raster.getSampleModel().getSampleSize();
         numberOfBands = raster.getNumBands();
-
-        Logger.log("bits:", LogLevel.DEBUG);
-        for (int bits : sampleSize) {
-            this.bitsUsed += bits;
-            Logger.log("  " + bits, LogLevel.DEBUG);
-        }
 
         if (this.bitsUsed > 64) {
             throw new UnsupportedOperationException("The total bits per pixel is greater than 64");

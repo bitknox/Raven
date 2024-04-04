@@ -69,26 +69,6 @@ public class BitMap implements Iterator<Integer>, Iterable<Integer>, Serializabl
         return map;
     }
 
-    /**
-     * computes the rank of the bitmap up to an index {@code i}
-     * 
-     * @param i
-     * @return the number of 1's up to and including index {@code i}
-     */
-    public int rank(int i) {
-        return rank(0, i);
-    }
-
-    public int rank(int from, int to) {
-        if (to == -1)
-            return 0;
-        int res = 0;
-        for (int j = from + 1; j <= to + 1; j++) { // 😡
-            res += get(j);
-        }
-        return res;
-    }
-
     public int size() {
         return limitPos;
     }
@@ -204,26 +184,6 @@ public class BitMap implements Iterator<Integer>, Iterable<Integer>, Serializabl
         map[windex] = (word & mask);
 
         return result;
-    }
-
-    private int get(int pos) {
-
-        while (pos >= capacity) {
-            doubleCapacity();
-        }
-
-        if (pos >= limitPos) {
-            limitPos = pos + 1;
-
-            return 0;
-        }
-
-        int windex = pos >> 5;
-        int mask = 0x80000000 >>> (pos & 0x1F);
-        int word = map[windex];
-
-        return (word & mask) == 0 ? 0
-                : 1;
     }
 
     public int getOrZero(int pos) {

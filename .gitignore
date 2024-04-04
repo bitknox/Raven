@@ -7,7 +7,7 @@ lib
 dependency-reduced-pom.xml
 *.tif
 *.tiff
-!**/src/test/java/dk/itu/raven/data/*
+!**/src/test/java/dk/itu/raven/data/**
 *.png
 *.raven
 *.jpg

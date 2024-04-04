@@ -27,6 +27,7 @@ import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.TreeExtensions;
 import dk.itu.raven.util.Tuple4;
 import dk.itu.raven.util.Tuple5;
+import dk.itu.raven.util.Logger.LogLevel;
 
 public class RavenJoin extends AbstractRavenJoin {
 	private enum QuadOverlapType {
@@ -419,8 +420,10 @@ public class RavenJoin extends AbstractRavenJoin {
 
 	private java.awt.Rectangle getRectangle(Square rasterBounding) {
 		return new java.awt.Rectangle(rasterBounding.getTopX(), rasterBounding.getTopY(),
-				Math.min(rasterBounding.getSize(), Math.max(0, imageSize.width - rasterBounding.getTopX())),
-				Math.min(rasterBounding.getSize(), Math.max(0, imageSize.height - rasterBounding.getTopY())));
+				Math.min(rasterBounding.getSize(),
+						Math.max(0, imageSize.width - rasterBounding.getTopX())),
+				Math.min(rasterBounding.getSize(), Math.max(0,
+						imageSize.height - rasterBounding.getTopY())));
 	}
 
 	private boolean intersects(java.awt.Rectangle movedRasterWindow, Rectangle mbr) {
@@ -449,13 +452,15 @@ public class RavenJoin extends AbstractRavenJoin {
 
 		for (Node<String, Geometry> node : TreeExtensions.getChildren(tree.root().get())) {
 			S.push(new Tuple5<>(node, 0,
-					new Square(offset.getX(), offset.getY(), k2Raster.getSize()), minMax.first,
-					minMax.second));
+					new Square(offset.getX(), offset.getY(),
+							k2Raster.getSize()),
+					minMax.first, minMax.second));
 		}
 
 		// Used for early termination. If the vector data does not overlap with BOTH the
 		// image and the square k2Raster there will never be an intersection.
-		java.awt.Rectangle movedRasterWindow = new java.awt.Rectangle(offset.getX(), offset.getY(),
+		java.awt.Rectangle movedRasterWindow = new java.awt.Rectangle(offset.getX(),
+				offset.getY(),
 				Math.min(imageSize.width, k2Raster.getSize()), Math.min(imageSize.height, k2Raster.getSize()));
 
 		while (!S.empty()) {
@@ -504,6 +509,8 @@ public class RavenJoin extends AbstractRavenJoin {
 					break;
 			}
 		}
+
+		Logger.log("Result size: " + def.size(), LogLevel.DEBUG);
 
 		return def;
 	}

@@ -50,9 +50,7 @@ public abstract class AbstractK2Raster implements Serializable {
      *         internal node, {@code false} otherwise.
      */
     public boolean hasChildren(int index) {
-        if (index == 0)
-            return minVal != maxVal;
-        return tree.isSet(index);
+        return index == 0 ? minVal != maxVal : tree.isSet(index);
     }
 
     /**
@@ -74,10 +72,8 @@ public abstract class AbstractK2Raster implements Serializable {
      *         with the given index
      */
     public long computeVMax(long parentMax, int index) {
-        if (index == 0)
-            return maxVal;
         // the -1 is caused by lMax being 0-indexed and not including the root
-        return parentMax - lMax.get(index - 1);
+        return index == 0 ? maxVal : parentMax - lMax.get(index - 1);
     }
 
     /**

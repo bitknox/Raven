@@ -15,11 +15,7 @@ public class VisualizerOptionsBuilder {
 
 	public VisualizerOptionsBuilder setOutputPath(String outputPath) {
 		this.outputPath = outputPath;
-		return this;
-	}
-
-	public VisualizerOptionsBuilder setOutputFormat(String outputFormat) {
-		this.outputFormat = outputFormat;
+		this.outputFormat = outputPath.substring(outputPath.lastIndexOf('.') + 1);
 		return this;
 	}
 

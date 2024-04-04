@@ -16,9 +16,9 @@ import com.github.davidmoten.rtree2.geometry.Geometries;
 
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
+import dk.itu.raven.io.IRasterReader;
 import dk.itu.raven.io.MatrixReader;
 import dk.itu.raven.io.MockedShapefileReader;
-import dk.itu.raven.io.RasterReader;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.join.AbstractRavenJoin;
@@ -36,7 +36,7 @@ public class ApiTest {
         Matrix m = new RandomMatrix(10, 10, 10, 10);
 
         ShapefileReader vectorReader = new MockedShapefileReader(List.of(p));
-        RasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
+        IRasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
         JoinResult result = getResult(streamed, vectorReader, rasterReader);
 
         int sum = 0;
@@ -55,7 +55,7 @@ public class ApiTest {
         Matrix m = new RandomMatrix(10, 15, 15, 10);
 
         ShapefileReader vectorReader = new MockedShapefileReader(List.of(p));
-        RasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
+        IRasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
 
         JoinResult result = getResult(streamed, vectorReader, rasterReader);
 
@@ -71,7 +71,7 @@ public class ApiTest {
         Matrix m = new RandomMatrix(10, 10, 10, 10);
 
         ShapefileReader vectorReader = new MockedShapefileReader(List.of(p));
-        RasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
+        IRasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
         JoinResult result = getResult(streamed, vectorReader, rasterReader);
 
         assertIncluded(10, 10, 0, 0, 9, 9, result);
@@ -85,7 +85,7 @@ public class ApiTest {
         Matrix m = new RandomMatrix(10, 10, 10, 10);
 
         ShapefileReader vectorReader = new MockedShapefileReader(List.of(p));
-        RasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
+        IRasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
         JoinResult result = getResult(streamed, vectorReader, rasterReader);
 
         assertIncluded(10, 10, 0, 0, 4, 4, result);
@@ -99,7 +99,7 @@ public class ApiTest {
         Matrix m = new RandomMatrix(10, 10, 10, 10);
 
         ShapefileReader vectorReader = new MockedShapefileReader(List.of(p));
-        RasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
+        IRasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
         JoinResult result = getResult(streamed, vectorReader, rasterReader);
 
         assertIncluded(10, 10, 5, 5, 9, 9, result);
@@ -113,7 +113,7 @@ public class ApiTest {
         Matrix m = new RandomMatrix(10, 10, 10, 10);
 
         ShapefileReader vectorReader = new MockedShapefileReader(List.of(p));
-        RasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
+        IRasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
         JoinResult result = getResult(streamed, vectorReader, rasterReader);
 
         assertIncluded(10, 10, 5, 0, 9, 4, result);
@@ -127,7 +127,7 @@ public class ApiTest {
         Matrix m = new RandomMatrix(10, 10, 10, 10);
 
         ShapefileReader vectorReader = new MockedShapefileReader(List.of(p));
-        RasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
+        IRasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
         JoinResult result = getResult(streamed, vectorReader, rasterReader);
 
         assertIncluded(10, 10, 0, 5, 4, 9, result);
@@ -141,7 +141,7 @@ public class ApiTest {
         Matrix m = new RandomMatrix(10, 10, 10, 10);
 
         ShapefileReader vectorReader = new MockedShapefileReader(List.of(p));
-        RasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
+        IRasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
         JoinResult result = getResult(streamed, vectorReader, rasterReader);
 
         int sum = 0;
@@ -160,7 +160,7 @@ public class ApiTest {
         Matrix m = new RandomMatrix(10, 10, 10, 10);
 
         ShapefileReader vectorReader = new MockedShapefileReader(List.of(p));
-        RasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
+        IRasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
         JoinResult result = getResult(streamed, vectorReader, rasterReader);
 
         int sum = 0;
@@ -179,7 +179,7 @@ public class ApiTest {
         Matrix m = new RandomMatrix(10, 10, 10, 10);
 
         ShapefileReader vectorReader = new MockedShapefileReader(List.of(p));
-        RasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
+        IRasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
         JoinResult result = getResult(streamed, vectorReader, rasterReader);
 
         int sum = 0;
@@ -198,7 +198,7 @@ public class ApiTest {
         Matrix m = new RandomMatrix(10, 10, 10, 10);
 
         ShapefileReader vectorReader = new MockedShapefileReader(List.of(p));
-        RasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
+        IRasterReader rasterReader = new MatrixReader(m, new TFWFormat(1, 0, 0, -1, 0, 0));
         JoinResult result = getResult(streamed, vectorReader, rasterReader);
 
         assertIncluded(10, 10, 0, 0, 9, 9, result);
@@ -225,7 +225,7 @@ public class ApiTest {
         assertEquals((maxX - minX + 1) * (maxY - minY + 1), sum);
     }
 
-    private JoinResult getResult(int streamed, ShapefileReader vectorReader, RasterReader rasterReader)
+    private JoinResult getResult(int streamed, ShapefileReader vectorReader, IRasterReader rasterReader)
             throws IOException {
         AbstractRavenJoin join;
         if (streamed == 0) {
