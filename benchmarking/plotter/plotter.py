@@ -26,7 +26,7 @@ def addlabels(x, y):
         elif difference < 1:
             text = "(-" + str(int((1 - difference) * 100)) + "%)"
         else:
-            text = "(+" + str(int(difference * 100)) + "%)"
+            text = "(+" + str(int((difference - 1) * 100)) + "%)"
 
         plt.text(i, y[i] / 2, text, ha="center", va="top", fontdict=font)
 
