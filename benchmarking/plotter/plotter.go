@@ -35,8 +35,16 @@ func VerifyEnvironment() {
 
 }
 
-func PlotResults(resultsPath string, outputPath string, timestamp string) {
-	cmd := exec.Command("python", "./plotter/plotter.py", "-i", resultsPath, "-o", outputPath, "-id", timestamp)
+func PlotResults(resultsPath string, outputPath string, timestamp string, subplots bool, YLimit int) {
+
+	var args = []string{"./plotter/plotter.py", "-i", resultsPath, "-o", outputPath, "-id", timestamp}
+	if subplots {
+		args = append(args, "-sp")
+	}
+	if YLimit != 0 {
+		args = append(args, "-ylim", fmt.Sprintf("%d", YLimit))
+	}
+	cmd := exec.Command("python", args...)
 	err := cmd.Run()
 	if err != nil {
 		fmt.Println(err)

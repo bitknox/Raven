@@ -11,6 +11,7 @@ parser.add_argument("-i", "--input")
 parser.add_argument("-o", "--output")
 parser.add_argument("-id", "--identifier")
 parser.add_argument("-sp", "--sub-plots", action="store_true")
+parser.add_argument("-ylim", "--y-limit")
 args = parser.parse_args()
 
 
@@ -49,7 +50,16 @@ def write_labels(labels):
     )
 
 
-colours = ["darkred", "darkgreen", "darkblue", "darkorange", "indigo", "dimgray"]
+colours = [
+    "darkred",
+    "darkgreen",
+    "darkblue",
+    "darkorange",
+    "indigo",
+    "teal",
+    "dimgray",
+    "darkgoldenrod",
+]
 
 file = open(args.input, "r")
 
@@ -96,7 +106,7 @@ ax.minorticks_on()
 ax.set_axisbelow(True)
 plt.tick_params(axis="x", rotation=30)
 
-plt.bar(names, times, color=colours)
+plt.bar(names, times, color=[test["colour"] for test in data])
 plt.ylabel("Join time (ms)")
 
 addlabels(names, times)
@@ -124,6 +134,13 @@ eb = plt.errorbar(
     color="black",
 )
 
+if args.y_limit == None:
+    y_lim = None
+else:
+    y_lim = int(args.y_limit)
+
+plt.ylim(bottom=0, top=y_lim)
+
 plt.savefig(
     args.output + "/" + experiment["title"] + " " + args.identifier + ".png",
     bbox_inches="tight",
@@ -132,6 +149,7 @@ plt.clf()
 
 if not args.sub_plots:
     exit(0)
+
 
 for test in data:
     fig, ax = plt.subplots()
@@ -142,7 +160,7 @@ for test in data:
     plt.tick_params(axis="x", rotation=30)
     ax.margins(x=0)
     plt.title("Join Times for " + test["name"])
-    plt.ylim(bottom=0)
+    plt.ylim(bottom=0, top=y_lim)
     write_labels(test["labels"])
 
     plt.savefig(
