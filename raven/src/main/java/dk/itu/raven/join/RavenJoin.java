@@ -2,6 +2,7 @@ package dk.itu.raven.join;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -20,6 +21,7 @@ import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.ksquared.AbstractK2Raster;
+import dk.itu.raven.util.EmptyMap;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.TreeExtensions;
@@ -58,23 +60,6 @@ public class RavenJoin extends AbstractRavenJoin {
 		this(k2Raster, tree, new Offset<>(0, 0), imageSize);
 	}
 
-	private void extractRange(Collection<PixelRange> ranges, int y, int x1, int x2, boolean prob) {
-		if (prob) {
-			PixelRange[] matching = this.k2Raster.searchValuesInWindow(
-					y - offset.getY(),
-					y - offset.getY(),
-					x1 - offset.getX(),
-					x2 - offset.getX(),
-					function);
-			for (PixelRange range : matching) {
-				range.translate(offset.getX(), offset.getY());
-				ranges.add(range);
-			}
-		} else {
-			ranges.add(new PixelRange(y, x1, x2));
-		}
-	}
-
 	/**
 	 * 
 	 * @param polygon        the vector shape
@@ -86,6 +71,14 @@ public class RavenJoin extends AbstractRavenJoin {
 	 */
 	protected Collection<PixelRange> extractCellsPolygon(Polygon polygon, int pk, java.awt.Rectangle rasterBounding,
 			boolean prob) {
+
+		// if there is no intersection between the polygon and rasterBounding we can
+		// exit early
+		if (polygon.mbr().x1() > rasterBounding.x + rasterBounding.width
+				|| polygon.mbr().y1() > rasterBounding.y + rasterBounding.height
+				|| polygon.mbr().x2() < rasterBounding.x || polygon.mbr().y2() < rasterBounding.y)
+			return new ArrayList<>();
+
 		// 1 on index i * rasterBounding.geetSize() + j if an intersection between a
 		// line of the polygon and the line y=j happens at point (i,j)
 		// 1 on index i if the left-most pixel of row i intersects the polygon, 0
@@ -99,6 +92,11 @@ public class RavenJoin extends AbstractRavenJoin {
 
 		// a line is of the form a*x + b*y = c
 		Point old = polygon.getFirst();
+
+		int minXInterseection = Integer.MAX_VALUE;
+		int minYInterseection = Integer.MAX_VALUE;
+		int maxXInterseection = Integer.MIN_VALUE;
+		int maxYInterseection = Integer.MIN_VALUE;
 
 		// we run the loop to polygon.size() + 1 because we want to wrap around end at
 		// the first point
@@ -134,7 +132,13 @@ public class RavenJoin extends AbstractRavenJoin {
 			old = next;
 		}
 
-		Collection<PixelRange> ranges = new ArrayList<>();
+		List<PixelRange> allRanges = new ArrayList<>();
+		Map<Integer, Pair<Integer, Integer>> rowStarts;
+		if (prob) {
+			rowStarts = new ArrayMap<>(rasterBounding.height + 1, rasterBounding.y - offset.getY());
+		} else {
+			rowStarts = new EmptyMap<>();
+		}
 		int oldY = 0;
 		boolean inRange = inRanges[0];
 		int start = 0;
@@ -144,15 +148,26 @@ public class RavenJoin extends AbstractRavenJoin {
 			// reconstruct x and y from packed value
 			int x = (int) k;
 			int y = (int) (k >>> 32);
+
 			if (y != oldY) { // new pixel-line
 				// start by finding out for all pixel-lines between old and new y if it should
 				// be joined or not
 				for (int j = oldY + 1; j <= y; j++) {
 					if (inRange) {
-						extractRange(ranges, oldY + rasterBounding.y, start + rasterBounding.x,
-								Math.min(rasterBounding.width - 1 + rasterBounding.x,
-										imageSize.width - 1),
-								prob);
+						int r = oldY + rasterBounding.y;
+						int x1 = start + rasterBounding.x;
+						int x2 = Math.min(rasterBounding.width - 1 + rasterBounding.x,
+								imageSize.width - 1);
+						if (!rowStarts.containsKey(r - offset.getY()))
+							rowStarts.put(r - offset.getY(), new Pair<>(allRanges.size(), allRanges.size()));
+						else {
+							rowStarts.get(r - offset.getY()).second++;
+						}
+						allRanges.add(new PixelRange(r, x1, x2));
+						minXInterseection = Math.min(minXInterseection, x1);
+						minYInterseection = Math.min(minYInterseection, r);
+						maxXInterseection = Math.max(maxXInterseection, x2);
+						maxYInterseection = Math.max(maxYInterseection, r);
 					}
 					// start a new pixel-line
 					oldY = j;
@@ -160,41 +175,90 @@ public class RavenJoin extends AbstractRavenJoin {
 					start = 0;
 				}
 			}
+
 			if ((v % 2) == 0) { // an even number of intersections happen at this point
 				if (!inRange) {
 					// if a range is ongoing, ignore these intersections, otherwise add this single
 					// pixel as a range. If there is an even number of intersections at the edge of
 					// the viewport, it should not be added as a single pixel, as that means a
 					// vector-shape has both started and ended outside the image.
-					extractRange(ranges, y + rasterBounding.y, x + rasterBounding.x,
-							x + rasterBounding.x, prob);
+					int r = y + rasterBounding.y;
+					int x1 = x + rasterBounding.x;
+					int x2 = x + rasterBounding.x;
+					if (!rowStarts.containsKey(r - offset.getY()))
+						rowStarts.put(r - offset.getY(), new Pair<>(allRanges.size(), allRanges.size()));
+					else {
+						rowStarts.get(r - offset.getY()).second++;
+					}
+					allRanges.add(new PixelRange(r, x1, x2));
+					minXInterseection = Math.min(minXInterseection, x1);
+					minYInterseection = Math.min(minYInterseection, r);
+					maxXInterseection = Math.max(maxXInterseection, x2);
+					maxYInterseection = Math.max(maxYInterseection, r);
 				}
 			} else {
 				if (inRange) {
 					inRange = false;
-					extractRange(ranges, y + rasterBounding.y, start + rasterBounding.x,
-							x + rasterBounding.x - 1, prob);
+					int r = y + rasterBounding.y;
+					int x1 = start + rasterBounding.x;
+					int x2 = x + rasterBounding.x - 1;
+					if (!rowStarts.containsKey(r - offset.getY()))
+						rowStarts.put(r - offset.getY(), new Pair<>(allRanges.size(), allRanges.size()));
+					else {
+						rowStarts.get(r - offset.getY()).second++;
+					}
+					allRanges.add(new PixelRange(r, x1, x2));
+					minXInterseection = Math.min(minXInterseection, x1);
+					minYInterseection = Math.min(minYInterseection, r);
+					maxXInterseection = Math.max(maxXInterseection, x2);
+					maxYInterseection = Math.max(maxYInterseection, r);
 				} else {
 					inRange = true;
 					start = x;
 				}
 			}
 		}
+
 		// perform one last check to handle all pixel-lines below the bottom-most
 		// intersection
 		for (int j = oldY + 1; j <= Math.min(rasterBounding.height, imageSize.height - rasterBounding.y); j++) {
 			if (inRange) {
-				extractRange(ranges, oldY + rasterBounding.y, start + rasterBounding.x,
-						Math.min(rasterBounding.width - 1 + rasterBounding.x,
-								imageSize.width - 1),
-						prob);
+				int r = oldY + rasterBounding.y;
+				int x1 = start + rasterBounding.x;
+				int x2 = Math.min(rasterBounding.width - 1 + rasterBounding.x,
+						imageSize.width - 1);
+				if (!rowStarts.containsKey(r - offset.getY()))
+					rowStarts.put(r - offset.getY(), new Pair<>(allRanges.size(), allRanges.size()));
+				else {
+					rowStarts.get(r - offset.getY()).second++;
+				}
+				allRanges.add(new PixelRange(r, x1, x2));
+
+				minXInterseection = Math.min(minXInterseection, x1);
+				minYInterseection = Math.min(minYInterseection, r);
+				maxXInterseection = Math.max(maxXInterseection, x2);
+				maxYInterseection = Math.max(maxYInterseection, r);
 			}
 			oldY = j;
 			inRange = inRanges[j];
 			start = 0;
 		}
 
-		return ranges;
+		if (!prob) {
+			return allRanges;
+		}
+
+		List<PixelRange> out = new ArrayList<>();
+
+		if (minXInterseection > maxXInterseection || minYInterseection > maxYInterseection) {
+			return new ArrayList<>();
+		}
+
+		k2Raster.searchValuesInRanges(allRanges, rowStarts, out, offset, minYInterseection - offset.getY(),
+				maxYInterseection - offset.getY(), minXInterseection - offset.getX(), maxXInterseection - offset.getX(),
+				function);
+
+		return out;
 	}
 
 	// based loosely on:
@@ -380,7 +444,7 @@ public class RavenJoin extends AbstractRavenJoin {
 	 */
 	@Override
 	protected JoinResult joinImplementation(IRasterFilterFunction function) {
-		this.function = function;
+		setFunction(function);
 		JoinResult def = new JoinResult();
 		Stack<Tuple5<Node<String, Geometry>, Integer, Square, Long, Long>> S = new Stack<>();
 
@@ -449,5 +513,9 @@ public class RavenJoin extends AbstractRavenJoin {
 		Logger.log("Result size: " + def.size(), LogLevel.DEBUG);
 
 		return def;
+	}
+
+	void setFunction(IRasterFilterFunction function) {
+		this.function = function;
 	}
 }

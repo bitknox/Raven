@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Random;
 import java.util.Stack;
 
@@ -225,7 +226,7 @@ public class KSquaredTest {
 			}
 		}
 		boolean[][] actual = new boolean[width][height];
-		PixelRange[] filteredValues = k2Raster.searchValuesInWindow(buffer, height - 1 - buffer, buffer,
+		List<PixelRange> filteredValues = k2Raster.searchValuesInWindow(buffer, height - 1 - buffer, buffer,
 				width - 1 - buffer,
 				JoinFilterFunctions.rangeFilter(filterLow, filterHigh));
 		for (PixelRange range : filteredValues) {
