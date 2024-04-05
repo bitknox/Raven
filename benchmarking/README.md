@@ -4,8 +4,9 @@ Benchmark framework for running evaluating geospatial systems
 
 ## Prerequisite
 
-- golang
+- golang (minimum 1.20)
 - docker
+- python 3
 
 ## Usage
 
@@ -16,32 +17,41 @@ go run main.go
 ## Input example
 
 ```json
-[
- {
-  "name": "Benchmark1",
-  "iterations": 1,
-  "command": {
-   "path": "cmd",
-   "args": ["/c", "dir"]
-  },
-  "environment_options": {
-   "environment_type": "local"
-  }
- },
- {
-  "name": "Benchmark2",
-  "iterations": 1,
-  "command": {
-   "path": "ls",
-   "args": ["-la"]
-  },
-  "environment_options": {
-   "environment_type": "docker",
-   "docker_file_path": "./test/", //The directory containing a file named Dockerfile
-   "docker_mount_path": "./dir"
-  }
- }
-]
+{
+    "name": "BenchmarkSuite",
+    "ylimit": 1500, // this determines the maximum y value shown in the plots (may be omitted if it should be determined automatically)
+    "benchmarks": [
+        {
+            "name": ["Benchmark1","Benchmark2"], // multiple benchmarks can be defined in one by having a list of names and lists where arguments should be different
+            "iterations": 1, // if only one value is given, it will be used by all benchmarks created by this (in this case, Benchmark1 and Benchmark2)
+            "colour": ["red","green"], // The colour should be one supported by matplotlib
+            "command": {
+                "path": "cmd",
+                "args": [
+                    ["/c","/d"], // note that multiple values can also be specified within the args list using the same rules as described above
+                    "dir"
+                ]
+            },
+            "environment_options": {
+                "environment_type": "local"
+            }
+        },
+        {
+            "name": "Benchmark3",
+            "iterations": 1,
+            "colour": "blue",
+            "command": {
+                "path": "ls",
+                "args": ["-la"]
+            },
+                "environment_options": {
+                "environment_type": "docker",
+                "docker_file_path": "./test/", //The directory containing a file named Dockerfile
+                "docker_mount_path": "./dir"
+            }
+        }
+    ]
+}
 ```
 
 ## Common execution interface
@@ -61,14 +71,16 @@ args := []string{"inputVectorPath", "inputRasterPath", "...args", "iterations"}
 * Output interface (JSON)
 */
 type BenchmarkResult struct {
- // The name of the benchmark
- Name string `json:"name"`
- // The time it took to run the benchmark in milliseconds
- Times []float64 `json:"times"`
- // The number of iterations
- Iterations int `json:"iterations"`
- // Labels to add to the plot
- Labels []string `json:"labels"`
+	// The name of the benchmark
+	Name string `json:"name"`
+	// The colour used in the bar chart
+	Colour string `json:"colour"`
+	// The time it took to run the benchmark in milliseconds
+	Times []float64 `json:"times"`
+	// The number of iterations
+	Iterations int `json:"iterations"`
+	// Labels to add to the plot
+	Labels []string `json:"labels"`
 }
 
 ```

@@ -11,13 +11,13 @@
 					"--class",
 					"dk.itu.raven.beast.App",
 					"/home/beast-uber-examples-0.9.4-SNAPSHOT.jar",
-					"\"-iv\"",
+					"-iv",
 					"/home/boundaries.zip",
-					"\"-ir\"",
+					"-ir",
 					"/home/Tiff",
-					"\"-fl\"",
+					"-fl",
 					"22",
-					"\"-fh\"",
+					"-fh",
 					"22"
 				]
 			},
@@ -37,9 +37,9 @@
 					"--class",
 					"dk.itu.raven.beast.App",
 					"/home/beast-uber-examples-0.9.4-SNAPSHOT.jar",
-					"\"-iv\"",
+					"-iv",
 					"/home/boundaries.zip",
-					"\"-ir\"",
+					"-ir",
 					"/home/Tiff"
 				]
 			},

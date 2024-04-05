@@ -28,12 +28,20 @@ func main() {
 				Usage:   "benchmark destination",
 				Value:   "./test/results",
 			},
+			&cli.BoolFlag{
+				Name:    "subplots",
+				Aliases: []string{"sp"},
+				Usage:   "plot subplots for each benchmark",
+				Value:   false,
+			},
 		},
 		Name:  "raven-benchmarking",
 		Usage: "benchmarking tool for raven project",
 		Action: func(c *cli.Context) error {
 			plotter.VerifyEnvironment()
-			suite, err := parsing.ParseInput(c.String("input"))
+			input, err := parsing.ParseInput(c.String("input"))
+
+			suite := model.FromInputSuite(input)
 
 			if err != nil {
 				fmt.Println(err)
@@ -66,7 +74,7 @@ func main() {
 			}
 
 			//plot results
-			plotter.PlotResults(resultsPath, resultOutputDirectory, timestamp)
+			plotter.PlotResults(resultsPath, resultOutputDirectory, timestamp, c.Bool("subplots"), suite.YLimit)
 
 			return nil
 		},
