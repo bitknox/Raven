@@ -18,7 +18,7 @@ type Input struct {
 	Name []string `json:"name"`
 	// The number of iterations
 	Iterations SingleOrList[int] `json:"iterations"`
-
+	// The colour used in the bar chart
 	Colour SingleOrList[string] `json:"colour"`
 	// The command to run
 	Command InputCommand `json:"command"`
@@ -39,11 +39,10 @@ func (a *SingleOrList[T]) UnmarshalJSON(b []byte) error {
 	if len(b) == 0 {
 		return fmt.Errorf("no bytes to unmarshal")
 	}
-	switch b[0] {
-	case '[':
+	if b[0] == '[' {
 		return a.unmarshalMany(b)
-	default:
-		return a.unmarshalSingle(b)
+	} else {
+		return a.unmarshalSingle(b) // we assume this will be a correct type
 	}
 }
 

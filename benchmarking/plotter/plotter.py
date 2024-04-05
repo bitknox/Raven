@@ -50,17 +50,6 @@ def write_labels(labels):
     )
 
 
-colours = [
-    "darkred",
-    "darkgreen",
-    "darkblue",
-    "darkorange",
-    "indigo",
-    "teal",
-    "dimgray",
-    "darkgoldenrod",
-]
-
 file = open(args.input, "r")
 
 experiment = json.loads(file.read())
