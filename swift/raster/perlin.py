@@ -7,14 +7,47 @@ from PIL import Image
 def rgb_norm(world):
     world_min = np.min(world)
     world_max = np.max(world)
-    norm = lambda x: int(((x - world_min) / (world_max - world_min)) * 8) * 32
+    norm = lambda x: int(((x - world_min) / (world_max - world_min)) * 256)
     return np.vectorize(norm)
+
+
+colour_cutoffs = [30, 60, 110, 130, 190, 230, 256]
+colours = [
+    0,
+    0,
+    50,
+    0,
+    0,
+    100,
+    0,
+    0,
+    255,
+    255,
+    255,
+    0,
+    0,
+    150,
+    0,
+    100,
+    100,
+    100,
+    255,
+    255,
+    255,
+]
+
+
+def colour_pixel(x):
+    for i in range(len(colour_cutoffs)):
+        if x <= colour_cutoffs[i]:
+            return i
 
 
 # Prep the world for saving
 def prep_world(world):
     norm = rgb_norm(world)
     world = norm(world)
+    world = np.vectorize(colour_pixel)(world)
     return world
 
 
@@ -35,6 +68,7 @@ def generate_perlin(shape, scale, octaves, persistence, lacunarity, seed, output
             )
 
     img = Image.fromarray(prep_world(world))
-    if img.mode != "L":
-        img = img.convert("L")
+    if img.mode != "P":
+        img = img.convert("P")
+    img.putpalette(data=colours)
     return img
