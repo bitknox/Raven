@@ -1,6 +1,8 @@
 import noise
 import numpy as np
 from PIL import Image
+import math
+import scipy.stats as st
 
 
 # Normalize the world to 0-255
@@ -39,7 +41,7 @@ def prep_world(world):
 
 
 # Parameters
-def generate_perlin(shape, scale, octaves, persistence, lacunarity, seed, output):
+def generate_perlin_inner(shape, scale, octaves, persistence, lacunarity, seed):
     world = np.zeros(shape)
     for i in range(shape[0]):
         for j in range(shape[1]):
@@ -53,9 +55,41 @@ def generate_perlin(shape, scale, octaves, persistence, lacunarity, seed, output
                 repeaty=shape[1],
                 base=seed,
             )
+    return world
 
-    img = Image.fromarray(prep_world(world))
-    if img.mode != "P":
-        img = img.convert("P")
-    img.putpalette(data=colours)
+
+
+def generate_selectivity_cutoff_function(selectivity, sigma, mean):
+    z = st.norm.ppf(selectivity)
+    a = mean + z*sigma
+    print(a)
+    def func(x):
+        if x < a:
+            return 255
+        else:
+            return 0
+    return np.vectorize(func)
+
+
+
+def generate_perlin(shape, scale, octaves, persistence, lacunarity, seed, selectivity):
+    world = generate_perlin_inner(shape, scale, octaves, persistence, lacunarity, seed)
+    if selectivity is None:
+        img = Image.fromarray(prep_world(world))
+        if img.mode != "P":
+            img = img.convert("P")
+        img.putpalette(data=colours)
+    else:
+        sigma = np.std(world)
+        mean = np.mean(world)
+        cutoff = generate_selectivity_cutoff_function(selectivity,sigma,mean)
+        img = Image.fromarray(cutoff(world))
+        if img.mode != "L":
+            img = img.convert("L")
+    
     return img
+
+
+
+
+    

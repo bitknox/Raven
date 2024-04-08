@@ -15,6 +15,7 @@ dependency-reduced-pom.xml
 *.exe
 *.txt
 *.zip
+*.tfw
 out/
 !requirements.txt
 results/
