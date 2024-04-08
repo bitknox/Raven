@@ -1,0 +1,4 @@
+noise==1.2.2
+numpy==1.26.4
+pillow==8.4.0
+pyshp==2.3.1

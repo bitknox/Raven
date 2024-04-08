@@ -1,5 +1,5 @@
 def generate_tfw(name,height, width):
-	with open(name+'.txt','w') as the_file:
+	with open(name+'.tfw','w') as the_file:
 		pixelScaleX = 360 / width
 		pixelScaleY = -180 / height
 		the_file.write('		                   '+ str(pixelScaleX)+'\n')
