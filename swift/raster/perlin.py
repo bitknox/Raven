@@ -9,27 +9,27 @@ import scipy.stats as st
 def rgb_norm(world):
     world_min = np.min(world)
     world_max = np.max(world)
-    norm = lambda x: int(((x - world_min) / (world_max - world_min)) * 256)
+    norm = lambda x: np.uint8(((x - world_min) / (world_max - world_min)) * 256)
     return np.vectorize(norm)
 
 
 colour_cutoffs = [30, 60, 110, 130, 190, 230, 256]
 colours = [
-    [0,0,50],
-    [0,0,100],
-    [0,0,255],
-    [255,255,0],
-    [0,150,0],
-    [100,100,100],
-    [255,255,255]
+    [0, 0, 50],
+    [0, 0, 100],
+    [0, 0, 255],
+    [255, 255, 0],
+    [0, 150, 0],
+    [100, 100, 100],
+    [255, 255, 255],
 ]
-colours = sum(colours,[])
+colours = sum(colours, [])
 
 
 def colour_pixel(x):
     for i in range(len(colour_cutoffs)):
         if x <= colour_cutoffs[i]:
-            return i
+            return np.uint8(i)
 
 
 # Prep the world for saving
@@ -58,38 +58,32 @@ def generate_perlin_inner(shape, scale, octaves, persistence, lacunarity, seed):
     return world
 
 
-
 def generate_selectivity_cutoff_function(selectivity, sigma, mean):
     z = st.norm.ppf(selectivity)
-    a = mean + z*sigma
+    a = mean + z * sigma
     print(a)
+
     def func(x):
         if x < a:
-            return 255
+            return np.uint8(255)
         else:
-            return 0
-    return np.vectorize(func)
+            return np.uint8(0)
 
+    return np.vectorize(func)
 
 
 def generate_perlin(shape, scale, octaves, persistence, lacunarity, seed, selectivity):
     world = generate_perlin_inner(shape, scale, octaves, persistence, lacunarity, seed)
     if selectivity is None:
-        img = Image.fromarray(prep_world(world))
-        if img.mode != "P":
-            img = img.convert("P")
+        world = prep_world(world)
+        img = Image.fromarray(world, mode="P")
         img.putpalette(data=colours)
     else:
         sigma = np.std(world)
         mean = np.mean(world)
-        cutoff = generate_selectivity_cutoff_function(selectivity,sigma,mean)
+        cutoff = generate_selectivity_cutoff_function(selectivity, sigma, mean)
         img = Image.fromarray(cutoff(world))
         if img.mode != "L":
             img = img.convert("L")
-    
+
     return img
-
-
-
-
-    
