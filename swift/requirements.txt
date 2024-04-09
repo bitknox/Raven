@@ -3,3 +3,5 @@ numpy==1.26.4
 pillow==8.4.0
 pyshp==2.3.1
 scipy==1.13.0
+click==8.1.7
+pulp==2.8.0
