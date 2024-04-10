@@ -8,6 +8,7 @@
                 "Raven - Treecover"
             ],
             "iterations": 1000,
+            "colour": "darkred",
             "command": {
                 "path": "java",
                 "args": [
@@ -51,7 +52,8 @@
                 "Raptor - SWF",
                 "Raptor - Treecover"
             ],
-            "iterations": 100,
+            "iterations": 1000,
+            "colour": "darkblue",
             "command": {
                 "path": "java",
                 "args": [

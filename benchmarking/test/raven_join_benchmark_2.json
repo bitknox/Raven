@@ -5,9 +5,10 @@
             "name": [
                 "8-bit",
                 "16-bit",
-                "32-bit"
+                "24-bit"
             ],
-            "iterations": 50,
+            "iterations": 1000,
+            "colour": "darkred",
             "command": {
                 "path": "java",
                 "args": [
@@ -19,7 +20,7 @@
                     [
                         "/home/8bit",
                         "/home/16bit",
-                        "/home/32bit"
+                        "/home/24bit"
                     ],
                     "-t",
                     "parallel",
