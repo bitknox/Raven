@@ -10,7 +10,7 @@ import os
 @click.command()
 @click.option("--polygons", default=10000, help="Number of polygons to generate")
 @click.option(
-    "--density", default=100, help="Fake density of the polygons (percent) :)"
+    "--density", type=float, default=100, help="Fake density of the polygons (percent) :)"
 )
 @click.option(
     "--area",
@@ -25,8 +25,8 @@ def generate_vector(polygons, density, area, output, num_vertices):
     shx = StringIO()
     dbf = StringIO()
 
-    dy = (area[0] - area[2]) * math.sqrt(density / 100)
-    dx = (area[3] - area[1]) * math.sqrt(density / 100)
+    dy = (area[0] - area[2]) 
+    dx = (area[3] - area[1]) 
 
     cy = math.sqrt(polygons * dy / dx)
     cx = polygons / cy
@@ -35,7 +35,10 @@ def generate_vector(polygons, density, area, output, num_vertices):
 
     jumpx = dx / cx
     jumpy = dy / cy
-    size = min(jumpy, jumpx) / 2.2
+
+    sizex = dx * math.sqrt(density / 100) / cx
+    sizey = dy * math.sqrt(density / 100) / cy
+    size = min(sizey, sizex) / 2.2
 
     w = shapefile.Writer(output, shp=shp, shx=shx, dbf=dbf)
     w.field("name", "C")
@@ -48,7 +51,7 @@ def generate_vector(polygons, density, area, output, num_vertices):
                     center=(x, y),
                     avg_radius=size,
                     irregularity=1,
-                    spikiness=0.02,
+                    spikiness=0.3,
                     num_vertices=int(clip(random.gauss(num_vertices, 0.5), 0, 2 * num_vertices)),
                 ),  # poly 1
             ]
@@ -60,6 +63,7 @@ def generate_vector(polygons, density, area, output, num_vertices):
         w.record("polygon"+str(i))
     w.close()
     shutil.make_archive('out', format='zip', root_dir=os.path.dirname(output))
+    
 
 
 if __name__ == "__main__":
