@@ -18,9 +18,9 @@
                     "home/vector/woody/woody.shp",
                     "-ir",
                     [
-                        "/home/raster/glc2000",
-                        "/home/raster/woody",
-                        "/home/raster/treecover"
+                        "/home/real/raster/glc2000",
+                        "/home/real/raster/woody",
+                        "/home/real/raster/treecover"
                     ],
                     "-t",
                     "parallel",
@@ -30,8 +30,8 @@
             },
             "environment_options": {
                 "environment_type": "docker",
-                "docker_file_path": "./runners/raven-runner/",
-                "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+                "docker_file_path": "./runners/beast-runner/",
+                "docker_mount_path": "home\\joinpro\\data"
             }
         },
         {
@@ -51,16 +51,16 @@
                     "home/vector/woody.zip",
                     "-ir",
                     [
-                        "/home/raster/glc2000",
-                        "/home/raster/woody",
-                        "/home/raster/treecover"
+                        "/home/real/raster/glc2000",
+                        "/home/real/raster/woody",
+                        "/home/real/raster/treecover"
                     ]
                 ]
             },
             "environment_options": {
                 "environment_type": "docker",
                 "docker_file_path": "./runners/raven-runner/",
-                "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+                "docker_mount_path": "home\\joinpro\\data"
             }
         }
     ]
