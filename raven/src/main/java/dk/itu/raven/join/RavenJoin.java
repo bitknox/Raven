@@ -189,6 +189,7 @@ public class RavenJoin extends AbstractRavenJoin {
 		int[] rangeCounts = new int[rasterBounding.height + 1];
 
 		List<List<PixelRange>> layers = new ArrayList<>();
+		Window w = new Window();
 
 		int oldY = 0;
 		boolean inRange = inRanges[0];
@@ -210,7 +211,7 @@ public class RavenJoin extends AbstractRavenJoin {
 						int x2 = Math.min(rasterBounding.width - 1 + rasterBounding.x,
 								imageSize.width - 1);
 
-						addRange(rasterBounding, rangeCounts, layers, r, x1, x2);
+						addRange(rasterBounding, rangeCounts, layers, r, x1, x2, w);
 					}
 					// start a new pixel-line
 					oldY = j;
@@ -229,7 +230,7 @@ public class RavenJoin extends AbstractRavenJoin {
 					int x1 = x + rasterBounding.x;
 					int x2 = x + rasterBounding.x;
 
-					addRange(rasterBounding, rangeCounts, layers, r, x1, x2);
+					addRange(rasterBounding, rangeCounts, layers, r, x1, x2, w);
 				}
 			} else {
 				if (inRange) {
@@ -238,7 +239,7 @@ public class RavenJoin extends AbstractRavenJoin {
 					int x1 = start + rasterBounding.x;
 					int x2 = x + rasterBounding.x - 1;
 
-					addRange(rasterBounding, rangeCounts, layers, r, x1, x2);
+					addRange(rasterBounding, rangeCounts, layers, r, x1, x2, w);
 				} else {
 					inRange = true;
 					start = x;
@@ -255,11 +256,15 @@ public class RavenJoin extends AbstractRavenJoin {
 				int x2 = Math.min(rasterBounding.width - 1 + rasterBounding.x,
 						imageSize.width - 1);
 
-				addRange(rasterBounding, rangeCounts, layers, r, x1, x2);
+				addRange(rasterBounding, rangeCounts, layers, r, x1, x2, w);
 			}
 			oldY = j;
 			inRange = inRanges[j];
 			start = 0;
+		}
+
+		if (w.minX > w.maxX || w.minY > w.maxY) {
+			return new ArrayList<>();
 		}
 
 		List<PixelRange> out = new ArrayList<>();
@@ -278,9 +283,9 @@ public class RavenJoin extends AbstractRavenJoin {
 			int[] rangeCountPrefixsum = res.second;
 
 			k2Raster.searchValuesInRanges(ranges, out, offset,
-					rangeLimits, rangeCountPrefixsum, rasterBounding.y - offset.getY(),
-					rasterBounding.y + rasterBounding.height - 1 - offset.getY(), rasterBounding.x - offset.getX(),
-					rasterBounding.x + rasterBounding.width - 1 - offset.getX(), function);
+					rangeLimits, rangeCountPrefixsum, w.minY - offset.getY(),
+					w.maxY - offset.getY(), w.minX - offset.getX(),
+					w.maxX - offset.getX(), function);
 		}
 
 		return out;
@@ -288,12 +293,16 @@ public class RavenJoin extends AbstractRavenJoin {
 	}
 
 	private void addRange(java.awt.Rectangle rasterBounding, int[] rangeCounts, List<List<PixelRange>> layers, int r,
-			int x1, int x2) {
+			int x1, int x2, Window w) {
 		int count = rangeCounts[r - rasterBounding.y];
 		if (layers.size() < count + 1)
 			layers.add(new ArrayList<>());
 		layers.get(count).add(new PixelRange(r, x1, x2));
 		rangeCounts[r - rasterBounding.y]++;
+		w.minX = Math.min(w.minX, x1);
+		w.maxX = Math.max(w.maxX, x2);
+		w.minY = Math.min(w.minY, r);
+		w.maxY = Math.max(w.maxY, r);
 	}
 
 	static Pair<RangeExtremes[], int[]> buildRangeLimitTree(Offset<Integer> offset, int n, int k,
