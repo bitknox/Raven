@@ -79,7 +79,7 @@ public abstract class FileRasterReader extends RasterReader {
 			Logger.log("Reading TFW file because the metadata had no model to grid information", Logger.LogLevel.DEBUG);
 			g2m = TFWFormat.read(tfw);
 		} else {
-			throw new UnsupportedOperationException("no side-car or inline TFW data found");
+			throw new UnsupportedOperationException("no side-car or inline TFW data found for tile: " + tiff.getPath());
 		}
 
 	}
