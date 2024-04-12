@@ -9,9 +9,9 @@
 				"path": "java",
 				"args": [
 					"-jar",
-					"/home/raven-runner-1.0.jar",
+					"/home/runners/raven-runner-1.0.jar",
 					"-iv",
-					"home/vector/boundaries/ne_10m_admin_0_countries.shp",
+					"/home/vector/boundaries/ne_10m_admin_0_countries.shp",
 					"-ir",
 					[
 						"/home/real/raster/glc2000",
@@ -42,9 +42,9 @@
 				"path": "java",
 				"args": [
 					"-jar",
-					"/home/raptor-runner-1.0.jar",
+					"/home/runners/raptor-runner-1.0.jar",
 					"-iv",
-					"/home/boundaries.zip",
+					"/home/vector/boundaries.zip",
 					"-ir",
 					[
 						"/home/real/raster/glc2000",

@@ -17,9 +17,9 @@
 				"path": "java",
 				"args": [
 					"-jar",
-					"/home/raven-runner-1.0.jar",
+					"/home/runners/raven-runner-1.0.jar",
 					"-iv",
-					"home/synthetic/vector/square/geom.shp",
+					"/home/synthetic/vector/square/geom.shp",
 					"-ir",
 					[
 						"/home/synthetic/raster/selectivity/100",
@@ -58,9 +58,9 @@
 				"path": "java",
 				"args": [
 					"-jar",
-					"/home/raptor-runner-1.0.jar",
+					"/home/runners/raptor-runner-1.0.jar",
 					"-iv",
-					"home/synthetic/vector/square.zip",
+					"/home/synthetic/vector/square.zip",
 					"-ir",
 					[
 						"/home/synthetic/raster/selectivity/100",
