@@ -2,6 +2,9 @@ package dk.itu.raven;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+
+import org.geotools.util.logging.Logging;
 
 import com.beust.jcommander.JCommander;
 
@@ -29,7 +32,6 @@ import dk.itu.raven.visualizer.VisualizerOptionsBuilder;
 public class Raven {
 
     public static void main(String[] args) throws IOException {
-
         CommandLineArgs jct = new CommandLineArgs();
         JCommander commander = JCommander.newBuilder().addObject(jct).build();
         commander.parse(args);
@@ -38,6 +40,8 @@ public class Raven {
             commander.usage();
             return;
         }
+        // Set geotools logging to severe to avoid spamming the console
+        Logging.getLogger("org.geotools").setLevel(Level.SEVERE);
 
         Logger.setLogLevel(jct.verbose);
 
