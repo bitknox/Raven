@@ -14,11 +14,11 @@ import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.PrimitiveArrayWrapper;
 
 public abstract class AbstractK2Raster implements Serializable {
-    public int k;
+    public final int k;
     protected long minVal;// the maximum value stored in the matrix
     protected long maxVal;// the minimum value stored in the matrix
     public BitMap tree; // A tree where the i'th index is a one iff. the node with index i is internal
-    protected int n; // the size of the matrix, always a power of k
+    protected final int n; // the size of the matrix, always a power of k
     protected IntRank prefixSum; // a prefix sum of the tree
 
     protected AbstractDAC lMin;// stores the difference between the minimum value stored in a node and the
@@ -346,8 +346,7 @@ public abstract class AbstractK2Raster implements Serializable {
     private void searchValuesInRanges(List<PixelRange> ranges, List<PixelRange> out, Offset<Integer> offset, int r1,
             int r2, int c1, int c2, int[] rangeLimits, int[] rangePrefixsum, int z, int treeIndex,
             IRasterFilterFunction function, int baseX, int baseY, long minVal, long maxVal, int n) {
-        // TODO: add early exit condition based on rangeLimits
-        int nKths = (n / k); // childsize
+        final int nKths = (n / k); // childsize
         int rank = treeRank(z);
         z = rank * k * k;
         int initialI = r1 / nKths;
