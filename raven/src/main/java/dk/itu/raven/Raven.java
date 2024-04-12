@@ -1,5 +1,6 @@
 package dk.itu.raven;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 
@@ -11,8 +12,8 @@ import dk.itu.raven.io.ImageMetadata;
 import dk.itu.raven.io.MultiFileRasterReader;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.commandline.CommandLineArgs;
-import dk.itu.raven.join.IJoinResult;
 import dk.itu.raven.join.AbstractRavenJoin;
+import dk.itu.raven.join.IJoinResult;
 import dk.itu.raven.join.IRasterFilterFunction;
 import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.util.Logger;
@@ -86,8 +87,8 @@ public class Raven {
             result = result.asMemoryAllocatedResult(); // this allows the visualizer to draw the result while still
             // allowing us to consume the stream and time the join
         } else {
-            result.count(); // count will still force the stream to be executed, so the timing of the
-                            // function will work
+            result.count(); // count will still force the stream to be executed, so the timing of
+                            // the function will work
         }
 
         long endJoinNano = System.nanoTime();
@@ -104,7 +105,8 @@ public class Raven {
             builder.setUseOutput(true);
             builder.setCropToVector(jct.cropToVector);
             builder.setPrimaryColor(new RandomColor());
-            builder.setDrawFeatures(false);
+            builder.setDrawFeatures(true);
+            builder.setSecondaryColor(Color.BLACK);
 
             VisualizerOptions options = builder.build();
 
