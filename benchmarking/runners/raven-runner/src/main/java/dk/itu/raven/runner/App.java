@@ -1,9 +1,11 @@
 package dk.itu.raven.runner;
 
 import java.io.IOException;
+import java.util.logging.Level;
 
 import com.beust.jcommander.JCommander;
 import com.google.gson.Gson;
+import org.geotools.util.logging.Logging;
 
 //import com.github.bitknox.Raven;
 import dk.itu.raven.api.RavenApi;
@@ -21,6 +23,9 @@ public class App {
                 .addObject(jct)
                 .build();
         commander.parse(args);
+
+        // Suppress geotools logging
+        Logging.getLogger("org.geotools").setLevel(Level.SEVERE);
 
         BenchResult benchResult = new BenchResult("Raven Benchmark");
         benchResult.addLabel("Vector: " + benchResult.formatPath(jct.inputVector));
