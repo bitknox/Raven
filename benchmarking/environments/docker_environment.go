@@ -56,7 +56,12 @@ func (d *DockerEnvironment) Setup() error {
 	tag := "benchmark_container_" + time.Now().Format("20060102")
 
 	//run the docker container as a daemon
-	err = exec.Command("docker", "run", "--rm", "-v", fmt.Sprintf("%s:/home", d.MountPath), "-v", fmt.Sprintf("%s:/root/.ivy2/cache", d.MountPath+"/cache"), "--name", tag, "-d", imageTag).Run()
+	out, err := exec.Command("docker", "run", "--rm", "-v", fmt.Sprintf("%s:/home", d.MountPath), "-v", fmt.Sprintf("%s:/root/.ivy2/cache", d.MountPath+"/cache"), "--name", tag, "-d", imageTag).CombinedOutput()
+
+	if err != nil {
+		fmt.Println(string(out))
+		return fmt.Errorf("failed to run docker container: %s", err)
+	}
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 	ticks := 0
@@ -69,7 +74,7 @@ func (d *DockerEnvironment) Setup() error {
 		ticks++
 		out, err := exec.Command("docker", "inspect", "-f", "{{.State.Running}}", tag).Output()
 		if err != nil {
-			return err
+			fmt.Println("failed to inspect container: ", err)
 		}
 		if strings.TrimSpace(string(out)) == "true" {
 			break
@@ -103,9 +108,10 @@ func (d *DockerEnvironment) buildImage() (string, error) {
 	//build the docker image from the dockerfile, giving it a unique tag that can be used to run the container
 	command := exec.Command("docker", "build", d.DockerFilePath, "-t", tag, "-f", d.DockerFilePath+"Dockerfile")
 
-	err := command.Run()
+	out, err := command.CombinedOutput()
 
 	if err != nil {
+		fmt.Println(string(out))
 		return "", fmt.Errorf("failed to build docker image: %s", err)
 	}
 	return tag, nil
