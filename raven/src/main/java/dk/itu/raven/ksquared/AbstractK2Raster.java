@@ -7,6 +7,7 @@ import java.util.List;
 import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.join.IRasterFilterFunction;
+import dk.itu.raven.join.RangeExtremes;
 import dk.itu.raven.ksquared.dac.AbstractDAC;
 import dk.itu.raven.util.BitMap;
 import dk.itu.raven.util.GoodArrayList;
@@ -337,22 +338,22 @@ public abstract class AbstractK2Raster implements Serializable {
     }
 
     public void searchValuesInRanges(List<PixelRange> ranges,
-            List<PixelRange> out, Offset<Integer> offset, int[] rangeLimits, int[] rangePrefixsum, int r1, int r2,
-            int c1, int c2, IRasterFilterFunction function) {
+            List<PixelRange> out, Offset<Integer> offset, RangeExtremes[] rangeLimits, int[] rangePrefixsum, int r1,
+            int r2, int c1, int c2, IRasterFilterFunction function) {
         searchValuesInRanges(ranges, out, offset, r1, r2, c1, c2, rangeLimits, rangePrefixsum, -1, 0, function, 0, 0,
                 this.minVal, this.maxVal, this.n);
     }
 
     private void searchValuesInRanges(List<PixelRange> ranges, List<PixelRange> out, Offset<Integer> offset, int r1,
-            int r2, int c1, int c2, int[] rangeLimits, int[] rangePrefixsum, int z, int treeIndex,
+            int r2, int c1, int c2, RangeExtremes[] rangeLimits, int[] rangePrefixsum, int z, int treeIndex,
             IRasterFilterFunction function, int baseX, int baseY, long minVal, long maxVal, int n) {
         final int nKths = (n / k); // childsize
-        int rank = treeRank(z);
+        final int rank = treeRank(z);
+        final int initialI = r1 / nKths;
+        final int lastI = r2 / nKths;
+        final int initialJ = c1 / nKths;
+        final int lastJ = c2 / nKths;
         z = rank * k * k;
-        int initialI = r1 / nKths;
-        int lastI = r2 / nKths;
-        int initialJ = c1 / nKths;
-        int lastJ = c2 / nKths;
 
         int r1p, r2p, c1p, c2p, zp;
         long maxValp, minValp;
@@ -396,8 +397,8 @@ public abstract class AbstractK2Raster implements Serializable {
                         addCells = true;
                         /* all cells meet the condition in this branch */
                     } else {
-                        boolean containsNoRanges = rangeLimits[2 * treeIndexp] > c2p + baseXp
-                                || rangeLimits[2 * treeIndexp + 1] < c1p + baseXp;
+                        boolean containsNoRanges = rangeLimits[treeIndexp].x1 > c2p + baseXp
+                                || rangeLimits[treeIndexp].x2 < c1p + baseXp;
                         if (!function.containsWithin(minValp, maxValp) || containsNoRanges) {
                             continue;
                         } else {

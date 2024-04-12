@@ -186,16 +186,10 @@ public class RavenJoin extends AbstractRavenJoin {
 	public Collection<PixelRange> findFilteredPixelRanges(java.awt.Rectangle rasterBounding, boolean[] inRanges,
 			Map<Long, Integer> intersections) {
 
-		int minXInterseection = Integer.MAX_VALUE;
-		int minYInterseection = Integer.MAX_VALUE;
-		int maxXInterseection = Integer.MIN_VALUE;
-		int maxYInterseection = Integer.MIN_VALUE;
 		int[] rangeCounts = new int[rasterBounding.height + 1];
-		// List<PixelRange> allRanges = new ArrayList<>();
+
 		List<List<PixelRange>> layers = new ArrayList<>();
-		// Map<Integer, Pair<Integer, Integer>> rowStarts = new
-		// ArrayMap<>(rasterBounding.height + 1,
-		// rasterBounding.y - offset.getY());
+
 		int oldY = 0;
 		boolean inRange = inRanges[0];
 		int start = 0;
@@ -215,21 +209,8 @@ public class RavenJoin extends AbstractRavenJoin {
 						int x1 = start + rasterBounding.x;
 						int x2 = Math.min(rasterBounding.width - 1 + rasterBounding.x,
 								imageSize.width - 1);
-						// if (!rowStarts.containsKey(r - offset.getY()))
-						// rowStarts.put(r - offset.getY(), new Pair<>(allRanges.size(),
-						// allRanges.size()));
-						// else {
-						// rowStarts.get(r - offset.getY()).second++;
-						// }
-						int count = rangeCounts[r - rasterBounding.y];
-						if (layers.size() < count + 1)
-							layers.add(new ArrayList<>());
-						layers.get(count).add(new PixelRange(r, x1, x2));
-						rangeCounts[r - rasterBounding.y]++;
-						minXInterseection = Math.min(minXInterseection, x1);
-						minYInterseection = Math.min(minYInterseection, r);
-						maxXInterseection = Math.max(maxXInterseection, x2);
-						maxYInterseection = Math.max(maxYInterseection, r);
+
+						addRange(rasterBounding, rangeCounts, layers, r, x1, x2);
 					}
 					// start a new pixel-line
 					oldY = j;
@@ -247,21 +228,8 @@ public class RavenJoin extends AbstractRavenJoin {
 					int r = y + rasterBounding.y;
 					int x1 = x + rasterBounding.x;
 					int x2 = x + rasterBounding.x;
-					// if (!rowStarts.containsKey(r - offset.getY()))
-					// rowStarts.put(r - offset.getY(), new Pair<>(allRanges.size(),
-					// allRanges.size()));
-					// else {
-					// rowStarts.get(r - offset.getY()).second++;
-					// }
-					int count = rangeCounts[r - rasterBounding.y];
-					if (layers.size() < count + 1)
-						layers.add(new ArrayList<>());
-					layers.get(count).add(new PixelRange(r, x1, x2));
-					rangeCounts[r - rasterBounding.y]++;
-					minXInterseection = Math.min(minXInterseection, x1);
-					minYInterseection = Math.min(minYInterseection, r);
-					maxXInterseection = Math.max(maxXInterseection, x2);
-					maxYInterseection = Math.max(maxYInterseection, r);
+
+					addRange(rasterBounding, rangeCounts, layers, r, x1, x2);
 				}
 			} else {
 				if (inRange) {
@@ -269,21 +237,8 @@ public class RavenJoin extends AbstractRavenJoin {
 					int r = y + rasterBounding.y;
 					int x1 = start + rasterBounding.x;
 					int x2 = x + rasterBounding.x - 1;
-					// if (!rowStarts.containsKey(r - offset.getY()))
-					// rowStarts.put(r - offset.getY(), new Pair<>(allRanges.size(),
-					// allRanges.size()));
-					// else {
-					// rowStarts.get(r - offset.getY()).second++;
-					// }
-					int count = rangeCounts[r - rasterBounding.y];
-					if (layers.size() < count + 1)
-						layers.add(new ArrayList<>());
-					layers.get(count).add(new PixelRange(r, x1, x2));
-					rangeCounts[r - rasterBounding.y]++;
-					minXInterseection = Math.min(minXInterseection, x1);
-					minYInterseection = Math.min(minYInterseection, r);
-					maxXInterseection = Math.max(maxXInterseection, x2);
-					maxYInterseection = Math.max(maxYInterseection, r);
+
+					addRange(rasterBounding, rangeCounts, layers, r, x1, x2);
 				} else {
 					inRange = true;
 					start = x;
@@ -299,29 +254,12 @@ public class RavenJoin extends AbstractRavenJoin {
 				int x1 = start + rasterBounding.x;
 				int x2 = Math.min(rasterBounding.width - 1 + rasterBounding.x,
 						imageSize.width - 1);
-				// if (!rowStarts.containsKey(r - offset.getY()))
-				// rowStarts.put(r - offset.getY(), new Pair<>(allRanges.size(),
-				// allRanges.size()));
-				// else {
-				// rowStarts.get(r - offset.getY()).second++;
-				// }
-				int count = rangeCounts[r - rasterBounding.y];
-				if (layers.size() < count + 1)
-					layers.add(new ArrayList<>());
-				layers.get(count).add(new PixelRange(r, x1, x2));
-				rangeCounts[r - rasterBounding.y]++;
-				minXInterseection = Math.min(minXInterseection, x1);
-				minYInterseection = Math.min(minYInterseection, r);
-				maxXInterseection = Math.max(maxXInterseection, x2);
-				maxYInterseection = Math.max(maxYInterseection, r);
+
+				addRange(rasterBounding, rangeCounts, layers, r, x1, x2);
 			}
 			oldY = j;
 			inRange = inRanges[j];
 			start = 0;
-		}
-
-		if (minXInterseection > maxXInterseection || minYInterseection > maxYInterseection) {
-			return new ArrayList<>();
 		}
 
 		List<PixelRange> out = new ArrayList<>();
@@ -334,36 +272,45 @@ public class RavenJoin extends AbstractRavenJoin {
 		// matrix), the next 2*k values are all nodes for the second layer of the
 		// k2-raster tree (corresponding to the sub-matrixes of size n/k).
 		for (List<PixelRange> ranges : layers) {
-			Pair<int[], int[]> res = buildRangeLimitTree(offset,
+			Pair<RangeExtremes[], int[]> res = buildRangeLimitTree(offset,
 					k2Raster.getSize(), k2Raster.k, ranges);
-			int[] rangeLimits = res.first;
+			RangeExtremes[] rangeLimits = res.first;
 			int[] rangeCountPrefixsum = res.second;
 
 			k2Raster.searchValuesInRanges(ranges, out, offset,
-					rangeLimits, rangeCountPrefixsum, minYInterseection - offset.getY(),
-					maxYInterseection - offset.getY(), minXInterseection - offset.getX(),
-					maxXInterseection - offset.getX(), function);
+					rangeLimits, rangeCountPrefixsum, rasterBounding.y - offset.getY(),
+					rasterBounding.y + rasterBounding.height - 1 - offset.getY(), rasterBounding.x - offset.getX(),
+					rasterBounding.x + rasterBounding.width - 1 - offset.getX(), function);
 		}
 
 		return out;
 
 	}
 
-	static Pair<int[], int[]> buildRangeLimitTree(Offset<Integer> offset, int n, int k,
+	private void addRange(java.awt.Rectangle rasterBounding, int[] rangeCounts, List<List<PixelRange>> layers, int r,
+			int x1, int x2) {
+		int count = rangeCounts[r - rasterBounding.y];
+		if (layers.size() < count + 1)
+			layers.add(new ArrayList<>());
+		layers.get(count).add(new PixelRange(r, x1, x2));
+		rangeCounts[r - rasterBounding.y]++;
+	}
+
+	static Pair<RangeExtremes[], int[]> buildRangeLimitTree(Offset<Integer> offset, int n, int k,
 			List<PixelRange> ranges) {
 		int size = (k * n - 1) / (k - 1);
-		int[] tree = new int[2 * size];
+		RangeExtremes[] tree = new RangeExtremes[size];
 		int[] prefixsum = new int[n + 1];
-		for (int i = 0; i < 2 * size;) {
-			tree[i++] = Integer.MAX_VALUE;
-			tree[i++] = Integer.MIN_VALUE;
+		for (int i = 0; i < size; i++) {
+			tree[i] = new RangeExtremes();
 		}
+
 		for (PixelRange range : ranges) {
 			int row = range.row - offset.getY();
 			prefixsum[row + 1] = 1;
 			int start = size - n;
-			tree[2 * (start + row)] = range.x1 - offset.getX();
-			tree[2 * (start + row) + 1] = range.x2 - offset.getX();
+			tree[start + row].x1 = range.x1 - offset.getX();
+			tree[start + row].x2 = range.x2 - offset.getX();
 		}
 
 		for (int i = 1; i < prefixsum.length; i++) {
@@ -371,12 +318,12 @@ public class RavenJoin extends AbstractRavenJoin {
 		}
 
 		for (int i = size - n - 1; i >= 0; i--) {
-			tree[2 * i] = tree[2 * (k * i + 1)];
-			tree[2 * i + 1] = tree[2 * (k * i + 1) + 1];
+			tree[i].x1 = tree[k * i + 1].x1;
+			tree[i].x2 = tree[k * i + 1].x2;
 			for (int j = 1; j < k; j++) { // go through all k children of this node and compute min and max x values for
 											// each.
-				tree[2 * i] = Math.min(tree[2 * i], tree[2 * (k * i + 1 + j)]);
-				tree[2 * i + 1] = Math.max(tree[2 * i + 1], tree[2 * (k * i + 1 + j) + 1]);
+				tree[i].x1 = Math.min(tree[i].x1, tree[k * i + 1 + j].x1);
+				tree[i].x2 = Math.max(tree[i].x2, tree[k * i + 1 + j].x2);
 			}
 		}
 		return new Pair<>(tree, prefixsum);
