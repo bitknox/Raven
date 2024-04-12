@@ -1,67 +1,59 @@
 {
-    "name": "Join Time - Woody (Filter)",
-    "benchmarks": [
-        {
-            "name": [
-                "Raven - GLC",
-                "Raven - SWF",
-                "Raven - Treecover"
-            ],
-            "iterations": 1000,
-            "colour": "darkred",
-            "command": {
-                "path": "java",
-                "args": [
-                    "-jar",
-                    "/home/raven-runner-1.0.jar",
-                    "-iv",
-                    "home/vector/woody/woody.shp",
-                    "-ir",
-                    [
-                        "/home/real/raster/glc2000",
-                        "/home/real/raster/woody",
-                        "/home/real/raster/treecover"
-                    ],
-                    "-t",
-                    "parallel",
-                    "-ts",
-                    "2048"
-                ]
-            },
-            "environment_options": {
-                "environment_type": "docker",
-                "docker_file_path": "./runners/beast-runner/",
-                "docker_mount_path": "home\\joinpro\\data"
-            }
-        },
-        {
-            "name": [
-                "Raptor - GLC",
-                "Raptor - SWF",
-                "Raptor - Treecover"
-            ],
-            "iterations": 1000,
-            "colour": "darkblue",
-            "command": {
-                "path": "java",
-                "args": [
-                    "-jar",
-                    "/home/raptor-runner-1.0.jar",
-                    "-iv",
-                    "home/vector/woody.zip",
-                    "-ir",
-                    [
-                        "/home/real/raster/glc2000",
-                        "/home/real/raster/woody",
-                        "/home/real/raster/treecover"
-                    ]
-                ]
-            },
-            "environment_options": {
-                "environment_type": "docker",
-                "docker_file_path": "./runners/raven-runner/",
-                "docker_mount_path": "home\\joinpro\\data"
-            }
-        }
-    ]
+	"name": "Join Time - Woody (Filter)",
+	"benchmarks": [
+		{
+			"name": ["Raven - GLC", "Raven - SWF", "Raven - Treecover"],
+			"iterations": 1000,
+			"colour": "darkred",
+			"command": {
+				"path": "java",
+				"args": [
+					"-jar",
+					"/home/raven-runner-1.0.jar",
+					"-iv",
+					"home/vector/woody/woody.shp",
+					"-ir",
+					[
+						"/home/real/raster/glc2000",
+						"/home/real/raster/woody",
+						"/home/real/raster/treecover"
+					],
+					"-t",
+					"parallel",
+					"-ts",
+					"2048"
+				]
+			},
+			"environment_options": {
+				"environment_type": "docker",
+				"docker_file_path": "./runners/beast-runner/",
+				"docker_mount_path": "/home/joinpro/data"
+			}
+		},
+		{
+			"name": ["Raptor - GLC", "Raptor - SWF", "Raptor - Treecover"],
+			"iterations": 1000,
+			"colour": "darkblue",
+			"command": {
+				"path": "java",
+				"args": [
+					"-jar",
+					"/home/raptor-runner-1.0.jar",
+					"-iv",
+					"home/vector/woody.zip",
+					"-ir",
+					[
+						"/home/real/raster/glc2000",
+						"/home/real/raster/woody",
+						"/home/real/raster/treecover"
+					]
+				]
+			},
+			"environment_options": {
+				"environment_type": "docker",
+				"docker_file_path": "./runners/raven-runner/",
+				"docker_mount_path": "/home/joinpro/data"
+			}
+		}
+	]
 }
