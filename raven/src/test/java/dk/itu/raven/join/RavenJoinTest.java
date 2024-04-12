@@ -162,7 +162,7 @@ public class RavenJoinTest {
         }
     }
 
-    private Pair<Integer, Integer> getMinMax(List<PixelRange> ranges, int start, int end) {
+    private Pair<Integer, Integer> getMinMax(List<PixelRange> ranges, int offsetX, int start, int end) {
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
         for (PixelRange range : ranges) {
@@ -170,8 +170,8 @@ public class RavenJoinTest {
                 continue;
             if (range.row > end)
                 break;
-            min = Math.min(min, range.x1);
-            max = Math.max(max, range.x2);
+            min = Math.min(min, range.x1 - offsetX);
+            max = Math.max(max, range.x2 - offsetX);
         }
         return new Pair<Integer, Integer>(min, max);
     }
@@ -198,6 +198,7 @@ public class RavenJoinTest {
         int min = n;
         int max = 0;
         Random r = new Random(42);
+        int offsetX = r.nextInt(n);
         for (int i = 0; i < n; i++) {
             if (r.nextDouble() > 0.5)
                 continue;
@@ -214,11 +215,11 @@ public class RavenJoinTest {
             ranges.add(new PixelRange(i, x1, x2));
 
         }
-        int[] tree = RavenJoin.buildRangeLimitTree(new Offset<>(0, 0), n, k, ranges).first;
+        int[] tree = RavenJoin.buildRangeLimitTree(new Offset<>(offsetX, 0), n, k, ranges).first;
         int idx = tree.length - 1;
         for (int i = 1; i <= n; i *= k) {
             for (int j = 0; j < n / i; j++) {
-                Pair<Integer, Integer> expected = getMinMax(ranges, n - (j + 1) * i, n - j * i - 1);
+                Pair<Integer, Integer> expected = getMinMax(ranges, offsetX, n - (j + 1) * i, n - j * i - 1);
                 int expectedMin = expected.first;
                 int expectedMax = expected.second;
                 int actualMax = tree[idx--];
@@ -239,7 +240,6 @@ public class RavenJoinTest {
         int min = n;
         int max = 0;
         Random r = new Random(42);
-        int offsetX = r.nextInt(n);
         for (int i = 0; i < n; i++) {
             if (r.nextDouble() > 0.5)
                 continue;

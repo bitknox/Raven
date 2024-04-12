@@ -186,6 +186,10 @@ public class RavenJoin extends AbstractRavenJoin {
 	public Collection<PixelRange> findFilteredPixelRanges(java.awt.Rectangle rasterBounding, boolean[] inRanges,
 			Map<Long, Integer> intersections) {
 
+		int minXInterseection = Integer.MAX_VALUE;
+		int minYInterseection = Integer.MAX_VALUE;
+		int maxXInterseection = Integer.MIN_VALUE;
+		int maxYInterseection = Integer.MIN_VALUE;
 		int[] rangeCounts = new int[rasterBounding.height + 1];
 		// List<PixelRange> allRanges = new ArrayList<>();
 		List<List<PixelRange>> layers = new ArrayList<>();
@@ -222,6 +226,10 @@ public class RavenJoin extends AbstractRavenJoin {
 							layers.add(new ArrayList<>());
 						layers.get(count).add(new PixelRange(r, x1, x2));
 						rangeCounts[r - rasterBounding.y]++;
+						minXInterseection = Math.min(minXInterseection, x1);
+						minYInterseection = Math.min(minYInterseection, r);
+						maxXInterseection = Math.max(maxXInterseection, x2);
+						maxYInterseection = Math.max(maxYInterseection, r);
 					}
 					// start a new pixel-line
 					oldY = j;
@@ -250,6 +258,10 @@ public class RavenJoin extends AbstractRavenJoin {
 						layers.add(new ArrayList<>());
 					layers.get(count).add(new PixelRange(r, x1, x2));
 					rangeCounts[r - rasterBounding.y]++;
+					minXInterseection = Math.min(minXInterseection, x1);
+					minYInterseection = Math.min(minYInterseection, r);
+					maxXInterseection = Math.max(maxXInterseection, x2);
+					maxYInterseection = Math.max(maxYInterseection, r);
 				}
 			} else {
 				if (inRange) {
@@ -268,6 +280,10 @@ public class RavenJoin extends AbstractRavenJoin {
 						layers.add(new ArrayList<>());
 					layers.get(count).add(new PixelRange(r, x1, x2));
 					rangeCounts[r - rasterBounding.y]++;
+					minXInterseection = Math.min(minXInterseection, x1);
+					minYInterseection = Math.min(minYInterseection, r);
+					maxXInterseection = Math.max(maxXInterseection, x2);
+					maxYInterseection = Math.max(maxYInterseection, r);
 				} else {
 					inRange = true;
 					start = x;
@@ -294,10 +310,18 @@ public class RavenJoin extends AbstractRavenJoin {
 					layers.add(new ArrayList<>());
 				layers.get(count).add(new PixelRange(r, x1, x2));
 				rangeCounts[r - rasterBounding.y]++;
+				minXInterseection = Math.min(minXInterseection, x1);
+				minYInterseection = Math.min(minYInterseection, r);
+				maxXInterseection = Math.max(maxXInterseection, x2);
+				maxYInterseection = Math.max(maxYInterseection, r);
 			}
 			oldY = j;
 			inRange = inRanges[j];
 			start = 0;
+		}
+
+		if (minXInterseection > maxXInterseection || minYInterseection > maxYInterseection) {
+			return new ArrayList<>();
 		}
 
 		List<PixelRange> out = new ArrayList<>();
@@ -316,8 +340,9 @@ public class RavenJoin extends AbstractRavenJoin {
 			int[] rangeCountPrefixsum = res.second;
 
 			k2Raster.searchValuesInRanges(ranges, out, offset,
-					rangeLimits, rangeCountPrefixsum, 0,
-					rasterBounding.height - 1, 0, rasterBounding.width - 1, function);
+					rangeLimits, rangeCountPrefixsum, minYInterseection - offset.getY(),
+					maxYInterseection - offset.getY(), minXInterseection - offset.getX(),
+					maxXInterseection - offset.getX(), function);
 		}
 
 		return out;
