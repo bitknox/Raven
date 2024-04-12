@@ -13,6 +13,7 @@ import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
+import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
@@ -20,6 +21,7 @@ import com.github.davidmoten.rtree2.geometry.Geometries;
 import com.github.davidmoten.rtree2.geometry.Point;
 
 import dk.itu.raven.geometry.Polygon;
+import dk.itu.raven.util.Logger;
 
 public class ShapefileReader {
 
@@ -66,6 +68,15 @@ public class ShapefileReader {
 		FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures();
 
 		CoordinateReferenceSystem crs = source.getSchema().getCoordinateReferenceSystem();
+		if (crs == null) {
+			try {
+				Logger.log("(Vector) Cannot create CRS from metadata, using default CRS", Logger.LogLevel.DEBUG);
+				crs = CRS.decode("EPSG:4326", true);
+			} catch (Exception e) {
+				Logger.log("Could not decode EPSG:4326 exception(" + e + ")", Logger.LogLevel.ERROR);
+				e.printStackTrace();
+			}
+		}
 
 		try (FeatureIterator<SimpleFeature> featuresItr = collection.features()) {
 			while (featuresItr.hasNext()) {

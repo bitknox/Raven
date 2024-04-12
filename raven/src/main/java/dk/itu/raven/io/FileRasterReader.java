@@ -58,7 +58,7 @@ public abstract class FileRasterReader extends RasterReader {
 		try {
 			crs = adapter.createCoordinateSystem(metadata);
 		} catch (Exception e) {
-			Logger.log("Cannot create CRS from metadata, using default CRS", Logger.LogLevel.DEBUG);
+			Logger.log("(Tiff) Cannot create CRS from metadata, using default CRS", Logger.LogLevel.DEBUG);
 			crs = adapter.DefaultCRS;
 		}
 	}
