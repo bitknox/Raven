@@ -26,7 +26,7 @@
 			},
 			"environment_options": {
 				"environment_type": "docker",
-				"docker_file_path": "./runners/beast-runner/",
+				"docker_file_path": "./runners/raven-runner/",
 				"docker_mount_path": "/home/joinpro/data"
 			}
 		},
@@ -51,7 +51,7 @@
 			},
 			"environment_options": {
 				"environment_type": "docker",
-				"docker_file_path": "./runners/raven-runner/",
+				"docker_file_path": "./runners/raptor-runner/",
 				"docker_mount_path": "/home/joinpro/data"
 			}
 		}
