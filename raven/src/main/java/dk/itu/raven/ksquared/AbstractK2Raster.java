@@ -397,8 +397,8 @@ public abstract class AbstractK2Raster implements Serializable {
                         addCells = true;
                         /* all cells meet the condition in this branch */
                     } else {
-                        boolean containsNoRanges = rangeLimits[2 * treeIndexp] > baseXp + nKths
-                                || rangeLimits[2 * treeIndexp + 1] < baseXp;
+                        boolean containsNoRanges = rangeLimits[2 * treeIndexp] > c2p + baseXp
+                                || rangeLimits[2 * treeIndexp + 1] < c1p + baseXp;
                         if (!function.containsWithin(minValp, maxValp) || containsNoRanges) {
                             continue;
                         } else {
@@ -413,7 +413,9 @@ public abstract class AbstractK2Raster implements Serializable {
                     int rEnd = r2p + baseYp;
                     for (int l = rangePrefixsum[rStart]; l < rangePrefixsum[rEnd + 1]; l++) {
                         PixelRange range = ranges.get(l);
-                        out.add(new PixelRange(range.row + offset.getY(),
+                        if (range.x2 - offset.getX() < c1p + baseXp || range.x1 - offset.getX() > c2p + baseXp)
+                            continue;
+                        out.add(new PixelRange(range.row,
                                 Math.max(range.x1, c1p + baseXp + offset.getX()),
                                 Math.min(range.x2, c2p + baseXp + offset.getX())));
                     }

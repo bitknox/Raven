@@ -310,7 +310,8 @@ public class RavenJoin extends AbstractRavenJoin {
 		// matrix), the next 2*k values are all nodes for the second layer of the
 		// k2-raster tree (corresponding to the sub-matrixes of size n/k).
 		for (List<PixelRange> ranges : layers) {
-			Pair<int[], int[]> res = buildRangeLimitTree(offset, k2Raster.getSize(), k2Raster.k, ranges);
+			Pair<int[], int[]> res = buildRangeLimitTree(offset,
+					k2Raster.getSize(), k2Raster.k, ranges);
 			int[] rangeLimits = res.first;
 			int[] rangeCountPrefixsum = res.second;
 

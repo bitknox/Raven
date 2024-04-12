@@ -239,6 +239,7 @@ public class RavenJoinTest {
         int min = n;
         int max = 0;
         Random r = new Random(42);
+        int offsetX = r.nextInt(n);
         for (int i = 0; i < n; i++) {
             if (r.nextDouble() > 0.5)
                 continue;
