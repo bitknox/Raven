@@ -22,7 +22,7 @@ import edu.ucr.cs.bdlab.raptor.IRasterReader;
 import edu.ucr.cs.bdlab.raptor.RasterHelper;
 
 public class RaptorApi {
-    public Stream<JoinResult> join(String inputRaster, String inputVector) throws IOException {
+    public Stream<JoinResult> join(String inputRaster, String inputVector, boolean parallel) throws IOException {
         File rasterFile = new File(inputRaster);
         Path vectorPath = new Path(new File(inputVector).getAbsolutePath());
 
@@ -54,6 +54,8 @@ public class RaptorApi {
 
         featureReader.initialize(vectorPath, new BeastOptions());
         Stream<List<PixelRange>> stream = join.createFlashIndices(featureReader, metadatas.stream());
+        if (parallel)
+            stream = stream.parallel();
         stream = join.optimizeFlashIndices(stream);
         Stream<JoinResult> res = join.processFlashIndices(stream, readers);
 
