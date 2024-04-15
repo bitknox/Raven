@@ -2,7 +2,6 @@ package dk.itu.raven.raptor;
 
 import java.io.File;
 import java.io.IOException;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,7 +29,7 @@ public class App {
             File dir = new File(jct.inputRaster);
             List<File> files = Arrays.asList(dir.listFiles());
 
-            files.stream().map(f -> {
+            files.stream().parallel().map(f -> {
                 try {
                     // find tiff file in the directory
                     if (!f.isDirectory()) {
@@ -55,7 +54,7 @@ public class App {
                 } else {
                     return res.filter(f -> f.m >= jct.filterLow && f.m <= jct.filterHigh).count();
                 }
-            }).count();
+            }).reduce(0l, (a, b) -> a + b);
 
             long end = System.currentTimeMillis();
             long time = end - start;
