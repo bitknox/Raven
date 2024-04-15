@@ -50,7 +50,9 @@ public abstract class AbstractK2Raster implements Serializable {
      *         internal node, {@code false} otherwise.
      */
     public boolean hasChildren(int index) {
-        return index == 0 ? minVal != maxVal : tree.isSet(index);
+        if (index == 0)
+            return minVal != maxVal;
+        return tree.isSet2(index);
     }
 
     /**
@@ -73,7 +75,9 @@ public abstract class AbstractK2Raster implements Serializable {
      */
     public long computeVMax(long parentMax, int index) {
         // the -1 is caused by lMax being 0-indexed and not including the root
-        return index == 0 ? maxVal : parentMax - lMax.get(index - 1);
+        if (index == 0)
+            return maxVal;
+        return parentMax - lMax.get(index - 1);
     }
 
     /**
@@ -340,11 +344,13 @@ public abstract class AbstractK2Raster implements Serializable {
     public void searchValuesInRanges(List<PixelRange> ranges,
             List<PixelRange> out, Offset<Integer> offset, RangeExtremes[] rangeLimits, int[] rangePrefixsum, int r1,
             int r2, int c1, int c2, IRasterFilterFunction function) {
-        searchValuesInRanges(ranges, out, offset, r1, r2, c1, c2, rangeLimits, rangePrefixsum, -1, 0, function, 0, 0,
+        searchValuesInRanges(ranges, out, offset, r1, r2, c1, c2, rangeLimits, rangePrefixsum, -1, 0, function,
+                0, 0,
                 this.minVal, this.maxVal, this.n);
     }
 
-    private void searchValuesInRanges(List<PixelRange> ranges, List<PixelRange> out, Offset<Integer> offset, int r1,
+    private void searchValuesInRanges(List<PixelRange> ranges, List<PixelRange> out,
+            Offset<Integer> offset, int r1,
             int r2, int c1, int c2, RangeExtremes[] rangeLimits, int[] rangePrefixsum, int z, int treeIndex,
             IRasterFilterFunction function, int baseX, int baseY, long minVal, long maxVal, int n) {
         final int nKths = (n / k); // childsize
@@ -384,6 +390,10 @@ public abstract class AbstractK2Raster implements Serializable {
                 boolean addCells = false;
                 int baseXp = baseX + j * nKths;
                 int baseYp = baseY + i * nKths;
+
+                int xValue1 = c1p + baseXp + offset.getX();
+                int xValue2 = c2p + baseXp + offset.getX();
+
                 int treeIndexp = treeIndex * k + i + 1;
                 if (!hasChildren(zp + 1)) {
                     minValp = maxValp;
@@ -399,25 +409,28 @@ public abstract class AbstractK2Raster implements Serializable {
                     } else {
                         boolean containsNoRanges = rangeLimits[treeIndexp].x1 > c2p + baseXp
                                 || rangeLimits[treeIndexp].x2 < c1p + baseXp;
-                        if (!function.containsWithin(minValp, maxValp) || containsNoRanges) {
+                        if (containsNoRanges || !function.containsWithin(minValp, maxValp)) {
                             continue;
                         } else {
-                            searchValuesInRanges(ranges, out, offset, r1p, r2p, c1p, c2p, rangeLimits, rangePrefixsum,
+                            searchValuesInRanges(ranges, out, offset, r1p, r2p, c1p, c2p, rangeLimits,
+                                    rangePrefixsum,
                                     zp, treeIndexp, function, baseXp, baseYp, minValp, maxValp, nKths);
                         }
                     }
                 }
-
                 if (addCells) {
                     int rStart = r1p + baseYp;
                     int rEnd = r2p + baseYp;
                     for (int l = rangePrefixsum[rStart]; l < rangePrefixsum[rEnd + 1]; l++) {
                         PixelRange range = ranges.get(l);
-                        if (range.x2 - offset.getX() < c1p + baseXp || range.x1 - offset.getX() > c2p + baseXp)
+
+                        if (range.x2 < xValue1 || range.x1 > xValue2) {
                             continue;
+                        }
+
                         out.add(new PixelRange(range.row,
-                                Math.max(range.x1, c1p + baseXp + offset.getX()),
-                                Math.min(range.x2, c2p + baseXp + offset.getX())));
+                                Math.max(range.x1, xValue1),
+                                Math.min(range.x2, xValue2)));
                     }
                 }
             }

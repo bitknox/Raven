@@ -104,15 +104,14 @@ public abstract class AbstractDAC implements Serializable {
             item += this.A.get(level).getLong(index * blockSizes[level],
                     blockSizes[level]) << this.blockSizesPrefixSum[level];
             if (level >= this.B.size()) {
-                break;
+                return item;
             }
             if (this.B.get(level).get(index)) {
                 index = this.B.get(level).rank(index) - 1;
             } else {
-                break;
+                return item;
             }
         }
-
         return item;
     }
 

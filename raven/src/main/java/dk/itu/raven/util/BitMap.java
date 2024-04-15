@@ -195,8 +195,15 @@ public class BitMap implements Iterator<Integer>, Iterable<Integer>, Serializabl
         int mask = 0x80000000 >>> (pos & 0x1F);
         int word = map[windex];
 
-        return (word & mask) == 0 ? 0
-                : 1;
+        return (word & mask) == 0 ? 0 : 1;
+    }
+
+    public boolean isSet2(int pos) {
+        final int windex = pos >> 5;
+        final int mask = 0x80000000 >>> (pos & 0x1F);
+        final int word = map[windex];
+
+        return (word & mask) != 0;
     }
 
     public boolean isSet(int pos) {
@@ -298,19 +305,20 @@ public class BitMap implements Iterator<Integer>, Iterable<Integer>, Serializabl
     }
 
     public int getInt(int idx, int length) {
-        int windex = idx >> 5;
+        final int windex = idx >> 5;
+        final int intBits = (idx & 31);
 
-        int endMask = ((-1) << (32 - length)) >>> (idx % 32);
-        int remaining = length + (idx % 32) - 32;
+        final int endMask = ((-1) << (32 - length)) >>> intBits;
+        final int remaining = length + intBits - 32;
         int startMask = 0;
         if (remaining > 0) {
             startMask = (-1) << (32 - remaining);
         }
         int res = (this.map[windex] & endMask);
-        if ((32 - length) - (idx % 32) > 0) {
-            res >>>= ((32 - length) - (idx % 32));
+        if ((32 - length) - intBits > 0) {
+            res >>>= ((32 - length) - intBits);
         } else {
-            res <<= ((length) + (idx % 32));
+            res <<= ((length) + intBits);
         }
         res += (this.map[windex + 1] & startMask) >>> (32 - remaining);
         return res;
