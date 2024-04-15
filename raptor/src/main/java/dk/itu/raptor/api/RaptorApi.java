@@ -3,6 +3,7 @@ package dk.itu.raptor.api;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -22,21 +23,37 @@ import edu.ucr.cs.bdlab.raptor.RasterHelper;
 
 public class RaptorApi {
     public Stream<JoinResult> join(String inputRaster, String inputVector) throws IOException {
-        Path rasterPath = new Path(new File(inputRaster).getAbsolutePath());
+        File rasterFile = new File(inputRaster);
         Path vectorPath = new Path(new File(inputVector).getAbsolutePath());
 
         FileSystem fs = FileSystem.newInstance(new Configuration());
 
         RaptorJoin join = new RaptorJoin();
         ShapefileFeatureReader featureReader = new ShapefileFeatureReader();
-        IRasterReader<Object> reader = RasterHelper.createRasterReader(fs, rasterPath, new BeastOptions(),
-                new SparkConf());
-        List<IRasterReader<Object>> readers = new ArrayList<>();
-        readers.add(reader);
+        List<File> files = Arrays.asList(rasterFile.listFiles());
 
-        RasterMetadata metadata = reader.metadata();
+        List<RasterMetadata> metadatas = new ArrayList<>();
+        List<IRasterReader<Object>> readers = new ArrayList<>();
+
+        for (File file : files) {
+            if (!file.isDirectory()) {
+                break;
+            }
+            File[] tiffFiles = file.listFiles((dir1, name) -> name.endsWith(".tif"));
+
+            if (tiffFiles.length == 0) {
+                break;
+            }
+            Path rasterPath = new Path(tiffFiles[0].getAbsolutePath());
+            IRasterReader<Object> reader = RasterHelper.createRasterReader(fs, rasterPath, new BeastOptions(),
+                    new SparkConf());
+            readers.add(reader);
+            RasterMetadata metadata = reader.metadata();
+            metadatas.add(metadata);
+        }
+
         featureReader.initialize(vectorPath, new BeastOptions());
-        Stream<List<PixelRange>> stream = join.createFlashIndices(featureReader, Stream.of(metadata));
+        Stream<List<PixelRange>> stream = join.createFlashIndices(featureReader, metadatas.stream());
         stream = join.optimizeFlashIndices(stream);
         Stream<JoinResult> res = join.processFlashIndices(stream, readers);
 
