@@ -86,6 +86,10 @@ public class MultiFileRasterReader implements IRasterReader {
 								+ bounds.y2(), Logger.LogLevel.INFO);
 
 						Iterable<Entry<String, Geometry>> overlapping = rtree.search(bounds);
+						if (!overlapping.iterator().hasNext()) {
+							Logger.log("No overlapping data found, skipping image", LogLevel.DEBUG);
+							return null;
+						}
 						RTree<String, Geometry> rtree2 = RTree.star().maxChildren(6).create();
 
 						for (Entry<String, Geometry> entry : overlapping) {
