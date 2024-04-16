@@ -54,7 +54,7 @@ public class CommandLineArgs {
 	public int kSize = 2;
 
 	@Parameter(names = { "--r-tree-min-children" }, description = "Minimum number of children in the R-tree")
-	public int rTreeMinChildren = 4;
+	public int rTreeMinChildren = 1;
 
 	@Parameter(names = { "--r-tree-max-children" }, description = "Maximum number of children in the R-tree")
 	public int rTreeMaxChildren = 8;
