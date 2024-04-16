@@ -24,7 +24,7 @@ public abstract class AbstractDAC implements Serializable {
     protected List<BitMap> A;
     protected long maxValue;
 
-    protected static final int FACT_RANK = 20;
+    public static int FACT_RANK = 20;
 
     public AbstractDAC(PrimitiveArrayWrapper values) {
         this.numValues = values.length();

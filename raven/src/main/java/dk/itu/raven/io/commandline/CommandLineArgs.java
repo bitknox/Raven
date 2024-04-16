@@ -49,4 +49,16 @@ public class CommandLineArgs {
 	@Parameter(names = { "-cv",
 			"--crop-to-vector" }, description = "Crop the output image so it only shows the part of the raster data that lies within the minimum bounding rectangle of the given vector data", arity = 1)
 	public boolean cropToVector = false;
+
+	@Parameter(names = { "--k-size" }, description = "size of k in the k2-raster algorithm")
+	public int kSize = 2;
+
+	@Parameter(names = { "--r-tree-min-children" }, description = "Minimum number of children in the R-tree")
+	public int rTreeMinChildren = 4;
+
+	@Parameter(names = { "--r-tree-max-children" }, description = "Maximum number of children in the R-tree")
+	public int rTreeMaxChildren = 8;
+
+	@Parameter(names = { "--dac-fraction-size" }, description = "Size of the fraction used in the DAC algorithm")
+	public int dacFractionSize = 20;
 }

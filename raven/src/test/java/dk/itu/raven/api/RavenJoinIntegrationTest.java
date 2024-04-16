@@ -48,7 +48,7 @@ public class RavenJoinIntegrationTest {
         IRasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
 
-        AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, false);
+        AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, false, 2, 6, 8);
         JoinResult result = join.join(JoinFilterFunctions.rangeFilter(filterLow, filterHigh)).asMemoryAllocatedResult();
 
         for (JoinResultItem item : result) {
@@ -92,7 +92,7 @@ public class RavenJoinIntegrationTest {
         IRasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
 
-        AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, false);
+        AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, false, 2, 6, 8);
         JoinResult result = join.join(JoinFilterFunctions.rangeFilter(filterLow, filterHigh)).asMemoryAllocatedResult();
 
         for (JoinResultItem item : result) {
@@ -153,7 +153,7 @@ public class RavenJoinIntegrationTest {
         IRasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
 
-        AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, false);
+        AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, false, 2, 6, 8);
         JoinResult result = join
                 .join(JoinFilterFunctions.multiSampleRangeFilter(
                         Arrays.asList(filterLow1, filterHigh1, filterLow2, filterHigh2, filterLow3, filterHigh3),
