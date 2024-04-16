@@ -11,7 +11,7 @@
 					"-jar",
 					"/home/runners/raven-runner-1.0.jar",
 					"-iv",
-					"/home/vector/real/pretected_areas/ProtectedArea.shp",
+					"/home/real/vector/pretected_areas/ProtectedArea.shp",
 					"-ir",
 					[
 						"/home/real/raster/glc2000",
@@ -40,7 +40,7 @@
 					"-jar",
 					"/home/runners/raptor-runner-1.0.jar",
 					"-iv",
-					"/home/vector/real/pretected_areas/ProtectedArea.shp",
+					"/home/real/vector/pretected_areas/ProtectedArea.shp",
 					"-ir",
 					[
 						"/home/real/raster/glc2000",
