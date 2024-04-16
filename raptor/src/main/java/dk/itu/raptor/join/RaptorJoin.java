@@ -46,18 +46,9 @@ public class RaptorJoin {
             List<JoinResult> results = new ArrayList<>();
             int tid = list.get(0).tid;
             int rid = list.get(0).rid;
-            int oldTid = tid;
-            int oldRid = rid;
             ITile<Object> tile = rasterReaders.get(rid).readTile(tid);
 
             for (PixelRange range : list) {
-                tid = range.tid;
-                rid = range.rid;
-                if (tid != oldTid || rid != oldRid) {
-                    tile = rasterReaders.get(rid).readTile(tid);
-                    oldRid = rid;
-                    oldTid = tid;
-                }
                 for (int x = range.x1; x <= range.x2; x++) {
                     Object m = tile.getPixelValue(x, range.y);
                     results.add(

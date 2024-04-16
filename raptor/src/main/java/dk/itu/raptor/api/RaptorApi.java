@@ -57,9 +57,6 @@ public class RaptorApi {
 
         Stream<Pair<Integer, RasterMetadata>> metadataStream = metadatas.stream();
 
-        if (parallel)
-            metadataStream = metadataStream.parallel();
-
         featureReader.initialize(vectorPath, new BeastOptions());
         Stream<List<PixelRange>> stream = join.createFlashIndices(featureReader, metadataStream)
                 .map(s -> parallel ? join.optimizeFlashIndices(s).parallel() : join.optimizeFlashIndices(s))
