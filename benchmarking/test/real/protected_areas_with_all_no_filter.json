@@ -3,7 +3,7 @@
 	"benchmarks": [
 		{
 			"name": ["Raven - GLC", "Raven - SWF", "Raven - Treecover"],
-			"iterations": 1000,
+			"iterations": 5,
 			"colour": "darkred",
 			"command": {
 				"path": "java",
@@ -11,7 +11,7 @@
 					"-jar",
 					"/home/runners/raven-runner-1.0.jar",
 					"-iv",
-					"/home/vector/pretected_areas",
+					"/home/vector/real/pretected_areas/ProtectedArea.shp",
 					"-ir",
 					[
 						"/home/real/raster/glc2000",
@@ -32,7 +32,7 @@
 		},
 		{
 			"name": ["Raptor - GLC", "Raptor - SWF", "Raptor - Treecover"],
-			"iterations": 1000,
+			"iterations": 5,
 			"colour": "darkblue",
 			"command": {
 				"path": "java",
@@ -40,7 +40,7 @@
 					"-jar",
 					"/home/runners/raptor-runner-1.0.jar",
 					"-iv",
-					"/home/vector/pretected_areas.zip",
+					"/home/vector/real/pretected_areas/ProtectedArea.shp",
 					"-ir",
 					[
 						"/home/real/raster/glc2000",

@@ -3,7 +3,7 @@
 	"benchmarks": [
 		{
 			"name": ["Raven - GLC", "Raven - SWF", "Raven - Treecover"],
-			"iterations": 1000,
+			"iterations": 5,
 			"colour": "darkred",
 			"command": {
 				"path": "java",
@@ -11,7 +11,7 @@
 					"-jar",
 					"/home/runners/raven-runner-1.0.jar",
 					"-iv",
-					"/home/vector/woody/woody.shp",
+					"/home/vector/real/woody/woody.shp",
 					"-ir",
 					[
 						"/home/real/raster/glc2000",
@@ -21,7 +21,11 @@
 					"-t",
 					"parallel",
 					"-ts",
-					"2048"
+					"2048",
+					"-fl",
+					["22", "1", "81"],
+					"-fh",
+					["22", "1", "84"]
 				]
 			},
 			"environment_options": {
@@ -32,7 +36,7 @@
 		},
 		{
 			"name": ["Raptor - GLC", "Raptor - SWF", "Raptor - Treecover"],
-			"iterations": 1000,
+			"iterations": 5,
 			"colour": "darkblue",
 			"command": {
 				"path": "java",
@@ -40,13 +44,17 @@
 					"-jar",
 					"/home/runners/raptor-runner-1.0.jar",
 					"-iv",
-					"/home/vector/woody.zip",
+					"/home/vector/real/woody/woody.shp",
 					"-ir",
 					[
 						"/home/real/raster/glc2000",
 						"/home/real/raster/woody",
 						"/home/real/raster/treecover"
-					]
+					],
+					"-fl",
+					["22", "1", "81"],
+					"-fh",
+					["22", "1", "84"]
 				]
 			},
 			"environment_options": {

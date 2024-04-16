@@ -11,13 +11,16 @@
 					"-jar",
 					"/home/runners/raven-runner-1.0.jar",
 					"-iv",
-					"/home/vector/pretected_areas",
+					"/home/vector/real/pretected_areas/ProtectedArea.shp",
 					"-ir",
 					[
 						"/home/real/raster/glc2000",
 						"/home/real/raster/woody",
 						"/home/real/raster/treecover"
 					],
+					["22", "1", "81"],
+					"-fh",
+					["22", "1", "84"],
 					"-t",
 					"parallel",
 					"-ts",
@@ -40,13 +43,16 @@
 					"-jar",
 					"/home/runners/raptor-runner-1.0.jar",
 					"-iv",
-					"/home/vector/pretected_areas.zip",
+					"/home/vector/real/pretected_areas/ProtectedArea.shp",
 					"-ir",
 					[
 						"/home/real/raster/glc2000",
 						"/home/real/raster/woody",
 						"/home/real/raster/treecover"
-					]
+					],
+					["22", "1", "81"],
+					"-fh",
+					["22", "1", "84"]
 				]
 			},
 			"environment_options": {
