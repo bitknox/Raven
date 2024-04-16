@@ -32,6 +32,7 @@ public class RaptorApi {
 
         RaptorJoin join = new RaptorJoin();
         ShapefileFeatureReader featureReader = new ShapefileFeatureReader();
+        featureReader.initialize(vectorPath, new BeastOptions());
         List<File> files = Arrays.asList(rasterFile.listFiles());
 
         List<Pair<Integer, RasterMetadata>> metadatas = new ArrayList<>();
@@ -57,7 +58,6 @@ public class RaptorApi {
 
         Stream<Pair<Integer, RasterMetadata>> metadataStream = metadatas.stream();
 
-        featureReader.initialize(vectorPath, new BeastOptions());
         Stream<List<PixelRange>> stream = join.createFlashIndices(featureReader, metadataStream)
                 .map(s -> parallel ? join.optimizeFlashIndices(s).parallel() : join.optimizeFlashIndices(s))
                 .reduce(Stream::concat).orElseGet(Stream::empty);
