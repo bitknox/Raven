@@ -1,0 +1,67 @@
+{
+	"name": "Join Time - Woody (Filter)",
+	"benchmarks": [
+		{
+			"name": ["Raven - GLC", "Raven - SWF", "Raven - Treecover"],
+			"iterations": 5,
+			"colour": "darkred",
+			"command": {
+				"path": "java",
+				"args": [
+					"-jar",
+					"/home/runners/raven-runner-1.0.jar",
+					"-iv",
+					"/home/vector/real/woody/woody.shp",
+					"-ir",
+					[
+						"/home/real/raster/glc2000",
+						"/home/real/raster/woody",
+						"/home/real/raster/treecover"
+					],
+					"-t",
+					"parallel",
+					"-ts",
+					"2048",
+					"-fl",
+					["22", "1", "81"],
+					"-fh",
+					["22", "1", "84"]
+				]
+			},
+			"environment_options": {
+				"environment_type": "docker",
+				"docker_file_path": "./runners/raven-runner/",
+				"docker_mount_path": "/home/joinpro/data"
+			}
+		},
+		{
+			"name": ["Raptor - GLC", "Raptor - SWF", "Raptor - Treecover"],
+			"iterations": 5,
+			"colour": "darkblue",
+			"command": {
+				"path": "java",
+				"args": [
+					"-jar",
+					"/home/runners/raptor-runner-1.0.jar",
+					"-iv",
+					"/home/vector/real/woody/woody.shp",
+					"-ir",
+					[
+						"/home/real/raster/glc2000",
+						"/home/real/raster/woody",
+						"/home/real/raster/treecover"
+					],
+					"-fl",
+					["22", "1", "81"],
+					"-fh",
+					["22", "1", "84"]
+				]
+			},
+			"environment_options": {
+				"environment_type": "docker",
+				"docker_file_path": "./runners/raptor-runner/",
+				"docker_mount_path": "/home/joinpro/data"
+			}
+		}
+	]
+}
