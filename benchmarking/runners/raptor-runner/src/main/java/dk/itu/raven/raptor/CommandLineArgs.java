@@ -20,4 +20,8 @@ public class CommandLineArgs {
         @Parameter(names = { "-i",
                         "--iterations" }, description = "The number of tests performed using these settings", required = true)
         public long iterations = -1;
+
+        @Parameter(names = { "-p",
+                        "--parallel" }, description = "Run the join in parallel (requires running as a stream)", arity = 1)
+        public boolean parallel = true;
 }

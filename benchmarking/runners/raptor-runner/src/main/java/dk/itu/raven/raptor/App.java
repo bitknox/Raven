@@ -1,6 +1,9 @@
 package dk.itu.raven.raptor;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 import com.beust.jcommander.JCommander;
@@ -25,7 +28,7 @@ public class App {
         for (int i = 0; i < jct.iterations; i++) {
             long start = System.currentTimeMillis();
 
-            Stream<JoinResult> res = api.join(jct.inputRaster, jct.inputVector);
+            Stream<JoinResult> res = api.join(jct.inputRaster, jct.inputVector, jct.parallel);
             if (jct.filterLow == Integer.MIN_VALUE && jct.filterHigh == Integer.MAX_VALUE) {
                 res.count();
             } else {
