@@ -3,7 +3,7 @@
 	"benchmarks": [
 		{
 			"name": ["Raven - GLC", "Raven - SWF", "Raven - Treecover"],
-			"iterations": 1000,
+			"iterations": 5,
 			"colour": "darkred",
 			"command": {
 				"path": "java",
@@ -35,7 +35,7 @@
 		},
 		{
 			"name": ["Raptor - GLC", "Raptor - SWF", "Raptor - Treecover"],
-			"iterations": 1000,
+			"iterations": 5,
 			"colour": "darkblue",
 			"command": {
 				"path": "java",
