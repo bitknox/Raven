@@ -51,7 +51,7 @@ public class Raven {
         ShapefileReader shapefileReader = api.createShapefileReader(jct.inputVector);
 
         // Set the fraction size for the DAC
-        AbstractDAC.FACT_RANK = jct.dacFractionSize;
+        api.setDACFraction(jct.dacFractionSize);
 
         IRasterFilterFunction function = JoinFilterFunctions.acceptAll();
 

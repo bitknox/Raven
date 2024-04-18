@@ -8,6 +8,7 @@ import dk.itu.raven.io.MultiFileRasterReader;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.StreamedRavenJoin;
+import dk.itu.raven.ksquared.dac.AbstractDAC;
 
 /**
  * Public API for interacting with the raven library safely.
@@ -71,5 +72,9 @@ public class RavenApi {
 	 */
 	public ShapefileReader createShapefileReader(String vectorPath) {
 		return new ShapefileReader(vectorPath);
+	}
+
+	public void setDACFraction(int size) {
+		AbstractDAC.FACT_RANK = size;
 	}
 }
