@@ -57,7 +57,7 @@ public class CommandLineArgs {
 	public int rTreeMinChildren = 1;
 
 	@Parameter(names = { "--r-tree-max-children" }, description = "Maximum number of children in the R-tree")
-	public int rTreeMaxChildren = 8;
+	public int rTreeMaxChildren = 6;
 
 	@Parameter(names = { "--dac-fraction-size" }, description = "Size of the fraction used in the DAC algorithm")
 	public int dacFractionSize = 20;
