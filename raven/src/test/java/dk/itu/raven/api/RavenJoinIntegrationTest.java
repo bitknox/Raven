@@ -16,6 +16,7 @@ import dk.itu.raven.io.IRasterReader;
 import dk.itu.raven.io.MatrixReader;
 import dk.itu.raven.io.MockedShapefileReader;
 import dk.itu.raven.io.TFWFormat;
+import dk.itu.raven.io.cache.CacheOptions;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.join.JoinResult;
@@ -48,7 +49,7 @@ public class RavenJoinIntegrationTest {
         IRasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
 
-        AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, false);
+        AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, new CacheOptions(null, false));
         JoinResult result = join.join(JoinFilterFunctions.rangeFilter(filterLow, filterHigh)).asMemoryAllocatedResult();
 
         for (JoinResultItem item : result) {
@@ -92,7 +93,7 @@ public class RavenJoinIntegrationTest {
         IRasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
 
-        AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, false);
+        AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, new CacheOptions(null, false));
         JoinResult result = join.join(JoinFilterFunctions.rangeFilter(filterLow, filterHigh)).asMemoryAllocatedResult();
 
         for (JoinResultItem item : result) {
@@ -153,7 +154,7 @@ public class RavenJoinIntegrationTest {
         IRasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
 
-        AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, false);
+        AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, new CacheOptions(null, false));
         JoinResult result = join
                 .join(JoinFilterFunctions.multiSampleRangeFilter(
                         Arrays.asList(filterLow1, filterHigh1, filterLow2, filterHigh2, filterLow3, filterHigh3),

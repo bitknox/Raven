@@ -26,7 +26,7 @@ public class RasterCacheTest {
 
 	@Test
 	public void testRasterCache() throws IOException, ClassNotFoundException {
-		RasterCache<String> rc = new RasterCache<String>(CACHE_DIR);
+		RasterCache<String> rc = new RasterCache<String>(".", CACHE_DIR);
 		// test that this item already exists in the cache
 		String inCache = "in-cache";
 		// test that this item does not exist in the cache

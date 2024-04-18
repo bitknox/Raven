@@ -14,6 +14,7 @@ import dk.itu.raven.io.IRasterReader;
 import dk.itu.raven.io.ImageMetadata;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.VectorData;
+import dk.itu.raven.io.cache.CacheOptions;
 import dk.itu.raven.io.cache.CachedRasterStructure;
 import dk.itu.raven.io.cache.RasterCache;
 import dk.itu.raven.join.AbstractRavenJoin;
@@ -42,21 +43,22 @@ public class InternalApi {
      */
     static Stream<JoinChunk> streamStructures(ShapefileReader featureReader,
             IRasterReader rasterReader, int widthStep,
-            int heightStep, boolean isCaching)
+            int heightStep, CacheOptions cacheOptions)
             throws IOException {
-        if (isCaching)
-            isCaching = rasterReader.getDirectory().isPresent();
+        if (cacheOptions.isCaching)
+            cacheOptions.isCaching = rasterReader.getDirectory().isPresent();
 
         // load geometries from shapefile
         VectorData geometries = featureReader.readShapefile();
 
         RTree<String, Geometry> rtree = generateRTree(geometries.getFeatures());
 
-        if (isCaching) {
+        if (cacheOptions.isCaching) {
             // create a cache for the raster structures
             // the cache key is the name of the dataset directory and the width and height
             // step
             RasterCache<CachedRasterStructure> cache = new RasterCache<CachedRasterStructure>(
+                    cacheOptions.getCacheDir(),
                     rasterReader.getDirectory().get() + "-" + widthStep + "-" + heightStep);
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
                     Optional.of(cache), rtree, geometries);
@@ -128,11 +130,12 @@ public class InternalApi {
         return rtree;
     }
 
-    static AbstractRavenJoin getJoin(IRasterReader rasterReader, ShapefileReader vectorReader, boolean isCaching)
+    static AbstractRavenJoin getJoin(IRasterReader rasterReader, ShapefileReader vectorReader,
+            CacheOptions cacheOptions)
             throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
         Optional<RavenJoin> streamedJoin = getStreamedJoin(rasterReader, vectorReader, metadata.getWidth(),
-                metadata.getHeight(), false, isCaching)
+                metadata.getHeight(), false, cacheOptions)
                 .getRavenJoins().findFirst();
         if (streamedJoin.isPresent()) {
             return streamedJoin.get();
@@ -142,11 +145,11 @@ public class InternalApi {
     }
 
     static StreamedRavenJoin getStreamedJoin(IRasterReader rasterReader, ShapefileReader vectorReader, int widthStep,
-            int heightStep, boolean parallel, boolean isCaching)
+            int heightStep, boolean parallel, CacheOptions cacheOptions)
             throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
         Size imageSize = new Size(metadata.getWidth(), metadata.getHeight());
-        var structures = streamStructures(vectorReader, rasterReader, widthStep, heightStep, isCaching);
+        var structures = streamStructures(vectorReader, rasterReader, widthStep, heightStep, cacheOptions);
         Stream<RavenJoin> stream = structures.filter(chunk -> {
             return chunk.getRtree().root().isPresent();
         }).map(chunk -> {

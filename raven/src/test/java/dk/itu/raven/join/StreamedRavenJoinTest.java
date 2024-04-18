@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import dk.itu.raven.api.RavenApi;
 import dk.itu.raven.geometry.PixelRange;
+import dk.itu.raven.io.cache.CacheOptions;
 
 public class StreamedRavenJoinTest {
     public class Point {
@@ -41,9 +42,11 @@ public class StreamedRavenJoinTest {
         RavenApi ravenApi = new RavenApi();
         String rasterPath = "src/test/java/dk/itu/raven/data/wildfires";
         String vectorPath = "src/test/java/dk/itu/raven/data/cb_2018_us_state_500k/cb_2018_us_state_500k.shp";
-        AbstractRavenJoin inMemoryJoin = ravenApi.getJoin(rasterPath, vectorPath, false);
-        AbstractRavenJoin streamedJoin = ravenApi.getStreamedJoin(rasterPath, vectorPath, 200, 200, false, false);
-        AbstractRavenJoin parallelJoin = ravenApi.getStreamedJoin(rasterPath, vectorPath, 200, 200, true, false);
+        AbstractRavenJoin inMemoryJoin = ravenApi.getJoin(rasterPath, vectorPath, new CacheOptions(null, false));
+        AbstractRavenJoin streamedJoin = ravenApi.getStreamedJoin(rasterPath, vectorPath, 200, 200, false,
+                new CacheOptions(null, false));
+        AbstractRavenJoin parallelJoin = ravenApi.getStreamedJoin(rasterPath, vectorPath, 200, 200, true,
+                new CacheOptions(null, false));
 
         IJoinResult inMemoryResult = inMemoryJoin.join().asMemoryAllocatedResult();
         IJoinResult streamedResult = streamedJoin.join().asMemoryAllocatedResult();
