@@ -46,6 +46,10 @@ public class CommandLineArgs {
 			"--cache" }, description = "Use cached raster structures", arity = 1)
 	public boolean isCaching = true;
 
+	@Parameter(names = { "-cl",
+			"--cache-location" }, description = "The parent directory to use for caches")
+	public String cacheDir = ".";
+
 	@Parameter(names = { "-cv",
 			"--crop-to-vector" }, description = "Crop the output image so it only shows the part of the raster data that lies within the minimum bounding rectangle of the given vector data", arity = 1)
 	public boolean cropToVector = false;

@@ -13,6 +13,7 @@ import dk.itu.raven.io.IRasterReader;
 import dk.itu.raven.io.ImageMetadata;
 import dk.itu.raven.io.MultiFileRasterReader;
 import dk.itu.raven.io.ShapefileReader;
+import dk.itu.raven.io.cache.CacheOptions;
 import dk.itu.raven.io.commandline.CommandLineArgs;
 import dk.itu.raven.join.IJoinResult;
 import dk.itu.raven.join.AbstractRavenJoin;
@@ -80,9 +81,9 @@ public class Raven {
         if (jct.streamed) {
             join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize,
                     jct.tileSize, jct.parallel,
-                    jct.isCaching);
+                    new CacheOptions(jct.cacheDir, jct.isCaching));
         } else {
-            join = api.getJoin(jct.inputRaster, jct.inputVector, jct.isCaching);
+            join = api.getJoin(jct.inputRaster, jct.inputVector, new CacheOptions(jct.cacheDir, jct.isCaching));
         }
         IJoinResult result = join.join(function);
 
