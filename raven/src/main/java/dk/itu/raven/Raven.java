@@ -13,12 +13,12 @@ import dk.itu.raven.io.IRasterReader;
 import dk.itu.raven.io.ImageMetadata;
 import dk.itu.raven.io.MultiFileRasterReader;
 import dk.itu.raven.io.ShapefileReader;
+import dk.itu.raven.io.cache.CacheOptions;
 import dk.itu.raven.io.commandline.CommandLineArgs;
 import dk.itu.raven.join.IJoinResult;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.IRasterFilterFunction;
 import dk.itu.raven.join.JoinFilterFunctions;
-import dk.itu.raven.ksquared.dac.AbstractDAC;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.visualizer.RandomColor;
@@ -81,9 +81,11 @@ public class Raven {
         if (jct.streamed) {
             join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize,
                     jct.tileSize, jct.parallel,
-                    jct.isCaching, jct.kSize, jct.rTreeMinChildren, jct.rTreeMaxChildren);
+                    new CacheOptions(jct.cacheDir, jct.isCaching), jct.kSize, jct.rTreeMinChildren,
+                    jct.rTreeMaxChildren);
         } else {
-            join = api.getJoin(jct.inputRaster, jct.inputVector, jct.isCaching, jct.kSize,
+            join = api.getJoin(jct.inputRaster, jct.inputVector, new CacheOptions(jct.cacheDir, jct.isCaching),
+                    jct.kSize,
                     jct.rTreeMinChildren, jct.rTreeMaxChildren);
         }
         IJoinResult result = join.join(function);

@@ -21,6 +21,7 @@ import dk.itu.raven.io.MatrixReader;
 import dk.itu.raven.io.MockedShapefileReader;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.TFWFormat;
+import dk.itu.raven.io.cache.CacheOptions;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.JoinResult;
 import dk.itu.raven.util.matrix.Matrix;
@@ -229,11 +230,11 @@ public class ApiTest {
             throws IOException {
         AbstractRavenJoin join;
         if (streamed == 0) {
-            join = getStreamedJoin(rasterReader, vectorReader, 4, 4, false, false, 2, 1, 8);
+            join = getStreamedJoin(rasterReader, vectorReader, 4, 4, false, new CacheOptions(null, false), 2, 1, 8);
         } else if (streamed == 1) {
-            join = getStreamedJoin(rasterReader, vectorReader, 4, 4, true, false, 2, 1, 8);
+            join = getStreamedJoin(rasterReader, vectorReader, 4, 4, true, new CacheOptions(null, false), 2, 1, 8);
         } else {
-            join = getJoin(rasterReader, vectorReader, false, 2, 1, 8);
+            join = getJoin(rasterReader, vectorReader, new CacheOptions(null, false), 2, 1, 8);
         }
         JoinResult result = join.join().asMemoryAllocatedResult();
         return result;
