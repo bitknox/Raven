@@ -43,6 +43,7 @@ public class RasterCache<T> {
 		Serializer.serialize(path + "/" + cacheKey, rasterStructure);
 	}
 
+	@SuppressWarnings("unchecked")
 	public T readItem(String cacheKey) throws ClassNotFoundException, IOException {
 		return (T) Serializer.deserialize(path + "/" + cacheKey);
 	}

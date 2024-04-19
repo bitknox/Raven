@@ -32,4 +32,16 @@ public class CommandLineArgs {
         @Parameter(names = { "-i",
                         "--iterations" }, description = "The number of tests performed using these settings", required = true)
         public long iterations = -1;
+
+        @Parameter(names = { "--k-size" }, description = "size of k in the k2-raster algorithm")
+	public int kSize = 2;
+
+        @Parameter(names = { "--r-tree-min-children" }, description = "Minimum number of children in the R-tree")
+	public int rTreeMinChildren = 1;
+
+	@Parameter(names = { "--r-tree-max-children" }, description = "Maximum number of children in the R-tree")
+	public int rTreeMaxChildren = 8;
+
+	@Parameter(names = { "--dac-fraction-size" }, description = "Size of the fraction used in the DAC algorithm")
+	public int dacFractionSize = 20;
 }

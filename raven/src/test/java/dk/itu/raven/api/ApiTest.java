@@ -230,11 +230,11 @@ public class ApiTest {
             throws IOException {
         AbstractRavenJoin join;
         if (streamed == 0) {
-            join = getStreamedJoin(rasterReader, vectorReader, 4, 4, false, new CacheOptions(null, false));
+            join = getStreamedJoin(rasterReader, vectorReader, 4, 4, false, new CacheOptions(null, false), 2, 1, 8);
         } else if (streamed == 1) {
-            join = getStreamedJoin(rasterReader, vectorReader, 4, 4, true, new CacheOptions(null, false));
+            join = getStreamedJoin(rasterReader, vectorReader, 4, 4, true, new CacheOptions(null, false), 2, 1, 8);
         } else {
-            join = getJoin(rasterReader, vectorReader, new CacheOptions(null, false));
+            join = getJoin(rasterReader, vectorReader, new CacheOptions(null, false), 2, 1, 8);
         }
         JoinResult result = join.join().asMemoryAllocatedResult();
         return result;

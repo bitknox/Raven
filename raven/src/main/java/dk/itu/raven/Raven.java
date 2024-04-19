@@ -43,15 +43,15 @@ public class Raven {
         }
         // Set geotools logging to severe to avoid spamming the console
         Logging.getLogger("org.geotools").setLevel(Level.SEVERE);
-
         Logger.setLogLevel(jct.verbose);
 
         RavenApi api = new RavenApi();
-
         IRasterReader rasterReader = new MultiFileRasterReader(new File(jct.inputRaster));
+        ImageMetadata metadata = rasterReader.getImageMetadata();
         ShapefileReader shapefileReader = api.createShapefileReader(jct.inputVector);
 
-        ImageMetadata metadata = rasterReader.getImageMetadata();
+        // Set the fraction size for the DAC
+        api.setDACFraction(jct.dacFractionSize);
 
         IRasterFilterFunction function = JoinFilterFunctions.acceptAll();
 
@@ -81,9 +81,12 @@ public class Raven {
         if (jct.streamed) {
             join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize,
                     jct.tileSize, jct.parallel,
-                    new CacheOptions(jct.cacheDir, jct.isCaching));
+                    new CacheOptions(jct.cacheDir, jct.isCaching), jct.kSize, jct.rTreeMinChildren,
+                    jct.rTreeMaxChildren);
         } else {
-            join = api.getJoin(jct.inputRaster, jct.inputVector, new CacheOptions(jct.cacheDir, jct.isCaching));
+            join = api.getJoin(jct.inputRaster, jct.inputVector, new CacheOptions(jct.cacheDir, jct.isCaching),
+                    jct.kSize,
+                    jct.rTreeMinChildren, jct.rTreeMaxChildren);
         }
         IJoinResult result = join.join(function);
 

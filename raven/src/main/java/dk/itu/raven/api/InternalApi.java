@@ -43,7 +43,7 @@ public class InternalApi {
      */
     static Stream<JoinChunk> streamStructures(ShapefileReader featureReader,
             IRasterReader rasterReader, int widthStep,
-            int heightStep, CacheOptions cacheOptions)
+            int heightStep, CacheOptions cacheOptions, int kSize, int rTreeMinChildren, int rTreeMaxChildren)
             throws IOException {
         if (cacheOptions.isCaching)
             cacheOptions.isCaching = rasterReader.getDirectory().isPresent();
@@ -51,7 +51,7 @@ public class InternalApi {
         // load geometries from shapefile
         VectorData geometries = featureReader.readShapefile();
 
-        RTree<String, Geometry> rtree = generateRTree(geometries.getFeatures());
+        RTree<String, Geometry> rtree = generateRTree(geometries.getFeatures(), rTreeMinChildren, rTreeMaxChildren);
 
         if (cacheOptions.isCaching) {
             // create a cache for the raster structures
@@ -76,7 +76,7 @@ public class InternalApi {
                 }
                 // cache has not been hit, generate structure
                 Logger.log("matrix[0,0]: " + chunk.getMatrix().get(0, 0), LogLevel.DEBUG);
-                AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix());
+                AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix(), kSize);
 
                 // write the structure to the cache
                 try {
@@ -93,7 +93,7 @@ public class InternalApi {
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
                     Optional.empty(), rtree, geometries);
             return rasterStream.map(chunk -> {
-                AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix());
+                AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix(), kSize);
                 return new JoinChunk(raster, chunk.getOffset(), chunk.getTree());
             });
         }
@@ -106,12 +106,12 @@ public class InternalApi {
      * @param rasterData
      * @return the k2-raster
      */
-    static AbstractK2Raster generateRasterStructure(Matrix rasterData) {
+    static AbstractK2Raster generateRasterStructure(Matrix rasterData, int k) {
         AbstractK2Raster k2Raster;
         if (rasterData.getBitsUsed() > 32) {
-            k2Raster = new K2RasterBuilder().build(rasterData, 2);
+            k2Raster = new K2RasterBuilder().build(rasterData, k);
         } else {
-            k2Raster = new K2RasterIntBuilder().build(rasterData, 2);
+            k2Raster = new K2RasterIntBuilder().build(rasterData, k);
         }
         return k2Raster;
     }
@@ -122,8 +122,8 @@ public class InternalApi {
      * @param geometries
      * @return the R* tree
      */
-    static RTree<String, Geometry> generateRTree(List<Polygon> geometries) {
-        RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
+    static RTree<String, Geometry> generateRTree(List<Polygon> geometries, int minChildren, int maxChildren) {
+        RTree<String, Geometry> rtree = RTree.star().minChildren(minChildren).maxChildren(maxChildren).create();
         for (Polygon polygon : geometries) {
             rtree = rtree.add(null, polygon);
         }
@@ -131,11 +131,12 @@ public class InternalApi {
     }
 
     static AbstractRavenJoin getJoin(IRasterReader rasterReader, ShapefileReader vectorReader,
-            CacheOptions cacheOptions)
+            CacheOptions cacheOptions,
+            int kSize, int rTreeMinChildren, int rTreeMaxChildren)
             throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
         Optional<RavenJoin> streamedJoin = getStreamedJoin(rasterReader, vectorReader, metadata.getWidth(),
-                metadata.getHeight(), false, cacheOptions)
+                metadata.getHeight(), false, cacheOptions, kSize, rTreeMinChildren, rTreeMaxChildren)
                 .getRavenJoins().findFirst();
         if (streamedJoin.isPresent()) {
             return streamedJoin.get();
@@ -145,11 +146,13 @@ public class InternalApi {
     }
 
     static StreamedRavenJoin getStreamedJoin(IRasterReader rasterReader, ShapefileReader vectorReader, int widthStep,
-            int heightStep, boolean parallel, CacheOptions cacheOptions)
+            int heightStep, boolean parallel, CacheOptions cacheOptions, int kSize, int rTreeMinChildren,
+            int rTreeMaxChildren)
             throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
         Size imageSize = new Size(metadata.getWidth(), metadata.getHeight());
-        var structures = streamStructures(vectorReader, rasterReader, widthStep, heightStep, cacheOptions);
+        var structures = streamStructures(vectorReader, rasterReader, widthStep, heightStep, cacheOptions, kSize,
+                rTreeMinChildren, rTreeMaxChildren);
         Stream<RavenJoin> stream = structures.filter(chunk -> {
             return chunk.getRtree().root().isPresent();
         }).map(chunk -> {
