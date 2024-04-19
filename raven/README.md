@@ -2,10 +2,23 @@
 
 Raven is a system build around the Raven Join algorithm. The algorithm is largely based on work done by Susana Ladra et-al (found [here](https://www.sciencedirect.com/science/article/pii/S0306437916306214?fr=RR-2&ref=pdf_download&rr=876cbe2d3c0c92ca)), with the implementation and various modifications done by us.
 
+It consists of the following main parts:
+
+- Input Reader: Read and partition multiple data formats in a parallel manner.
+- Data Visualizer: Enables users to visualize join results & data sets.
+- RavenJoin Algorithm: The core spatial join algorithm, introduces key enhancements such as the use of an R*-tree for faster query times, compressed cached raster data structures & parallel computation.
+
+## Prerequisite
+
+- maven
+- jdk 16
+
+
 ## Usage
 
 ```bash
 java -jar ./target/raven-${version}.jar
+
 Usage: Raven [options]
   Options:
     -c, --cache
@@ -43,4 +56,10 @@ Usage: Raven [options]
       Level of verbosity
       Default: WARNING
       Possible Values: [NONE, ERROR, WARNING, INFO, DEBUG]
+```
+
+## Building
+
+```bash
+mvn package -DskipTests
 ```
