@@ -9,6 +9,7 @@ import org.geotools.util.logging.Logging;
 
 //import com.github.bitknox.Raven;
 import dk.itu.raven.api.RavenApi;
+import dk.itu.raven.io.cache.CacheOptions;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.JoinFilterFunctions;
 
@@ -26,6 +27,8 @@ public class App {
 
         api.setDACFraction(jct.dacFractionSize);
 
+        CacheOptions cacheOptions = new CacheOptions(jct.cacheDir, jct.cached);
+
         // Suppress geotools logging
         Logging.getLogger("org.geotools").setLevel(Level.SEVERE);
 
@@ -41,12 +44,12 @@ public class App {
             AbstractRavenJoin join;
             if (jct.joinType.equals(JoinType.STREAMED)) {
                 join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, false,
-                        jct.cached, jct.kSize, jct.rTreeMinChildren, jct.rTreeMaxChildren);
+                        cacheOptions, jct.kSize, jct.rTreeMinChildren, jct.rTreeMaxChildren);
             } else if (jct.joinType.equals(JoinType.PARALLEL)) {
                 join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, true,
-                        jct.cached, jct.kSize, jct.rTreeMinChildren, jct.rTreeMaxChildren);
+                        cacheOptions, jct.kSize, jct.rTreeMinChildren, jct.rTreeMaxChildren);
             } else {
-                join = api.getJoin(jct.inputRaster, jct.inputVector, jct.cached, jct.kSize, jct.rTreeMinChildren,
+                join = api.getJoin(jct.inputRaster, jct.inputVector, cacheOptions, jct.kSize, jct.rTreeMinChildren,
                         jct.rTreeMaxChildren);
             }
             if (jct.filterLow == Integer.MIN_VALUE && jct.filterHigh == Integer.MAX_VALUE) {

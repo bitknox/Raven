@@ -49,6 +49,7 @@ public class Raven {
         IRasterReader rasterReader = new MultiFileRasterReader(new File(jct.inputRaster));
         ImageMetadata metadata = rasterReader.getImageMetadata();
         ShapefileReader shapefileReader = api.createShapefileReader(jct.inputVector);
+        CacheOptions cacheOptions = new CacheOptions(jct.cacheDir, jct.isCaching);
 
         // Set the fraction size for the DAC
         api.setDACFraction(jct.dacFractionSize);
@@ -81,10 +82,10 @@ public class Raven {
         if (jct.streamed) {
             join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize,
                     jct.tileSize, jct.parallel,
-                    new CacheOptions(jct.cacheDir, jct.isCaching), jct.kSize, jct.rTreeMinChildren,
+                    cacheOptions, jct.kSize, jct.rTreeMinChildren,
                     jct.rTreeMaxChildren);
         } else {
-            join = api.getJoin(jct.inputRaster, jct.inputVector, new CacheOptions(jct.cacheDir, jct.isCaching),
+            join = api.getJoin(jct.inputRaster, jct.inputVector, cacheOptions,
                     jct.kSize,
                     jct.rTreeMinChildren, jct.rTreeMaxChildren);
         }

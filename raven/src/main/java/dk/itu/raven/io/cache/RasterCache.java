@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import dk.itu.raven.io.serialization.Serializer;
+import dk.itu.raven.util.Logger;
 
 public class RasterCache<T> {
 	private Path path;
@@ -18,7 +19,7 @@ public class RasterCache<T> {
 		Path p = Paths.get(parentDir, path);
 		this.path = p;
 		File dir = p.toFile();
-		System.out.println(this.path.toString());
+		Logger.log("RasterCache path: " + this.path.toString(), Logger.LogLevel.DEBUG);
 		if (!dir.exists()) {
 			dir.mkdirs();
 			return;

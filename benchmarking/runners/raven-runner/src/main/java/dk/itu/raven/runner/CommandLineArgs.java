@@ -29,6 +29,10 @@ public class CommandLineArgs {
                         "--cached" }, description = "Whether to use cached structures", arity=1)
         public boolean cached = true;
 
+        @Parameter(names = { "-cl",
+			"--cache-location" }, description = "The parent directory to use for caches")
+	public String cacheDir = ".";
+
         @Parameter(names = { "-i",
                         "--iterations" }, description = "The number of tests performed using these settings", required = true)
         public long iterations = -1;
