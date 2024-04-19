@@ -2,6 +2,7 @@ package executor
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/bitknox/Raven/benchmarking/environments"
@@ -64,8 +65,8 @@ func ExecuteBenchmark(benchmark *model.Benchmark) (*model.BenchmarkResult, error
 func ExecuteBenchmarks(benchmarks []*model.Benchmark) []*model.BenchmarkResult {
 	var results []*model.BenchmarkResult
 	for _, benchmark := range benchmarks {
-		fmt.Println("Executing benchmark: ", benchmark.Name)
-		fmt.Printf("Benchmark command: %s \n", benchmark.Command)
+		log.Println("Executing benchmark: ", benchmark.Name)
+		log.Printf("Benchmark command: %s \n", benchmark.Command)
 		benchResult, err := ExecuteBenchmark(benchmark)
 
 		if err != nil {
