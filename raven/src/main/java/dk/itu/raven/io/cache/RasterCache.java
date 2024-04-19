@@ -18,7 +18,7 @@ public class RasterCache<T> {
 		Path p = Paths.get(parentDir, path);
 		this.path = p;
 		File dir = p.toFile();
-		System.out.println(this.path.toString());
+		Logger.log("RasterCache path: " + this.path.toString(), Logger.LogLevel.DEBUG);
 		if (!dir.exists()) {
 			dir.mkdirs();
 			return;
