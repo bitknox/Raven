@@ -1,6 +1,6 @@
-# Benchmark framework
+# Eagle (Efficient Analysis of Geospatial joins with Large-data Evaluations)
 
-Benchmark framework for running evaluating geospatial systems
+Benchmark framework for running, evaluating, and plotting results for geospatial systems.
 
 ## Prerequisite
 
@@ -83,4 +83,30 @@ type BenchmarkResult struct {
 	Labels []string `json:"labels"`
 }
 
+```
+
+## Plotter
+See [plotter](./plotter/plotter.py) for source-code
+### Usage
+
+```bash
+python plotter/plotter.py
+```
+
+```bash
+usage: plotter.py [-h] [-i INPUT] [-o OUTPUT] [-id IDENTIFIER] [-sp] [-ylim Y_LIMIT]
+
+plots results of benchmarks as a bar chart showing average running times, as well as separate charts showing the progressing of running time of each experiment over time.
+
+options:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        a path to the result JSON file to plot
+  -o OUTPUT, --output OUTPUT
+                        a path to the folder the images should be placed in
+  -id IDENTIFIER, --identifier IDENTIFIER
+                        an identifier added to the end of the file to prevent overriding
+  -sp, --sub-plots      whether a separate plot should be made for each experiment showing how the running time evolved over time
+  -ylim Y_LIMIT, --y-limit Y_LIMIT
+                        the top y-limit of the produced plots
 ```
