@@ -20,6 +20,8 @@
 					"/home/runners/raven-runner-1.0.jar",
 					"-iv",
 					"/home/synthetic/vector/square/geom.shp",
+					"-cl",
+					"/home/raster-cache/",
 					"-ir",
 					[
 						"/home/synthetic/raster/selectivity/100",

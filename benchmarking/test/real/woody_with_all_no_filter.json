@@ -12,6 +12,8 @@
 					"/home/runners/raven-runner-1.0.jar",
 					"-iv",
 					"/home/real/vector/woody/woody.shp",
+					"-cl",
+					"/home/raster-cache/",
 					"-ir",
 					[
 						"/home/real/raster/glc2000",
