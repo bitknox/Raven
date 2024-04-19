@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import dk.itu.raven.io.serialization.Serializer;
+import dk.itu.raven.util.Logger;
 
 public class RasterCache<T> {
 	private Path path;
