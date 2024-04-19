@@ -6,10 +6,10 @@ A component for generating synthetic vector and raster data
 
 - python 3
 
-## Usage
+## Usage (Raster)
 
 ```bash
-python gen.py
+python raster/gen.py
 ```
 
 ```bash
@@ -28,4 +28,34 @@ Options:
   --help                          Show this message and exit.
 ```
 
-### 
+### Types of noise
+- perlin noise
+- voronoi noise
+
+### NOTE
+The area uses the EPSG-4326 CRS (lat/long with latitudes ranging from -90 to 90 and longtitudes ranging from -180 to 180).
+
+## Usage (Vector)
+
+```bash
+python vector/gen.py
+```
+
+```bash
+Usage: gen.py [OPTIONS]
+
+Options:
+  --polygons INTEGER              Number of polygons to generate
+  --density FLOAT                 Fake density of the polygons (percent) :)
+  --area <FLOAT FLOAT FLOAT FLOAT>...
+                                  Area that the generated polygons cover.
+  --output TEXT                   Output path
+  --num-vertices INTEGER          Average number of vertices per polygon
+  --help                          Show this message and exit.
+```
+
+### NOTE
+The area uses the EPSG-4326 CRS (lat/long with latitudes ranging from -90 to 90 and longtitudes ranging from -180 to 180).
+
+A density of 100 will only result in the vector data covering around 78%, this is because the shapes resemble circles and the program is made to place them with touching perimeters when the density is 100%. a density of 50% will result in an actual density of $50\% * 78\%=39\%$.
+
