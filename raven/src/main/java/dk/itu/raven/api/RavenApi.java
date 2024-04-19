@@ -6,8 +6,10 @@ import java.io.IOException;
 import dk.itu.raven.io.IRasterReader;
 import dk.itu.raven.io.MultiFileRasterReader;
 import dk.itu.raven.io.ShapefileReader;
+import dk.itu.raven.io.cache.CacheOptions;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.StreamedRavenJoin;
+import dk.itu.raven.ksquared.dac.AbstractDAC;
 
 /**
  * Public API for interacting with the raven library safely.
@@ -25,11 +27,12 @@ public class RavenApi {
 	 * @return
 	 * @throws IOException
 	 */
-	public AbstractRavenJoin getJoin(String rasterPath, String vectorPath, boolean isCaching) throws IOException {
+	public AbstractRavenJoin getJoin(String rasterPath, String vectorPath, CacheOptions cacheOptions, int kSize,
+			int rTreeMinChildren, int rTreeMaxChildren) throws IOException {
 		IRasterReader rasterReader = createRasterReader(rasterPath);
 		ShapefileReader vectorReader = createShapefileReader(vectorPath);
 
-		return InternalApi.getJoin(rasterReader, vectorReader, isCaching);
+		return InternalApi.getJoin(rasterReader, vectorReader, cacheOptions, kSize, rTreeMinChildren, rTreeMaxChildren);
 	}
 
 	/**
@@ -41,11 +44,13 @@ public class RavenApi {
 	 * @return a stream of results of the join
 	 */
 	public StreamedRavenJoin getStreamedJoin(String rasterPath, String vectorPath,
-			int widthStep, int heightStep, boolean parallel, boolean isCaching) throws IOException {
+			int widthStep, int heightStep, boolean parallel, CacheOptions cacheOptions, int kSize, int rTreeMinChildren,
+			int rTreeMaxChildren) throws IOException {
 		IRasterReader rasterReader = createRasterReader(rasterPath);
 		ShapefileReader vectorReader = createShapefileReader(vectorPath);
 
-		return InternalApi.getStreamedJoin(rasterReader, vectorReader, widthStep, heightStep, parallel, isCaching);
+		return InternalApi.getStreamedJoin(rasterReader, vectorReader, widthStep, heightStep, parallel, cacheOptions,
+				kSize, rTreeMinChildren, rTreeMaxChildren);
 	}
 
 	/**
@@ -68,5 +73,9 @@ public class RavenApi {
 	 */
 	public ShapefileReader createShapefileReader(String vectorPath) {
 		return new ShapefileReader(vectorPath);
+	}
+
+	public void setDACFraction(int size) {
+		AbstractDAC.FACT_RANK = size;
 	}
 }
