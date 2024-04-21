@@ -13,7 +13,7 @@ def rgb_norm(world):
     return np.vectorize(norm)
 
 
-colour_cutoffs = [30, 60, 110, 130, 190, 230, 256]
+colour_cutoffs = [35, 70, 140, 150, 200, 230, 256]
 colours = [
     [0, 0, 50],
     [0, 0, 100],
@@ -82,7 +82,10 @@ def generate_perlin(shape, scale, octaves, persistence, lacunarity, seed, select
         sigma = np.std(world)
         mean = np.mean(world)
         cutoff = generate_selectivity_cutoff_function(selectivity, sigma, mean)
-        img = Image.fromarray(cutoff(world))
+        cutoff_world = cutoff(world)
+        selectivity = np.count_nonzero(cutoff_world) / np.size(cutoff_world)
+        print(f"Selectivity: {selectivity}")
+        img = Image.fromarray(cutoff_world)
         if img.mode != "L":
             img = img.convert("L")
 

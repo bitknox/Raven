@@ -23,6 +23,6 @@ public class CommandLineArgs {
         public List<Long> ranges = new ArrayList<>();
 
         @Parameter(names = { "-p",
-                        "--parallel" }, description = "Run the join in parallel (requires running as a stream)", arity = 1)
+                        "--parallel" }, description = "Run the join in parallel", arity = 1)
         public boolean parallel = true;
 }

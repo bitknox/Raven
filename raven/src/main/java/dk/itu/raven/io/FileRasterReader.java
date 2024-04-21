@@ -58,7 +58,7 @@ public abstract class FileRasterReader extends RasterReader {
 		try {
 			crs = adapter.createCoordinateSystem(metadata);
 		} catch (Exception e) {
-			Logger.log("Cannot create CRS from metadata, using default CRS", Logger.LogLevel.DEBUG);
+			Logger.log("(Tiff) Cannot create CRS from metadata, using default CRS", Logger.LogLevel.DEBUG);
 			crs = adapter.DefaultCRS;
 		}
 	}
@@ -79,7 +79,7 @@ public abstract class FileRasterReader extends RasterReader {
 			Logger.log("Reading TFW file because the metadata had no model to grid information", Logger.LogLevel.DEBUG);
 			g2m = TFWFormat.read(tfw);
 		} else {
-			throw new UnsupportedOperationException("no side-car or inline TFW data found");
+			throw new UnsupportedOperationException("no side-car or inline TFW data found for tile: " + tiff.getPath());
 		}
 
 	}
