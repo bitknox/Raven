@@ -62,19 +62,29 @@ public class RaptorApi {
 
         List<File> files = Arrays.asList(rasterFile.listFiles());
 
-        for (File file : files) {
-            System.out.println(file.getAbsolutePath());
-            if (!file.isDirectory()) {
-                break;
+        Stream<File> stream = files.stream();
+
+        if (parallel) {
+            stream = stream.parallel();
+        }
+
+        stream.forEach(f -> {
+            System.out.println(f.getAbsolutePath());
+            if (!f.isDirectory()) {
+                return;
             }
-            File[] tiffFiles = file.listFiles((dir1, name) -> name.endsWith(".tif"));
+            File[] tiffFiles = f.listFiles((dir1, name) -> name.endsWith(".tif"));
 
             if (tiffFiles.length == 0) {
-                break;
+                return;
             }
             Path rasterPath = new Path(tiffFiles[0].getAbsolutePath());
-            callback.call(join(rasterPath, geomArray));
-        }
+            try {
+                callback.call(join(rasterPath, geomArray));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
 
         featureReader.close();
     }
