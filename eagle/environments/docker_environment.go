@@ -3,6 +3,7 @@ package environments
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os/exec"
 	"strings"
 	"time"
@@ -35,7 +36,7 @@ func (d *DockerEnvironment) RunCommand(cmd Command) (string, error) {
 
 	go func() {
 		for errScanner.Scan() {
-			fmt.Println(errScanner.Text())
+			log.Println(errScanner.Text())
 		}
 	}()
 

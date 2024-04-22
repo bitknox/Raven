@@ -26,6 +26,7 @@ public class App {
 
         RaptorApi api = new RaptorApi();
         for (int i = 0; i < jct.iterations; i++) {
+            System.err.println("Running iteration " + (i+1) + " of " + jct.iterations + " iterations.");
             long start = System.currentTimeMillis();
 
             Stream<JoinResult> res = api.join(jct.inputRaster, jct.inputVector, jct.parallel);
@@ -36,6 +37,7 @@ public class App {
             }
             long end = System.currentTimeMillis();
             long time = end - start;
+            System.err.println("    Iteration " + (i+1) + " took " + time + "ms.");
             benchResult.addEntry(time);
         }
 
