@@ -1,10 +1,7 @@
 package dk.itu.raptor.join;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -14,10 +11,8 @@ import org.locationtech.jts.geom.Geometry;
 
 import dk.itu.raptor.util.Pair;
 import edu.ucr.cs.bdlab.beast.common.BeastOptions;
-import edu.ucr.cs.bdlab.beast.geolite.IFeature;
 import edu.ucr.cs.bdlab.beast.geolite.ITile;
 import edu.ucr.cs.bdlab.beast.geolite.RasterMetadata;
-import edu.ucr.cs.bdlab.beast.io.shapefile.ShapefileFeatureReader;
 import edu.ucr.cs.bdlab.raptor.IRasterReader;
 import edu.ucr.cs.bdlab.raptor.Intersections;
 import edu.ucr.cs.bdlab.raptor.RasterHelper;
@@ -28,32 +23,37 @@ public class RaptorJoin {
     }
 
     private Stream<List<PixelRange>> extractCellsBeast(Path path, Geometry[] geometries, RasterMetadata metadata) {
-        Map<Integer, List<PixelRange>> ranges = new HashMap<>();
+        List<List<PixelRange>> ranges = new ArrayList<>();
+        for (int i = 0; i < metadata.numTiles(); i++) {
+            ranges.add(new ArrayList<>());
+        }
         Intersections intersections = new Intersections();
         intersections.compute(geometries, metadata, new BeastOptions());
         for (int i = 0; i < intersections.getNumIntersections(); i++) {
-            List<PixelRange> rangeList = ranges.get(intersections.getTileID(i));
-            if (rangeList == null) {
-                rangeList = new ArrayList<>();
-                ranges.put(intersections.getTileID(i), rangeList);
-            }
-            rangeList.add(new PixelRange(path, intersections.getTileID(i),
+            ranges.get(intersections.getTileID(i)).add(new PixelRange(path, intersections.getTileID(i),
                     intersections.getFeatureID(i),
                     intersections.getY(i), intersections.getX1(i), intersections.getX2(i)));
         }
-        return ranges.values().stream();
+        return ranges.stream();
     }
 
-    public Stream<JoinResult> processFlashIndices(Stream<List<PixelRange>> ranges, FileSystem fs) {
-        return ranges.flatMap(list -> { // changing this to a map causes heap space issues
+    public Stream<List<JoinResult>> processFlashIndices(Stream<List<PixelRange>> stream, FileSystem fs) {
+        return stream.map(ranges -> {
+            if (ranges.isEmpty()) {
+                return new ArrayList<>();
+            }
             List<JoinResult> results = new ArrayList<>();
-            int tid = list.get(0).tid;
-            Path path = list.get(0).file;
+            Path path = ranges.get(0).file;
             IRasterReader<Object> reader = RasterHelper.createRasterReader(fs, path, new BeastOptions(),
                     new SparkConf());
+            int tid = ranges.get(0).tid;
             ITile<Object> tile = reader.readTile(tid);
+            for (var range : ranges) {
+                if (range.tid != tid) {
+                    tid = range.tid;
+                    tile = reader.readTile(tid);
+                }
 
-            for (PixelRange range : list) {
                 for (int x = range.x1; x <= range.x2; x++) {
                     Object m = tile.getPixelValue(x, range.y);
                     results.add(
@@ -67,27 +67,16 @@ public class RaptorJoin {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return results.stream();
+            return results;
         });
     }
 
-    public Stream<List<PixelRange>> optimizeFlashIndices(Stream<List<PixelRange>> ranges) {
-        return ranges.map(list -> {
-            Collections.sort(list);
-            return list;
-        });
+    public void optimizeFlashIndices(Stream<List<PixelRange>> ranges) {
+        // Collections.sort(ranges);
     }
 
-    public Stream<Stream<List<PixelRange>>> createFlashIndices(ShapefileFeatureReader featureReader,
-            Stream<Pair<Path, RasterMetadata>> metadatas) {
-        List<Geometry> geometries = new ArrayList<>();
-        for (IFeature feature : featureReader) {
-            geometries.add(feature.getGeometry());
-        }
-        Geometry[] geomArray = geometries.toArray(new Geometry[0]);
-
-        return metadatas.map(metadata -> {
-            return extractCellsBeast(metadata.first, geomArray, metadata.second);
-        });
+    public Stream<List<PixelRange>> createFlashIndices(Geometry[] geomArray,
+            Pair<Path, RasterMetadata> metadata) {
+        return extractCellsBeast(metadata.first, geomArray, metadata.second);
     }
 }
