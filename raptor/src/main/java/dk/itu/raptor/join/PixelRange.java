@@ -1,11 +1,14 @@
 package dk.itu.raptor.join;
 
+import org.apache.hadoop.fs.Path;
+
 public class PixelRange implements Comparable<PixelRange> {
-    int rid, tid, y, x1, x2;
+    Path file;
+    int tid, y, x1, x2;
     long gid;
 
-    public PixelRange(int rid, int tid, long gid, int y, int x1, int x2) {
-        this.rid = rid;
+    public PixelRange(Path file, int tid, long gid, int y, int x1, int x2) {
+        this.file = file;
         this.tid = tid;
         this.gid = gid;
         this.y = y;

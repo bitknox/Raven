@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import org.apache.hadoop.conf.Configuration;
@@ -35,9 +34,7 @@ public class RaptorApi {
         featureReader.initialize(vectorPath, new BeastOptions());
         List<File> files = Arrays.asList(rasterFile.listFiles());
 
-        List<Pair<Integer, RasterMetadata>> metadatas = new ArrayList<>();
-        List<IRasterReader<Object>> readers = new ArrayList<>();
-        AtomicInteger counter = new AtomicInteger();
+        List<Pair<Path, RasterMetadata>> metadatas = new ArrayList<>();
 
         for (File file : files) {
             if (!file.isDirectory()) {
@@ -51,17 +48,19 @@ public class RaptorApi {
             Path rasterPath = new Path(tiffFiles[0].getAbsolutePath());
             IRasterReader<Object> reader = RasterHelper.createRasterReader(fs, rasterPath, new BeastOptions(),
                     new SparkConf());
-            readers.add(reader);
             RasterMetadata metadata = reader.metadata();
-            metadatas.add(new Pair<>(counter.getAndIncrement(), metadata));
+            metadatas.add(new Pair<>(rasterPath, metadata));
         }
 
-        Stream<Pair<Integer, RasterMetadata>> metadataStream = metadatas.stream();
+        Stream<Pair<Path, RasterMetadata>> metadataStream = metadatas.stream();
 
         Stream<List<PixelRange>> stream = join.createFlashIndices(featureReader, metadataStream)
                 .map(s -> parallel ? join.optimizeFlashIndices(s).parallel() : join.optimizeFlashIndices(s))
                 .reduce(Stream::concat).orElseGet(Stream::empty);
-        Stream<JoinResult> res = join.processFlashIndices(stream, readers);
+        Stream<JoinResult> res = join.processFlashIndices(stream, fs);
+
+        featureReader.close();
+        fs.close();
 
         return res;
     }
