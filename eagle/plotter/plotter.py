@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import rcParams
 import sys
 import argparse
+from collections import defaultdict
 
 parser = argparse.ArgumentParser(
     description="plots results of benchmarks as a bar chart showing average running times, as well as separate charts showing the progressing of running time of each experiment over time.",
@@ -23,18 +24,32 @@ parser.add_argument(
     help="whether a separate plot should be made for each experiment showing how the running time evolved over time",
 )
 parser.add_argument("-ylim", "--y-limit", help="the top y-limit of the produced plots")
+parser.add_argument(
+    "-g",
+    "--groups",
+    help="a description of the groups given as a string where every character corresponds to some group. Experiments in the same group will be compared to eachother. Any character can be the identifier for a group",
+)
 args = parser.parse_args()
 
 
 def addlabels(x, y):
     font = {"family": "DejaVu Sans", "size": 12, "color": "white"}
+
+    if args.groups is None:
+        args.groups = "a" * len(x)
+    groups = {}
+    group_members = defaultdict(list)
+    for i, c in enumerate(args.groups):
+        groups[i] = c
+        group_members[c].append(i)
+
     for i in range(len(x)):
         plt.text(
             i, y[i] / 2, str(int(y[i])) + "ms", ha="center", va="bottom", fontdict=font
         )
-        difference = y[i] / y[0]
-        if i == 0:
-            text = "(Ref)"
+        difference = y[i] / y[group_members[groups[i]][0]]
+        if i == group_members[groups[i]][0]:
+            text = "(Reference)"
         elif difference < 1:
             text = "(-" + str(int((1 - difference) * 100)) + "%)"
         else:
