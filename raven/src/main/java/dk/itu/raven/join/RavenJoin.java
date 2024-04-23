@@ -269,8 +269,8 @@ public class RavenJoin extends AbstractRavenJoin {
 
 		List<PixelRange> out = new ArrayList<>();
 
-		int squareOffsetX = offset.getX() + area.getTopX();
-		int squareOffsetY = offset.getY() + area.getTopY();
+		int squareOffsetX = area.getTopX();
+		int squareOffsetY = area.getTopY();
 
 		int c1 = w.minX - squareOffsetX;
 		int c2 = w.maxX - squareOffsetX;
@@ -290,7 +290,8 @@ public class RavenJoin extends AbstractRavenJoin {
 			int[] rangeCountPrefixsum = res.second;
 
 			k2Raster.searchValuesInRanges(ranges, out, offset, r1, r2, c1, c2, rangeLimits, rangeCountPrefixsum,
-					function, k2Index - 1, 0, area.getTopX(), area.getTopY(), minValue, maxValue, area.getSize());
+					function, k2Index - 1, 0, area.getTopX() - offset.getX(), area.getTopY() - offset.getY(), minValue,
+					maxValue, area.getSize());
 		}
 
 		return out;
