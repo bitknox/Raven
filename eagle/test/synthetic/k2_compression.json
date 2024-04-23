@@ -1,0 +1,49 @@
+{
+	"name": "Join Time - K2Compression",
+	"benchmarks": [
+		{
+			"name": [
+				"Raven - 100%",
+				"Raven - 50%",
+				"Raven - 25%",
+				"Raven - 12.5%",
+				"Raven - 6.25%",
+				"Raven - 3.125%",
+				"Raven - 1.562%"
+			],
+			"iterations": 100,
+			"colour": "darkred",
+			"command": {
+				"path": "java",
+				"args": [
+					"-jar",
+					"/home/runners/raven-runner-1.0.jar",
+					"-iv",
+					"/home/synthetic/vector/square/geom.shp",
+					"-cl",
+					"/home/raster-cache/",
+					"-ir",
+					[
+						"/home/synthetic/raster/colors/2",
+						"/home/synthetic/raster/colors/4",
+						"/home/synthetic/raster/colors/8",
+						"/home/synthetic/raster/colors/16",
+						"/home/synthetic/raster/colors/32",
+						"/home/synthetic/raster/colors/64",
+						"/home/synthetic/raster/colors/128",
+						"/home/synthetic/raster/colors/256"
+					],
+					"-t",
+					"parallel",
+					"-ts",
+					"2048"
+				]
+			},
+			"environment_options": {
+				"environment_type": "docker",
+				"docker_file_path": "./runners/raven-runner/",
+				"docker_mount_path": "/home/joinpro/data"
+			}
+		}
+	]
+}

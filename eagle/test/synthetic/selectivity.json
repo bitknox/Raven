@@ -62,16 +62,16 @@
 					"-jar",
 					"/home/runners/raptor-runner-1.0.jar",
 					"-iv",
-					"/home/synthetic/vector/square.zip",
+					"/home/synthetic/vector/square/geom.shp",
 					"-ir",
 					[
-						"/home/synthetic/raster/selectivity/100/tile1/tile.tif",
-						"/home/synthetic/raster/selectivity/50/tile1/tile.tif",
-						"/home/synthetic/raster/selectivity/25/tile1/tile.tif",
-						"/home/synthetic/raster/selectivity/12.5/tile1/tile.tif",
-						"/home/synthetic/raster/selectivity/6.25/tile1/tile.tif",
-						"/home/synthetic/raster/selectivity/3.125/tile1/tile.tif",
-						"/home/synthetic/raster/selectivity/1.562/tile1/tile.tif"
+						"/home/synthetic/raster/selectivity/100",
+						"/home/synthetic/raster/selectivity/50",
+						"/home/synthetic/raster/selectivity/25",
+						"/home/synthetic/raster/selectivity/12.5",
+						"/home/synthetic/raster/selectivity/6.25",
+						"/home/synthetic/raster/selectivity/3.125",
+						"/home/synthetic/raster/selectivity/1.562"
 					]
 				]
 			},
