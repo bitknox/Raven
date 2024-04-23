@@ -34,7 +34,6 @@ public class RaptorApi {
                 new SparkConf());
         RasterMetadata metadata = reader.metadata();
         Stream<List<PixelRange>> ranges = join.createFlashIndices(geomArray, new Pair<>(rasterPath, metadata));
-        join.optimizeFlashIndices(ranges);
         Stream<List<JoinResult>> res = join.processFlashIndices(ranges, fs);
 
         fs.close();

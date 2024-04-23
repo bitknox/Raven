@@ -18,18 +18,21 @@ public class PixelRange implements Comparable<PixelRange> {
 
     @Override
     public int compareTo(PixelRange o) {
-        if (y == o.y) {
-            if (gid == o.gid) {
-                if (x1 == o.x1) {
-                    return 0;
+        if (tid == o.tid) {
+            if (y == o.y) {
+                if (gid == o.gid) {
+                    if (x1 == o.x1) {
+                        return 0;
+                    }
+                    return x1 - o.x1;
                 }
-                return x1 - o.x1;
+                // return (int) (gid - o.gid);
+                if (gid < o.gid)
+                    return -1;
+                return 1;
             }
-            // return (int) (gid - o.gid);
-            if (gid < o.gid)
-                return -1;
-            return 1;
+            return y - o.y;
         }
-        return y - o.y;
+        return tid - o.tid;
     }
 }

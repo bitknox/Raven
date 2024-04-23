@@ -1,6 +1,7 @@
 package dk.itu.raptor.join;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -34,6 +35,11 @@ public class RaptorJoin {
                     intersections.getFeatureID(i),
                     intersections.getY(i), intersections.getX1(i), intersections.getX2(i)));
         }
+
+        for (List<PixelRange> lst : ranges) {
+            Collections.sort(lst);
+        }
+
         return ranges.stream();
     }
 
@@ -69,10 +75,6 @@ public class RaptorJoin {
             }
             return results;
         });
-    }
-
-    public void optimizeFlashIndices(Stream<List<PixelRange>> ranges) {
-        // Collections.sort(ranges);
     }
 
     public Stream<List<PixelRange>> createFlashIndices(Geometry[] geomArray,

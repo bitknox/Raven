@@ -27,9 +27,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.bitknox</groupId>
-            <artifactId>Raptor</artifactId>
-            <version>1.0</version>
+            <groupId>com.github.bitknox.Raven</groupId>
+            <artifactId>raptor</artifactId>
+            <version>main-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
