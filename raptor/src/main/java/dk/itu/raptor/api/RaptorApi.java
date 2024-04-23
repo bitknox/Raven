@@ -68,7 +68,7 @@ public class RaptorApi {
         }
 
         stream.forEach(f -> {
-            System.out.println(f.getAbsolutePath());
+            System.err.println(f.getAbsolutePath());
             if (!f.isDirectory()) {
                 return;
             }
