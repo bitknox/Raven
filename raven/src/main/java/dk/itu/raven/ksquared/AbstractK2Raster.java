@@ -342,17 +342,24 @@ public abstract class AbstractK2Raster implements Serializable {
     }
 
     public void searchValuesInRanges(List<PixelRange> ranges,
-            List<PixelRange> out, Offset<Integer> offset, RangeExtremes[] rangeLimits, int[] rangePrefixsum, int r1,
-            int r2, int c1, int c2, IRasterFilterFunction function) {
-        searchValuesInRanges(ranges, out, offset, r1, r2, c1, c2, rangeLimits, rangePrefixsum, -1, 0, function,
-                0, 0,
-                this.minVal, this.maxVal, this.n);
+            List<PixelRange> out, Offset<Integer> offset, int r1,
+            int r2, int c1, int c2, RangeExtremes[] rangeLimits, int[] rangePrefixsum, IRasterFilterFunction function) {
+        searchValuesInRanges(ranges, out, offset, r1, r2, c1, c2, rangeLimits, rangePrefixsum, function, -1, 0,
+                0, 0, this.minVal, this.maxVal, this.n);
     }
 
-    private void searchValuesInRanges(List<PixelRange> ranges, List<PixelRange> out,
-            Offset<Integer> offset, int r1,
+    public void searchValuesInRanges(List<PixelRange> ranges,
+            List<PixelRange> out, Offset<Integer> offset, int r1, int r2, int c1, int c2, RangeExtremes[] rangeLimits,
+            int[] rangePrefixsum, IRasterFilterFunction function, int z, int treeIndex, int baseX, int baseY,
+            long minVal, long maxVal, int n) {
+        searchValuesInRanges(ranges, out, offset, r1, r2, c1, c2, rangeLimits, rangePrefixsum, z, treeIndex, function,
+                baseX, baseY, minVal, maxVal, n, new Offset<Integer>(baseX, baseY));
+    }
+
+    private void searchValuesInRanges(List<PixelRange> ranges, List<PixelRange> out, Offset<Integer> offset, int r1,
             int r2, int c1, int c2, RangeExtremes[] rangeLimits, int[] rangePrefixsum, int z, int treeIndex,
-            IRasterFilterFunction function, int baseX, int baseY, long minVal, long maxVal, int n) {
+            IRasterFilterFunction function, int baseX, int baseY, long minVal, long maxVal, int n,
+            Offset<Integer> treeOffset) {
         final int nKths = (n / k); // childsize
         final int rank = treeRank(z);
         final int initialI = r1 / nKths;
@@ -407,20 +414,19 @@ public abstract class AbstractK2Raster implements Serializable {
                         addCells = true;
                         /* all cells meet the condition in this branch */
                     } else {
-                        boolean containsNoRanges = rangeLimits[treeIndexp].x1 > c2p + baseXp
-                                || rangeLimits[treeIndexp].x2 < c1p + baseXp;
+                        boolean containsNoRanges = rangeLimits[treeIndexp].x1 > c2p + baseXp - treeOffset.getX()
+                                || rangeLimits[treeIndexp].x2 < c1p + baseXp - treeOffset.getX();
                         if (containsNoRanges || !function.containsWithin(minValp, maxValp)) {
                             continue;
                         } else {
-                            searchValuesInRanges(ranges, out, offset, r1p, r2p, c1p, c2p, rangeLimits,
-                                    rangePrefixsum,
-                                    zp, treeIndexp, function, baseXp, baseYp, minValp, maxValp, nKths);
+                            searchValuesInRanges(ranges, out, offset, r1p, r2p, c1p, c2p, rangeLimits, rangePrefixsum,
+                                    zp, treeIndexp, function, baseXp, baseYp, minValp, maxValp, nKths, treeOffset);
                         }
                     }
                 }
                 if (addCells) {
-                    int rStart = r1p + baseYp;
-                    int rEnd = r2p + baseYp;
+                    int rStart = r1p + baseYp - treeOffset.getY();
+                    int rEnd = r2p + baseYp - treeOffset.getY();
                     for (int l = rangePrefixsum[rStart]; l < rangePrefixsum[rEnd + 1]; l++) {
                         PixelRange range = ranges.get(l);
 

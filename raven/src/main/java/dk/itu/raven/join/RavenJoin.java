@@ -184,7 +184,7 @@ public class RavenJoin extends AbstractRavenJoin {
 	}
 
 	public Collection<PixelRange> findFilteredPixelRanges(java.awt.Rectangle rasterBounding, boolean[] inRanges,
-			Map<Long, Integer> intersections) {
+			Map<Long, Integer> intersections, Square area, long minValue, long maxValue, int k2Index) {
 
 		int[] rangeCounts = new int[rasterBounding.height + 1];
 
@@ -269,27 +269,31 @@ public class RavenJoin extends AbstractRavenJoin {
 
 		List<PixelRange> out = new ArrayList<>();
 
-		// TODO: find a better type
-		// rangeLimits is a tree where every pair of integers starting at index 0 (ie.
-		// 0;1, 2;3, ...) corresponds to a node. The tree should be able to quickly tell
+		int squareOffsetX = offset.getX() + area.getTopX();
+		int squareOffsetY = offset.getY() + area.getTopY();
+
+		int c1 = w.minX - squareOffsetX;
+		int c2 = w.maxX - squareOffsetX;
+		int r1 = w.minY - squareOffsetY;
+		int r2 = w.maxY - squareOffsetY;
+
+		// rangeLimits is a tree that is able to quickly tell
 		// what the maximum and minimum x-values for ranges in a given k2-raster node
-		// is. The first 2 values correspond to the root of the tree (ie. the whole
-		// matrix), the next 2*k values are all nodes for the second layer of the
+		// is. The first node values correspond to the root of the tree (ie. the whole
+		// matrix), the next k nodes are all nodes for the second layer of the
 		// k2-raster tree (corresponding to the sub-matrixes of size n/k).
 		for (List<PixelRange> ranges : layers) {
-			Pair<RangeExtremes[], int[]> res = buildRangeLimitTree(offset,
-					k2Raster.getSize(), k2Raster.k, ranges);
+			Pair<RangeExtremes[], int[]> res = buildRangeLimitTree(
+					new Offset<Integer>(squareOffsetX, squareOffsetY),
+					area.getSize(), k2Raster.k, ranges);
 			RangeExtremes[] rangeLimits = res.first;
 			int[] rangeCountPrefixsum = res.second;
 
-			k2Raster.searchValuesInRanges(ranges, out, offset,
-					rangeLimits, rangeCountPrefixsum, w.minY - offset.getY(),
-					w.maxY - offset.getY(), w.minX - offset.getX(),
-					w.maxX - offset.getX(), function);
+			k2Raster.searchValuesInRanges(ranges, out, offset, r1, r2, c1, c2, rangeLimits, rangeCountPrefixsum,
+					function, k2Index - 1, 0, area.getTopX(), area.getTopY(), minValue, maxValue, area.getSize());
 		}
 
 		return out;
-
 	}
 
 	private void addRange(java.awt.Rectangle rasterBounding, int[] rangeCounts, List<List<PixelRange>> layers, int r,
@@ -347,8 +351,8 @@ public class RavenJoin extends AbstractRavenJoin {
 	 * @return A collection of pixels that are contained in the vector shape
 	 *         described by {@code polygon}
 	 */
-	protected Collection<PixelRange> extractCellsPolygon(Polygon polygon, int pk, java.awt.Rectangle rasterBounding,
-			boolean prob) {
+	protected Collection<PixelRange> extractCellsPolygon(Polygon polygon, int pk, Square area, long minValue,
+			long maxValue, java.awt.Rectangle rasterBounding, boolean prob) {
 
 		// if there is no intersection between the polygon and rasterBounding we can
 		// exit early
@@ -362,7 +366,7 @@ public class RavenJoin extends AbstractRavenJoin {
 		boolean[] inRanges = temp.first;
 
 		if (prob) {
-			return findFilteredPixelRanges(rasterBounding, inRanges, intersections);
+			return findFilteredPixelRanges(rasterBounding, inRanges, intersections, area, minValue, maxValue, pk);
 		} else {
 			return findAllPixelRanges(rasterBounding, inRanges, intersections);
 		}
@@ -370,12 +374,14 @@ public class RavenJoin extends AbstractRavenJoin {
 
 	// based loosely on:
 	// https://bitbucket.org/bdlabucr/beast/src/master/raptor/src/main/java/edu/ucr/cs/bdlab/raptor/Intersections.java
-	private void extractCells(Leaf<String, Geometry> pr, int pk, java.awt.Rectangle rasterBounding,
+	private void extractCells(Leaf<String, Geometry> pr, int pk, Square area, long minValue,
+			long maxValue, java.awt.Rectangle rasterBounding,
 			JoinResult def, boolean prob) {
 		for (Entry<String, Geometry> entry : ((Leaf<String, Geometry>) pr).entries()) {
 			// all geometries we store are polygons
 			def.add(new JoinResultItem(entry.geometry(),
-					extractCellsPolygon((Polygon) entry.geometry(), pk, rasterBounding, prob)));
+					extractCellsPolygon((Polygon) entry.geometry(), pk, area, minValue, maxValue, rasterBounding,
+							prob)));
 		}
 	}
 
@@ -388,13 +394,15 @@ public class RavenJoin extends AbstractRavenJoin {
 	 *                       node with index {@code pk} in the k2 raster tree
 	 * @param def            the list all the pixelranges should be added to
 	 */
-	private void addDescendantsLeaves(NonLeaf<String, Geometry> pr, int pk, java.awt.Rectangle rasterBounding,
+	private void addDescendantsLeaves(NonLeaf<String, Geometry> pr, int pk, Square area, long minValue,
+			long maxValue, java.awt.Rectangle rasterBounding,
 			JoinResult def, boolean prob) {
 		for (Node<String, Geometry> n : pr.children()) {
 			if (TreeExtensions.isLeaf(n)) {
-				extractCells((Leaf<String, Geometry>) n, pk, rasterBounding, def, prob);
+				extractCells((Leaf<String, Geometry>) n, pk, area, minValue, maxValue, rasterBounding, def, prob);
 			} else {
-				addDescendantsLeaves((NonLeaf<String, Geometry>) n, pk, rasterBounding, def, prob);
+				addDescendantsLeaves((NonLeaf<String, Geometry>) n, pk, area, minValue, maxValue, rasterBounding, def,
+						prob);
 			}
 		}
 	}
@@ -582,9 +590,11 @@ public class RavenJoin extends AbstractRavenJoin {
 				case TotalOverlap:
 					if (TreeExtensions.isLeaf(p.a)) {
 
-						extractCells((Leaf<String, Geometry>) p.a, checked.b, rect, def, false);
+						extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, checked.d, checked.e, rect,
+								def, false);
 					} else {
-						addDescendantsLeaves((NonLeaf<String, Geometry>) p.a, checked.b, rect, def, false);
+						addDescendantsLeaves((NonLeaf<String, Geometry>) p.a, checked.b, checked.c, checked.d,
+								checked.e, rect, def, false);
 					}
 					break;
 				case PossibleOverlap:
@@ -599,10 +609,12 @@ public class RavenJoin extends AbstractRavenJoin {
 								checked.d, checked.e);
 						switch (overlap) {
 							case TotalOverlap:
-								extractCells((Leaf<String, Geometry>) p.a, checked.b, rect, def, false);
+								extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, checked.d, checked.e,
+										rect, def, false);
 								break;
 							case PartialOverlap:
-								extractCells((Leaf<String, Geometry>) p.a, checked.b, rect, def, true);
+								extractCells((Leaf<String, Geometry>) p.a, checked.b, checked.c, checked.d, checked.e,
+										rect, def, true);
 								Logger.log(p.a.geometry().mbr(), Logger.LogLevel.DEBUG);
 								break;
 							case NoOverlap:
