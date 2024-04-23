@@ -354,12 +354,12 @@ def generate(
         region_colors = Utilities.get_different_adjacent_colors(
             width, height, image, colors, color_algorithm
         )
-
+    print(len(region_colors))
     # if we're masking, some regions won't be assigned
     region_colors[None] = background
 
     # the original, full image (without borders)
-    pil_image = Image.new("RGB", (width, height))
+    pil_image = Image.new("P", (width, height))
     for x in range(width):
         for y in range(height):
             pil_image.putpixel((x, y), region_colors[image[x][y]])
@@ -423,6 +423,8 @@ def generate(
                 break
 
     else:
+        
+        pil_image.putpalette([c for color in colors for c in color])
         return pil_image
 
 

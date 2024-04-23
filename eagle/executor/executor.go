@@ -12,7 +12,7 @@ import (
 
 func ExecuteBenchmark(benchmark *model.Benchmark) (*model.BenchmarkResult, error) {
 	env := environments.NewEnvironment(benchmark.EnvironmentOptions)
-
+	defer env.Runner.Teardown()
 	//append iterations to command arguments
 	benchmark.Command.Args = append(benchmark.Command.Args, "\"-i\"", fmt.Sprintf("%d", benchmark.Iterations))
 
@@ -37,8 +37,6 @@ func ExecuteBenchmark(benchmark *model.Benchmark) (*model.BenchmarkResult, error
 
 	fmt.Println(r)
 	//get last line of output
-
-	defer env.Runner.Teardown()
 	//generate result
 	result, err := parsing.ParseResult(r)
 

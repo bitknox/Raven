@@ -10,6 +10,7 @@ import click
 @click.command()
 @click.option("--type", default="perlin", help="Type of image to generate")
 @click.option("--selectivity", type=float, default=None, help="Describes how much of the image should be white (0.0 - 1.0). If None, it will instead generate a coloured world")
+@click.option("--regions", type=int, default=100, help="Number of regions to generate for voronoi image")
 @click.option("--rescale", default=1, type=int, help="Scales the resulting images by the value")
 @click.option("--shape", type=(int, int), default=(1000,1000), help="Original size (before scaling) of the image")
 @click.option("--output", default="image.png", help="Output path")
@@ -19,7 +20,7 @@ import click
     default=(90, -180, -90, 180),
     help="Area that the generated polygons cover.",
 )
-def generate_image(type, selectivity, rescale, shape, output,area):
+def generate_image(type, selectivity, regions,rescale, shape, output,area):
     if type not in ["perlin", "voronoi"]:
         raise ValueError("Invalid type of image to generate")
     if type != "perlin" and selectivity is not None:
@@ -41,8 +42,8 @@ def generate_image(type, selectivity, rescale, shape, output,area):
             path=output,
             width=shape[0],
             height=shape[1],
-            regions=100,
-            colors=[generate_random_color() for _ in range(20)],
+            regions=regions,
+            colors=[generate_random_color() for _ in range(50)],
             color_algorithm=ColorAlgorithm.no_adjacent_same,
         )
 

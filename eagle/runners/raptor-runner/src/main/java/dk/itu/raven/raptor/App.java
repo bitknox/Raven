@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Stream;
 
 import com.beust.jcommander.JCommander;
@@ -26,16 +27,31 @@ public class App {
 
         RaptorApi api = new RaptorApi();
         for (int i = 0; i < jct.iterations; i++) {
+            System.err.println("Running iteration " + (i+1) + " of " + jct.iterations + " iterations.");
             long start = System.currentTimeMillis();
 
-            Stream<JoinResult> res = api.join(jct.inputRaster, jct.inputVector, jct.parallel);
-            if (jct.filterLow == Integer.MIN_VALUE && jct.filterHigh == Integer.MAX_VALUE) {
-                res.count();
-            } else {
-                res.filter(f -> f.m >= jct.filterLow && f.m <= jct.filterHigh).count();
-            }
+            api.join(jct.inputRaster, jct.inputVector, jct.parallel, new RaptorApi.JoinCallback() {
+
+                @Override
+                public void call(Stream<List<JoinResult>> result) {
+                    if (!(jct.filterLow == Integer.MIN_VALUE && jct.filterHigh == Integer.MAX_VALUE)) {
+                        result = result.map(lst -> {
+                            List<JoinResult> out = new ArrayList<>();
+                            for (JoinResult r : lst) {
+                                if (jct.filterLow <= r.m && r.m <= jct.filterHigh) {
+                                    out.add(r);
+                                }
+                            }
+                            return out;
+                        });
+                    }
+                    result.map(List::size).reduce(Integer::sum).orElse(-1);
+                }
+            });
+
             long end = System.currentTimeMillis();
             long time = end - start;
+            System.err.println("    Iteration " + (i+1) + " took " + time + "ms.");
             benchResult.addEntry(time);
         }
 
