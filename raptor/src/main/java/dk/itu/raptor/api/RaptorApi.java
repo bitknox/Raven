@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import org.apache.hadoop.conf.Configuration;
@@ -63,12 +64,16 @@ public class RaptorApi {
 
         Stream<File> stream = files.stream();
 
+        int numTiles = files.size();
+
+        AtomicInteger counter = new AtomicInteger(0);
+
         if (parallel) {
             stream = stream.parallel();
         }
 
         stream.forEach(f -> {
-            System.err.println(f.getAbsolutePath());
+            System.err.println("Processing " + counter.incrementAndGet() + " of " + numTiles + " tiles.");
             if (!f.isDirectory()) {
                 return;
             }
