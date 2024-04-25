@@ -27,18 +27,20 @@ def addlabels(x, y, indices, groups, group_members):
 
     for x, i in enumerate(indices):
         font = white_font
+        va = "top"
         yi = y[i] / 2
         if y[i] < 0.1 * max_val:
             yi = y[i] * 1.25
             font = black_font
+            va = "bottom"
 
         difference = y[i] / y[group_members[groups[i]][0]]
         if i == group_members[groups[i]][0]:
             text = "(Reference)"
         elif difference < 1:
-            text = "(-" + str(int((1 - difference) * 100)) + "%)"
+            text = "(-" + str(round((1 - difference) * 100)) + "%)"
         else:
-            text = "(+" + str(int((difference - 1) * 100)) + "%)"
+            text = "(+" + str(round((difference - 1) * 100)) + "%)"
 
         annotation_font = {i: font[i] for i in font}
         annotation_font["size"] -= 2
@@ -50,7 +52,7 @@ def addlabels(x, y, indices, groups, group_members):
             fontdict=annotation_font,
             multialignment="center",
             ha="center",
-            va="bottom",
+            va=va,
         )  # custom properties
         text = plt.annotate(
             "{:0.2f}s".format(y[i]),
