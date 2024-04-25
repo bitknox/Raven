@@ -1,9 +1,9 @@
 import json
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import rcParams
-import sys
 import argparse
 from collections import defaultdict
+from plotterutil import *
+from reader import read_json
 
 parser = argparse.ArgumentParser(
     description="plots results of benchmarks as a bar chart showing average running times, as well as separate charts showing the progressing of running time of each experiment over time.",
@@ -29,157 +29,63 @@ parser.add_argument(
     "--groups",
     help="a description of the groups given as a string where every character corresponds to some group. Experiments in the same group will be compared to eachother. Any character can be the identifier for a group",
 )
+parser.add_argument(
+    "-sg",
+    "--split-groups",
+    action="store_true",
+    help="generate separate bar-charts for the different groups. If not given, one bar-chart will be generated containing all groups.",
+)
 args = parser.parse_args()
-
-
-def addlabels(x, y):
-    font = {"family": "DejaVu Sans", "size": 12, "color": "white"}
-
-    if args.groups is None:
-        args.groups = "a" * len(x)
-    groups = {}
-    group_members = defaultdict(list)
-    for i, c in enumerate(args.groups):
-        groups[i] = c
-        group_members[c].append(i)
-
-    for i in range(len(x)):
-        plt.text(
-            i, y[i] / 2, str(int(y[i])) + "ms", ha="center", va="bottom", fontdict=font
-        )
-        difference = y[i] / y[group_members[groups[i]][0]]
-        if i == group_members[groups[i]][0]:
-            text = "(Reference)"
-        elif difference < 1:
-            text = "(-" + str(int((1 - difference) * 100)) + "%)"
-        else:
-            text = "(+" + str(int((difference - 1) * 100)) + "%)"
-
-        plt.text(i, y[i] / 2, text, ha="center", va="top", fontdict=font)
-
-
-def write_labels(labels):
-    text = ""
-    for label in labels:
-        text += label + "\n"
-
-    props = dict(boxstyle="round", facecolor="wheat", alpha=0.5)
-    plt.text(
-        0.5,
-        -0.05,
-        text[0:-1],
-        transform=plt.gcf().transFigure,
-        fontsize=14,
-        verticalalignment="top",
-        horizontalalignment="center",
-        bbox=props,
-    )
-
 
 file = open(args.input, "r")
 
-experiment = json.loads(file.read())
-data = experiment["data"]
-file.close()
+data = read_json(file)
 
-font = {"family": "DejaVu Sans", "weight": "bold", "size": 15}
 
-plt.rc("font", **font)
+if args.groups is None:
+    args.groups = "a" * len(data)
+args.groups = [c for c in args.groups] + ([None] * (len(data) - len(args.groups)))
 
-thrown_away = 1
+unique_groups = []
+for group in args.groups:
+    if not group in unique_groups:
+        unique_groups.append(group)
 
-for test in data:
-    test["times"] = test["times"][thrown_away:]
-    test["iterations"] -= thrown_away
-    test["sorted times"] = [time for time in test["times"]]
-    test["sorted times"].sort()
-
-names = [test["name"] for test in data]
-# NOTE: ignores 'thrown_away' entries in all time lists to account for cold starts
-times = [sum(test["times"]) / (test["iterations"]) for test in data]
-errors_lo = [times[i] - data[i]["sorted times"][0] for i in range(len(data))]
-errors_hi = [data[i]["sorted times"][-1] - times[i] for i in range(len(data))]
-
-percentile = 5
-index = []
-for i in range(len(data)):
-    index = int(percentile * data[i]["iterations"] / 100)
-print(index)
-
-errors_lo_95p = [times[i] - data[i]["sorted times"][index] for i in range(len(data))]
-errors_hi_95p = [
-    data[i]["sorted times"][-index - 1] - times[i] for i in range(len(data))
-]
-
-_, ax = plt.subplots(figsize=(2 * len(data), 5))
-
-ax.grid(axis="y", which="major", linewidth=1, alpha=0.3, linestyle="dashed")
-plt.grid(
-    color="gray", linestyle="dashed", linewidth=1, alpha=0.3, axis="y", which="minor"
-)
-ax.minorticks_on()
-ax.set_axisbelow(True)
-plt.tick_params(axis="x", rotation=30)
-
-plt.bar(names, times, color=[test["colour"] for test in data])
-plt.ylabel("Join time (ms)")
-
-addlabels(names, times)
-
-plt.title(experiment["title"])
-
-plt.errorbar(
-    names,
-    times,
-    yerr=[errors_lo, errors_hi],
-    marker=" ",
-    fmt="o",
-    capsize=5,
-    elinewidth=0,
-    color="black",
-)
-eb = plt.errorbar(
-    names,
-    times,
-    yerr=[errors_lo_95p, errors_hi_95p],
-    marker=" ",
-    fmt="o",
-    capsize=10,
-    elinewidth=2,
-    color="black",
-)
+groups = {}
+group_members = defaultdict(list)
+for i, c in enumerate(args.groups):
+    groups[i] = c
+    group_members[c].append(i)
 
 if args.y_limit == None:
     y_lim = None
 else:
     y_lim = int(args.y_limit)
 
-plt.ylim(bottom=0, top=y_lim)
+# CALL DRAW FUNCTIONS
 
-plt.savefig(
-    args.output + "/" + experiment["title"] + " " + args.identifier + ".png",
-    bbox_inches="tight",
-)
-plt.clf()
-
-if not args.sub_plots:
-    exit(0)
-
-
-for test in data:
-    fig, ax = plt.subplots()
-    plt.plot(test["times"], linestyle="dotted")
-    plt.ylabel("Join time (ms)")
-    plt.xlabel("Iteration")
-    plt.locator_params(axis="x", nbins=10, tight=True)
-    plt.tick_params(axis="x", rotation=30)
-    ax.margins(x=0)
-    plt.title("Join Times for " + test["name"])
-    plt.ylim(bottom=0, top=y_lim)
-    write_labels(test["labels"])
-
-    plt.savefig(
-        args.output + "/" + test["name"] + " " + args.identifier + ".png",
-        bbox_inches="tight",
+if args.split_groups:
+    for group in unique_groups:
+        indices = [i for i in range(len(data)) if groups[i] == group]
+        draw_plot(
+            indices,
+            data,
+            args.output,
+            args.identifier + " " + group,
+            y_lim,
+            groups,
+            group_members,
+        )
+else:
+    indices = [member for g in unique_groups for member in group_members[g]]
+    draw_plot(
+        indices,
+        data,
+        args.output,
+        args.identifier,
+        y_lim,
+        groups,
+        group_members,
     )
-    plt.clf()
+if args.sub_plots:
+    draw_sub_plots(data, args.output, args.identifier, y_lim)
