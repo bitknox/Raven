@@ -35,7 +35,7 @@ func VerifyEnvironment() {
 
 }
 
-func PlotResults(resultsPath string, outputPath string, timestamp string, subplots bool, YLimit int) {
+func PlotResults(resultsPath string, outputPath string, timestamp string, subplots bool, splitGroups bool, YLimit int) {
 
 	var args = []string{"./plotter/plotter.py", "-i", resultsPath, "-o", outputPath, "-id", timestamp}
 	if subplots {

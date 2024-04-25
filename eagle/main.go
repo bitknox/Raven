@@ -31,7 +31,13 @@ func main() {
 			&cli.BoolFlag{
 				Name:    "subplots",
 				Aliases: []string{"sp"},
-				Usage:   "plot subplots for each benchmark",
+				Usage:   "plots subplots for each benchmark",
+				Value:   false,
+			},
+			&cli.BoolFlag{
+				Name:    "split-groups",
+				Aliases: []string{"sg"},
+				Usage:   "splits result into separate bar charts for each group",
 				Value:   false,
 			},
 		},
@@ -64,6 +70,7 @@ func main() {
 			var experiment = model.BenchmarkSuiteResult{}
 			experiment.Results = results
 			experiment.Name = suite.Name
+			experiment.Colours = suite.Colours
 
 			//write results to file
 			err = parsing.WriteResults(&experiment, resultsPath)
@@ -74,7 +81,7 @@ func main() {
 			}
 
 			//plot results
-			plotter.PlotResults(resultsPath, resultOutputDirectory, timestamp, c.Bool("subplots"), suite.YLimit)
+			plotter.PlotResults(resultsPath, resultOutputDirectory, timestamp, c.Bool("subplots"), c.Bool("split-groups"), suite.YLimit)
 
 			return nil
 		},

@@ -9,19 +9,21 @@ import (
 type BenchmarkSuiteResult struct {
 	Results []*BenchmarkResult `json:"data"`
 	Name    string             `json:"title"`
+	Colours map[string]string  `json:"colours"`
 }
 
 type BenchmarkSuite struct {
-	Benchmarks []*Benchmark `json:"benchmarks"`
-	Name       string       `json:"name"`
-	YLimit     int          `json:"y_limit"`
+	Benchmarks []*Benchmark      `json:"benchmarks"`
+	Name       string            `json:"name"`
+	YLimit     int               `json:"y_limit"`
+	Colours    map[string]string `json:"colours"`
 }
 
 type BenchmarkResult struct {
 	// The name of the benchmark
 	Name string `json:"name"`
 	// The colour used in the bar chart
-	Colour string `json:"colour"`
+	Group string `json:"group"`
 	// The time it took to run the benchmark in milliseconds
 	Times []float64 `json:"times"`
 	// The number of iterations
@@ -36,7 +38,7 @@ type Benchmark struct {
 	// The number of iterations
 	Iterations int `json:"iterations"`
 	//The colour of the benchmark
-	Colour string `json:"colour"`
+	Group string `json:"group"`
 	// The command to run
 	Command environments.Command `json:"command"`
 	//optional values for the environment
@@ -81,15 +83,15 @@ func FromInputBenchmark(inputBenchmark *Input) []*Benchmark {
 			panic(fmt.Sprintf("%s: iterations (%v)", err, inputBenchmark.Iterations.List))
 		}
 
-		err = extendList(&inputBenchmark.Colour, length)
+		err = extendList(&inputBenchmark.Group, length)
 		if err != nil {
-			panic(fmt.Sprintf("%s: colour (%v)", err, inputBenchmark.Colour.List))
+			panic(fmt.Sprintf("%s: colour (%v)", err, inputBenchmark.Group.List))
 		}
 
 		benchmarks[i] = &Benchmark{
 			Name:       name,
 			Iterations: inputBenchmark.Iterations.List[i],
-			Colour:     inputBenchmark.Colour.List[i],
+			Group:      inputBenchmark.Group.List[i],
 			Command: environments.Command{
 				Path: inputBenchmark.Command.Path,
 				Args: makeArguments(inputBenchmark.Command.Args, i),
@@ -109,5 +111,6 @@ func FromInputSuite(inputSuite *InputSuite) *BenchmarkSuite {
 		Benchmarks: benchmarks,
 		Name:       inputSuite.Name,
 		YLimit:     inputSuite.YLimit,
+		Colours:    inputSuite.Colours,
 	}
 }

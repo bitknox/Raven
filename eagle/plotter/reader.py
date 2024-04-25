@@ -22,8 +22,11 @@ def read_json(file):
         test["sorted times"] = [time for time in test["times"]]
         test["sorted times"].sort()
 
+    colour_dict = experiment["colours"]
+
     names = [test["name"] for test in tests]
-    colours = [test["colour"] for test in tests]
+    groups = [test["group"] for test in tests]
+    colours = [colour_dict[test["name"]] for test in tests]
     # NOTE: ignores 'thrown_away' entries in all time lists to account for cold starts
     times = [sum(test["times"]) / (test["iterations"]) for test in tests]
     errors_lo = [times[i] - tests[i]["sorted times"][0] for i in range(len(tests))]
@@ -43,6 +46,7 @@ def read_json(file):
 
     return data(
         names,
+        groups,
         times,
         colours,
         errors_lo,

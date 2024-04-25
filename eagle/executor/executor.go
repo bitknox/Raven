@@ -46,7 +46,7 @@ func ExecuteBenchmark(benchmark *model.Benchmark) (*model.BenchmarkResult, error
 	}
 
 	result.Name = benchmark.Name
-	result.Colour = benchmark.Colour
+	result.Group = benchmark.Group
 	result.Iterations = benchmark.Iterations
 
 	isValid := parsing.ResultIsValid(result)

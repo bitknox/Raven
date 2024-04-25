@@ -1,12 +1,9 @@
-import json
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import rcParams
-import argparse
-from collections import defaultdict
-import plotterutil
+from collections import OrderedDict, defaultdict
 
 
-def addlabels(x, y, indices, groups, group_members):
+def addlabels(y, indices, groups, group_members, ticks):
     white_font = {
         "family": "DejaVu Sans",
         "size": 12,
@@ -44,9 +41,10 @@ def addlabels(x, y, indices, groups, group_members):
 
         annotation_font = {i: font[i] for i in font}
         annotation_font["size"] -= 2
+        annotation_font["weight"] = "regular"
 
         text = plt.text(
-            x,
+            ticks[x],
             yi,
             text,
             fontdict=annotation_font,
@@ -83,7 +81,7 @@ def write_labels(labels):
     )
 
 
-def draw_plot(indices, data, path, id, y_lim, groups, group_members):
+def draw_plot(indices, data, path, id, y_lim):
     _, ax = plt.subplots(figsize=(2 * len(indices), 5))
 
     ax.grid(axis="y", which="major", linewidth=1, alpha=0.3, linestyle="dashed")
@@ -102,46 +100,74 @@ def draw_plot(indices, data, path, id, y_lim, groups, group_members):
     relevant_names = [data.names[i] for i in indices]
     relevant_times = [data.times[i] for i in indices]
     relevant_colours = [data.colours[i] for i in indices]
+    group_placements = defaultdict(list)
+    ticks = [0]
+    group_placements[data.groups[indices[0]]].append(ticks[-1])
+    for i in range(1, len(indices)):
+        if data.groups[indices[i]] == data.groups[indices[i - 1]]:
+            ticks.append(ticks[-1] + 1)
+        else:
+            ticks.append(ticks[-1] + 1.5)
+        group_placements[data.groups[indices[i]]].append(ticks[-1])
+
+    group_placements = {
+        group: sum(group_placements[group]) / len(group_placements[group])
+        for group in group_placements
+    }
 
     plt.bar(
-        relevant_names,
+        ticks,
         relevant_times,
         color=relevant_colours,
+        label=relevant_names,
     )
     plt.ylabel("Join time (s)")
 
-    addlabels(data.names, data.times, indices, groups, group_members)
+    addlabels(data.times, indices, data.groups, data.group_members, ticks)
 
     plt.title(data.title)
 
     plt.errorbar(
-        relevant_names,
+        ticks,
         relevant_times,
         yerr=[
             [data.errors_lo[i] for i in indices],
             [data.errors_hi[i] for i in indices],
         ],
         marker=" ",
-        fmt="o",
+        fmt=" ",
         capsize=5,
         elinewidth=0,
         color="black",
     )
     plt.errorbar(
-        relevant_names,
+        ticks,
         relevant_times,
         yerr=[
             [data.errors_lo_95p[i] for i in indices],
             [data.errors_hi_95p[i] for i in indices],
         ],
         marker=" ",
-        fmt="o",
+        fmt=" ",
         capsize=10,
         elinewidth=2,
         color="black",
     )
 
+    # plt.xticks(ticks, [data.groups[i] for i in indices])
+    plt.xticks(
+        [group_placements[group] for group in group_placements],
+        [group for group in group_placements],
+    )
     plt.ylim(bottom=0, top=y_lim)
+
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = OrderedDict(
+        zip(labels, handles)
+    )  # this is done to avoid duplicate entries in legend
+    ax.legend(
+        by_label.values(), by_label.keys(), loc="upper left", ncols=1, fontsize=10
+    )
 
     plt.savefig(
         path + "/" + data.title + " " + id + ".png",

@@ -8,9 +8,10 @@ import (
 )
 
 type InputSuite struct {
-	Benchmarks []*Input `json:"benchmarks"`
-	Name       string   `json:"name"`
-	YLimit     int      `json:"y_limit"`
+	Benchmarks []*Input          `json:"benchmarks"`
+	Name       string            `json:"name"`
+	YLimit     int               `json:"y_limit"`
+	Colours    map[string]string `json:"colours"`
 }
 
 type Input struct {
@@ -19,7 +20,7 @@ type Input struct {
 	// The number of iterations
 	Iterations SingleOrList[int] `json:"iterations"`
 	// The colour used in the bar chart
-	Colour SingleOrList[string] `json:"colour"`
+	Group SingleOrList[string] `json:"group"`
 	// The command to run
 	Command InputCommand `json:"command"`
 	//optional values for the environment

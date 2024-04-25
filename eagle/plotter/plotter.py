@@ -1,7 +1,4 @@
-import json
-import matplotlib.pyplot as plt
 import argparse
-from collections import defaultdict
 from plotterutil import *
 from reader import read_json
 
@@ -41,22 +38,6 @@ file = open(args.input, "r")
 
 data = read_json(file)
 
-
-if args.groups is None:
-    args.groups = "a" * len(data)
-args.groups = [c for c in args.groups] + ([None] * (len(data) - len(args.groups)))
-
-unique_groups = []
-for group in args.groups:
-    if not group in unique_groups:
-        unique_groups.append(group)
-
-groups = {}
-group_members = defaultdict(list)
-for i, c in enumerate(args.groups):
-    groups[i] = c
-    group_members[c].append(i)
-
 if args.y_limit == None:
     y_lim = None
 else:
@@ -65,27 +46,11 @@ else:
 # CALL DRAW FUNCTIONS
 
 if args.split_groups:
-    for group in unique_groups:
-        indices = [i for i in range(len(data)) if groups[i] == group]
-        draw_plot(
-            indices,
-            data,
-            args.output,
-            args.identifier + " " + group,
-            y_lim,
-            groups,
-            group_members,
-        )
+    for group in data.unique_groups:
+        indices = [i for i in range(len(data)) if data.groups[i] == group]
+        draw_plot(indices, data, args.output, args.identifier + " " + group, y_lim)
 else:
-    indices = [member for g in unique_groups for member in group_members[g]]
-    draw_plot(
-        indices,
-        data,
-        args.output,
-        args.identifier,
-        y_lim,
-        groups,
-        group_members,
-    )
+    indices = [member for g in data.unique_groups for member in data.group_members[g]]
+    draw_plot(indices, data, args.output, args.identifier, y_lim)
 if args.sub_plots:
     draw_sub_plots(data, args.output, args.identifier, y_lim)
