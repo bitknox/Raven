@@ -101,6 +101,17 @@ public abstract class AbstractK2Raster implements Serializable {
         return parentMin + lMin.get(rank - 1);
     }
 
+    public long computeVMin(long parentMax, long parentMin, int index, long vMax) {
+        if (index == 0)
+            return minVal;
+        if (!hasChildren(index)) {
+            return vMax;
+        }
+
+        int rank = treeRank(index - 1);
+        return parentMin + lMin.get(rank - 1);
+    }
+
     /**
      * gets the children of the node at index {@code index}
      * 
@@ -294,7 +305,7 @@ public abstract class AbstractK2Raster implements Serializable {
                         /* all cells meet the condition in this branch */
                     }
                 } else {
-                    minValp = computeVMin(maxVal, minVal, zp + 1);
+                    minValp = computeVMin(maxVal, minVal, zp + 1, maxValp);
                     if (!function.containsOutside(minValp, maxValp)) {
                         addCells = true;
                         /* all cells meet the condition in this branch */
@@ -409,7 +420,7 @@ public abstract class AbstractK2Raster implements Serializable {
                         /* all cells meet the condition in this branch */
                     }
                 } else {
-                    minValp = computeVMin(maxVal, minVal, zp + 1);
+                    minValp = computeVMin(maxVal, minVal, zp + 1, maxValp);
                     if (!function.containsOutside(minValp, maxValp)) {
                         addCells = true;
                         /* all cells meet the condition in this branch */

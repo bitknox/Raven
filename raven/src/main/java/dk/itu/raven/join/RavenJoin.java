@@ -453,8 +453,8 @@ public class RavenJoin extends AbstractRavenJoin {
 				int child = children[i];
 				Square childRasterBounding = node.b.getChildSquare(childSize, i, k2Raster.k);
 				if (childRasterBounding.contains(bounding)) {
-					vMinMBR = k2Raster.computeVMin(node.d, node.c, child);
 					vMaxMBR = k2Raster.computeVMax(node.d, child);
+					vMinMBR = k2Raster.computeVMin(node.d, node.c, child, vMaxMBR);
 
 					k2Nodes.push(new Tuple4<>(child, childRasterBounding, vMinMBR, vMaxMBR));
 					returnedK2Index = child;
@@ -511,13 +511,13 @@ public class RavenJoin extends AbstractRavenJoin {
 				Square childRasterBounding = node.b.getChildSquare(childSize, i, k2Raster.k);
 
 				if (childRasterBounding.intersects(bounding)) {
-					long vminVal = k2Raster.computeVMin(node.d, node.c, child);
-					long vmaxVal = k2Raster.computeVMax(node.d, child);
+					long vMaxVal = k2Raster.computeVMax(node.d, child);
+					long vMinVal = k2Raster.computeVMin(node.d, node.c, child, vMaxVal);
 					if (childRasterBounding.isContained(bounding)) {
-						vMinMBR = Math.min(vminVal, vMinMBR);
-						vMaxMBR = Math.max(vmaxVal, vMaxMBR);
+						vMinMBR = Math.min(vMinVal, vMinMBR);
+						vMaxMBR = Math.max(vMaxVal, vMaxMBR);
 					} else {
-						k2Nodes.push(new Tuple4<>(child, childRasterBounding, vminVal, vmaxVal));
+						k2Nodes.push(new Tuple4<>(child, childRasterBounding, vMinVal, vMaxVal));
 					}
 				}
 			}
