@@ -16,7 +16,7 @@ type InputSuite struct {
 
 type Input struct {
 	// The name of the benchmark
-	Name []string `json:"name"`
+	Name SingleOrList[string] `json:"name"`
 	// The number of iterations
 	Iterations SingleOrList[int] `json:"iterations"`
 	// The colour used in the bar chart

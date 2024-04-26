@@ -82,7 +82,37 @@ def write_labels(labels):
 
 
 def draw_plot(indices, data, path, id, y_lim):
+    bar_width = 0.8
+    group_gap = 1
+    non_group_gap = 1.25
+
+    relevant_names = [data.names[i] for i in indices]
+    relevant_times = [data.times[i] for i in indices]
+    relevant_colours = [data.colours[i] for i in indices]
+    group_placements = defaultdict(list)
+    ticks = [0]
+    group_placements[data.groups[indices[0]]].append(ticks[-1])
+    for i in range(1, len(indices)):
+        if data.groups[indices[i]] == data.groups[indices[i - 1]]:
+            ticks.append(ticks[-1] + group_gap)
+        else:
+            ticks.append(ticks[-1] + non_group_gap)
+        group_placements[data.groups[indices[i]]].append(ticks[-1])
+
+    group_placements = {
+        group: sum(group_placements[group]) / len(group_placements[group])
+        for group in group_placements
+    }
+    groups_set = set()
+    for index in indices:
+        groups_set.add(data.groups[index])
+    num_groups = len(groups_set)
+
     _, ax = plt.subplots(figsize=(2 * len(indices), 5))
+
+    plt.suptitle(data.title, fontsize=20, y=1)
+    if num_groups == 1:
+        plt.title(next(iter(groups_set)), fontsize=15, weight="bold")
 
     ax.grid(axis="y", which="major", linewidth=1, alpha=0.3, linestyle="dashed")
     plt.grid(
@@ -97,35 +127,16 @@ def draw_plot(indices, data, path, id, y_lim):
     ax.set_axisbelow(True)
     plt.tick_params(axis="x", rotation=30)
 
-    relevant_names = [data.names[i] for i in indices]
-    relevant_times = [data.times[i] for i in indices]
-    relevant_colours = [data.colours[i] for i in indices]
-    group_placements = defaultdict(list)
-    ticks = [0]
-    group_placements[data.groups[indices[0]]].append(ticks[-1])
-    for i in range(1, len(indices)):
-        if data.groups[indices[i]] == data.groups[indices[i - 1]]:
-            ticks.append(ticks[-1] + 1)
-        else:
-            ticks.append(ticks[-1] + 1.5)
-        group_placements[data.groups[indices[i]]].append(ticks[-1])
-
-    group_placements = {
-        group: sum(group_placements[group]) / len(group_placements[group])
-        for group in group_placements
-    }
-
     plt.bar(
         ticks,
         relevant_times,
         color=relevant_colours,
         label=relevant_names,
+        width=bar_width,
     )
     plt.ylabel("Join time (s)")
 
     addlabels(data.times, indices, data.groups, data.group_members, ticks)
-
-    plt.title(data.title)
 
     plt.errorbar(
         ticks,
@@ -154,11 +165,13 @@ def draw_plot(indices, data, path, id, y_lim):
         color="black",
     )
 
-    # plt.xticks(ticks, [data.groups[i] for i in indices])
-    plt.xticks(
-        [group_placements[group] for group in group_placements],
-        [group for group in group_placements],
-    )
+    if num_groups > 1:
+        plt.xticks(
+            [group_placements[group] for group in group_placements],
+            [group for group in group_placements],
+        )
+    else:
+        plt.xticks([], [])
     plt.ylim(bottom=0, top=y_lim)
 
     handles, labels = plt.gca().get_legend_handles_labels()

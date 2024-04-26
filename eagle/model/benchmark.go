@@ -6,6 +6,13 @@ import (
 	"github.com/bitknox/Raven/benchmarking/environments"
 )
 
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 type BenchmarkSuiteResult struct {
 	Results []*BenchmarkResult `json:"data"`
 	Name    string             `json:"title"`
@@ -67,9 +74,28 @@ func extendList[T any](list *SingleOrList[T], length int) error {
 }
 
 func FromInputBenchmark(inputBenchmark *Input) []*Benchmark {
-	benchmarks := make([]*Benchmark, len(inputBenchmark.Name))
-	for i, name := range inputBenchmark.Name {
-		var length = len(inputBenchmark.Name)
+	var length = 0
+	if len(inputBenchmark.Name.List) != len(inputBenchmark.Group.List) {
+		if len(inputBenchmark.Name.List) != 1 && len(inputBenchmark.Group.List) != 1 {
+			panic("The name list and group list have different lengths")
+		}
+		length = max(len(inputBenchmark.Name.List), len(inputBenchmark.Group.List))
+	}
+	if len(inputBenchmark.Name.List) == 1 {
+		arg := &inputBenchmark.Name
+		err := extendList(arg, length)
+		if err != nil {
+			panic(fmt.Sprintf("%s: %v", err, arg.List))
+		}
+	} else {
+		arg := &inputBenchmark.Group
+		err := extendList(arg, length)
+		if err != nil {
+			panic(fmt.Sprintf("%s: %v", err, arg.List))
+		}
+	}
+	benchmarks := make([]*Benchmark, length)
+	for i, name := range inputBenchmark.Name.List {
 		for j := 0; j < len(inputBenchmark.Command.Args); j++ {
 			arg := &inputBenchmark.Command.Args[j]
 			err := extendList(arg, length)
