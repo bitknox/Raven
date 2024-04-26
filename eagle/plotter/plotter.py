@@ -22,11 +22,6 @@ parser.add_argument(
 )
 parser.add_argument("-ylim", "--y-limit", help="the top y-limit of the produced plots")
 parser.add_argument(
-    "-g",
-    "--groups",
-    help="a description of the groups given as a string where every character corresponds to some group. Experiments in the same group will be compared to eachother. Any character can be the identifier for a group",
-)
-parser.add_argument(
     "-sg",
     "--split-groups",
     action="store_true",

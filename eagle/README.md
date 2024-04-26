@@ -23,8 +23,8 @@ go run main.go
     "benchmarks": [
         {
             "name": ["Benchmark1","Benchmark2"], // multiple benchmarks can be defined in one by having a list of names and lists where arguments should be different
-            "iterations": 1, // if only one value is given, it will be used by all benchmarks created by this (in this case, Benchmark1 and Benchmark2)
-            "colour": ["red","green"], // The colour should be one supported by matplotlib
+            "group": "Group1", // it is also possible to have only 1 name but multiple groups. In the resulting plot, data in the same group will be next to eachter and data with the same name will have the same colour (defined in the outer object).
+            "iterations": 10, // if only one value is given, it will be used by all benchmarks created by this (in this case, Benchmark1 and Benchmark2)
             "command": {
                 "path": "cmd",
                 "args": [
@@ -38,8 +38,8 @@ go run main.go
         },
         {
             "name": "Benchmark3",
-            "iterations": 1,
-            "colour": "blue",
+            "iterations": 20,
+            "group": "Group2",
             "command": {
                 "path": "ls",
                 "args": ["-la"]
@@ -50,9 +50,19 @@ go run main.go
                 "docker_mount_path": "./dir"
             }
         }
-    ]
+    ],
+    "colours": { // The colours should be supported by matplotlib
+        "Benchmark1": "red",
+        "Benchmark2": "green",
+        "Benchmark3": "blue"
+    }
 }
 ```
+
+### NOTE:
+- the pair of (name, group) should be unique for all tests within a suite
+- the length of any list of arguments must either be 1 or match the length of the name or group list.
+- the name or group lists must also match unless one of them has length 1, in which case the length of the other will be used
 
 ## Common execution interface
 
@@ -74,7 +84,7 @@ type BenchmarkResult struct {
 	// The name of the benchmark
 	Name string `json:"name"`
 	// The colour used in the bar chart
-	Colour string `json:"colour"`
+	Group string `json:"group"`
 	// The time it took to run the benchmark in milliseconds
 	Times []float64 `json:"times"`
 	// The number of iterations
@@ -94,7 +104,7 @@ python plotter/plotter.py
 ```
 
 ```bash
-usage: plotter.py [-h] [-i INPUT] [-o OUTPUT] [-id IDENTIFIER] [-sp] [-ylim Y_LIMIT]
+usage: plotter.py [-h] [-i INPUT] [-o OUTPUT] [-id IDENTIFIER] [-sp] [-ylim Y_LIMIT] [-g GROUPS] [-sg]
 
 plots results of benchmarks as a bar chart showing average running times, as well as separate charts showing the progressing of running time of each experiment over time.
 
@@ -109,4 +119,5 @@ options:
   -sp, --sub-plots      whether a separate plot should be made for each experiment showing how the running time evolved over time
   -ylim Y_LIMIT, --y-limit Y_LIMIT
                         the top y-limit of the produced plots
+  -sg, --split-groups   generate separate bar-charts for the different groups. If not given, one bar-chart will be generated containing all groups.
 ```
