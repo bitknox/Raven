@@ -33,9 +33,8 @@ def read_json(file):
     errors_hi = [tests[i]["sorted times"][-1] - times[i] for i in range(len(tests))]
 
     percentile = 5
-    index = []
     for i in range(len(tests)):
-        index = int(percentile * tests[i]["iterations"] / 100)
+        index = round(percentile * tests[i]["iterations"] / 100)
 
     errors_lo_95p = [
         times[i] - tests[i]["sorted times"][index] for i in range(len(tests))
