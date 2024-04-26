@@ -1,5 +1,5 @@
 {
-	"name": "Join Time - Density",
+	"name": "Join Time - K2Compression",
 	"benchmarks": [
 		{
 			"name": [
@@ -19,19 +19,20 @@
 					"-jar",
 					"/home/runners/raven-runner-1.0.jar",
 					"-iv",
-					[
-						"/home/synthetic/vector/density/100/geom.shp",
-						"/home/synthetic/vector/density/50/geom.shp",
-						"/home/synthetic/vector/density/25/geom.shp",
-						"/home/synthetic/vector/density/12.5/geom.shp",
-						"/home/synthetic/vector/density/6.25/geom.shp",
-						"/home/synthetic/vector/density/3.125/geom.shp",
-						"/home/synthetic/vector/density/1.562/geom.shp"
-					],
+					"/home/synthetic/vector/square/geom.shp",
 					"-cl",
 					"/home/raster-cache/",
 					"-ir",
-					"/home/synthetic/raster/selectivity/100",
+					[
+						"/home/synthetic/raster/colors/2",
+						"/home/synthetic/raster/colors/4",
+						"/home/synthetic/raster/colors/8",
+						"/home/synthetic/raster/colors/16",
+						"/home/synthetic/raster/colors/32",
+						"/home/synthetic/raster/colors/64",
+						"/home/synthetic/raster/colors/128",
+						"/home/synthetic/raster/colors/256"
+					],
 					"-t",
 					"parallel",
 					"-ts",
