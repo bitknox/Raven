@@ -442,23 +442,23 @@ public abstract class AbstractK2Raster implements Serializable {
                             continue;
                         }
 
-                        // if (nKths <= 1) {
-                        // out.add(new PixelValue(maxValp, xValue1, range.row));
-                        // continue;
-                        // }
+                        if (nKths <= 1) {
+                            out.add(new PixelValue(maxValp, xValue1, range.row));
+                            continue;
+                        }
 
                         int row = range.row - offset.getY();
-                        int x1 = Math.max(range.x1, xValue1);
-                        int x2 = Math.min(range.x2, xValue2);
+                        int x1 = Math.max(range.x1, xValue1) - offset.getX();
+                        int x2 = Math.min(range.x2, xValue2) - offset.getX();
                         PrimitiveArrayWrapper result = new LongArrayWrapper(new long[x2 - x1 + 1]);
 
-                        // getWindow(n, row, row, x1,
-                        // x2, z, maxVal,
-                        // result, new IntPointer());
+                        getWindow(n, row - baseY, row - baseY, x1 - baseX,
+                                x2 - baseX, zp, maxVal,
+                                result, new IntPointer());
 
-                        for (int x = x1; x <= x2; x++) {
+                        for (int dx = 0; dx < result.length(); dx++) {
                             // out.add(new PixelValue(result.get(dx), x1 + dx, range.row));
-                            out.add(new PixelValue(0, x, range.row));
+                            out.add(new PixelValue(result.get(dx), x1 + dx + offset.getX(), range.row));
                         }
 
                         // out.add(new PixelRange(range.row,

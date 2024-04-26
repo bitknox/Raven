@@ -149,7 +149,7 @@ public class RavenJoinTest {
 
             boolean[][] actual2 = new boolean[16][16];
             for (PixelValue range : res.get(1).pixelRanges) {
-                actual[range.x][range.y] = true;
+                actual2[range.x][range.y] = true;
             }
 
             for (int i = 0; i < 16; i++) {
