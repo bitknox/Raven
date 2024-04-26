@@ -1,48 +1,52 @@
 {
-	"name": "Join Time - Density",
-	"benchmarks": [
-		{
-			"name": [
-				"Raven - 100%",
-				"Raven - 50%",
-				"Raven - 25%",
-				"Raven - 12.5%",
-				"Raven - 6.25%",
-				"Raven - 3.125%",
-				"Raven - 1.562%"
-			],
-			"iterations": 100,
-			"colour": "darkred",
-			"command": {
-				"path": "java",
-				"args": [
-					"-jar",
-					"/home/runners/raven-runner-1.0.jar",
-					"-iv",
-					[
-						"/home/synthetic/vector/density/100/geom.shp",
-						"/home/synthetic/vector/density/50/geom.shp",
-						"/home/synthetic/vector/density/25/geom.shp",
-						"/home/synthetic/vector/density/12.5/geom.shp",
-						"/home/synthetic/vector/density/6.25/geom.shp",
-						"/home/synthetic/vector/density/3.125/geom.shp",
-						"/home/synthetic/vector/density/1.562/geom.shp"
-					],
-					"-cl",
-					"/home/raster-cache/",
-					"-ir",
-					"/home/synthetic/raster/selectivity/100",
-					"-t",
-					"parallel",
-					"-ts",
-					"2048"
-				]
-			},
-			"environment_options": {
-				"environment_type": "docker",
-				"docker_file_path": "./runners/raven-runner/",
-				"docker_mount_path": "/home/joinpro/data"
-			}
-		}
-	]
+    "name": "Join Time - Density",
+    "benchmarks": [
+        {
+            "name": "Raven",
+            "iterations": 100,
+            "group": [
+                "100%",
+                "50%",
+                "25%",
+                "12.5%",
+                "6.25%",
+                "3.125%",
+                "1.562%"
+            ],
+            "command": {
+                "path": "java",
+                "args": [
+                    "-jar",
+                    "/home/runners/raven-runner-1.0.jar",
+                    "-iv",
+                    [
+                        "/home/synthetic/vector/density/100/geom.shp",
+                        "/home/synthetic/vector/density/50/geom.shp",
+                        "/home/synthetic/vector/density/25/geom.shp",
+                        "/home/synthetic/vector/density/12.5/geom.shp",
+                        "/home/synthetic/vector/density/6.25/geom.shp",
+                        "/home/synthetic/vector/density/3.125/geom.shp",
+                        "/home/synthetic/vector/density/1.562/geom.shp"
+                    ],
+                    "-cl",
+                    "/home/raster-cache/",
+                    "-ir",
+                    "/home/synthetic/raster/selectivity/100",
+                    "-t",
+                    "parallel",
+                    "-ts",
+                    "2048"
+                ]
+            },
+            "environment_options": {
+                "environment_type": "docker",
+                "docker_file_path": "./runners/raven-runner/",
+                "docker_mount_path": "/home/joinpro/data"
+            }
+        }
+    ],
+    "colours": {
+        "Raven": "darkred",
+        "Raptor": "darkblue"
+    }
 }
