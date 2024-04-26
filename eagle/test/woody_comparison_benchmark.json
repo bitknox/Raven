@@ -2,17 +2,13 @@
     "name": "Join Time Comparison (No Filter)",
     "benchmarks": [
         {
-            "name": [
-                "current all",
-                "current 50%",
-                "current 2%"
+            "name": "current",
+            "iterations": 2,
+            "group": [
+                "all",
+                "50%",
+                "2%"
             ],
-            "iterations": [
-                2,
-                2,
-                2
-            ],
-            "colour": "red",
             "command": {
                 "path": "java",
                 "args": [
@@ -49,17 +45,13 @@
             }
         },
         {
-            "name": [
-                "new all",
-                "new 50%",
-                "new 2%"
+            "name": "new",
+            "iterations": 2,
+            "group": [
+                "all",
+                "50%",
+                "2%"
             ],
-            "iterations": [
-                2,
-                2,
-                2
-            ],
-            "colour": "darkred",
             "command": {
                 "path": "java",
                 "args": [
@@ -95,5 +87,9 @@
                 "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
             }
         }
-    ]
+    ],
+    "colours": {
+        "current": "red",
+        "new": "darkred"
+    }
 }
