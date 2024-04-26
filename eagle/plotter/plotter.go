@@ -41,6 +41,9 @@ func PlotResults(resultsPath string, outputPath string, timestamp string, subplo
 	if subplots {
 		args = append(args, "-sp")
 	}
+	if splitGroups {
+		args = append(args, "-sg")
+	}
 	if YLimit != 0 {
 		args = append(args, "-ylim", fmt.Sprintf("%d", YLimit))
 	}
