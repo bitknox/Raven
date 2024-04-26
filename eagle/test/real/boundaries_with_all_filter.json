@@ -2,9 +2,13 @@
 	"name": "Join Time - Boundaries (Filter)",
 	"benchmarks": [
 		{
-			"name": ["Raven - GLC", "Raven - SWF", "Raven - Treecover"],
+			"name": "Raven",
 			"iterations": 5,
-			"colour": "darkred",
+			"group": [
+				"GLC",
+				"SWF",
+				"Treecover"
+			],
 			"command": {
 				"path": "java",
 				"args": [
@@ -25,9 +29,17 @@
 					"-ts",
 					"2048",
 					"-fl",
-					["22", "1", "81"],
+					[
+						"22",
+						"1",
+						"81"
+					],
 					"-fh",
-					["22", "1", "84"]
+					[
+						"22",
+						"1",
+						"84"
+					]
 				]
 			},
 			"environment_options": {
@@ -37,9 +49,13 @@
 			}
 		},
 		{
-			"name": ["Raptor - GLC", "Raptor - SWF", "Raptor - Treecover"],
+			"name": "Raptor",
 			"iterations": 5,
-			"colour": "darkblue",
+			"group": [
+				"GLC",
+				"SWF",
+				"Treecover"
+			],
 			"command": {
 				"path": "java",
 				"args": [
@@ -54,9 +70,17 @@
 						"/home/real/raster/treecover"
 					],
 					"-fl",
-					["22", "1", "81"],
+					[
+						"22",
+						"1",
+						"81"
+					],
 					"-fh",
-					["22", "1", "84"]
+					[
+						"22",
+						"1",
+						"84"
+					]
 				]
 			},
 			"environment_options": {
@@ -65,5 +89,9 @@
 				"docker_mount_path": "/home/joinpro/data"
 			}
 		}
-	]
+	],
+	"colours": {
+		"Raven": "darkred",
+		"Raptor": "darkblue"
+	}
 }

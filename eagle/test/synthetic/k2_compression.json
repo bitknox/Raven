@@ -2,17 +2,17 @@
 	"name": "Join Time - K2Compression",
 	"benchmarks": [
 		{
-			"name": [
-				"Raven - 100%",
-				"Raven - 50%",
-				"Raven - 25%",
-				"Raven - 12.5%",
-				"Raven - 6.25%",
-				"Raven - 3.125%",
-				"Raven - 1.562%"
-			],
+			"name": "Raven",
 			"iterations": 100,
-			"colour": "darkred",
+			"group": [
+				"100%",
+				"50%",
+				"25%",
+				"12.5%",
+				"6.25%",
+				"3.125%",
+				"1.562%"
+			],
 			"command": {
 				"path": "java",
 				"args": [
@@ -45,5 +45,9 @@
 				"docker_mount_path": "/home/joinpro/data"
 			}
 		}
-	]
+	],
+	"colours": {
+		"Raven": "darkred",
+		"Raptor": "darkblue"
+	}
 }

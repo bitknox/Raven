@@ -3,6 +3,7 @@
     "benchmarks": [
         {
             "name": "Raptor",
+            "group": "GLC - Boundaries",
             "iterations": 100,
             "command": {
                 "path": "java",
@@ -23,6 +24,7 @@
         },
         {
             "name": "Parallel Raven",
+            "group": "GLC - Boundaries",
             "iterations": 100,
             "command": {
                 "path": "java",
@@ -47,6 +49,7 @@
         },
         {
             "name": "Sequential Raven",
+            "group": "GLC - Boundaries",
             "iterations": 100,
             "command": {
                 "path": "java",
@@ -69,5 +72,10 @@
                 "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
             }
         }
-    ]
+    ],
+    "colours": {
+        "Raptor": "darkblue",
+        "Parallel Raven": "darkred",
+        "Sequential Raven": "red"
+    }
 }

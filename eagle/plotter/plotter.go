@@ -35,11 +35,14 @@ func VerifyEnvironment() {
 
 }
 
-func PlotResults(resultsPath string, outputPath string, timestamp string, subplots bool, YLimit int) {
+func PlotResults(resultsPath string, outputPath string, timestamp string, subplots bool, splitGroups bool, YLimit int) {
 
 	var args = []string{"./plotter/plotter.py", "-i", resultsPath, "-o", outputPath, "-id", timestamp}
 	if subplots {
 		args = append(args, "-sp")
+	}
+	if splitGroups {
+		args = append(args, "-sg")
 	}
 	if YLimit != 0 {
 		args = append(args, "-ylim", fmt.Sprintf("%d", YLimit))
