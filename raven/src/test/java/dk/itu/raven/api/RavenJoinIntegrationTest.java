@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import com.github.davidmoten.rtree2.geometry.Geometries;
 
-import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.io.IRasterReader;
 import dk.itu.raven.io.MatrixReader;
@@ -21,6 +20,7 @@ import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.join.JoinResult;
 import dk.itu.raven.join.JoinResultItem;
+import dk.itu.raven.join.PixelValue;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RandomMatrix;
@@ -54,11 +54,10 @@ public class RavenJoinIntegrationTest {
         JoinResult result = join.join(JoinFilterFunctions.rangeFilter(filterLow, filterHigh)).asMemoryAllocatedResult();
 
         for (JoinResultItem item : result) {
-            for (PixelRange range : item.pixelRanges) {
-                int y = range.row;
-                for (int x = range.x1; x <= range.x2; x++) {
-                    actual[x][y] = true;
-                }
+            for (PixelValue value : item.pixelRanges) {
+                int y = value.y;
+                int x = value.x;
+                actual[x][y] = true;
             }
         }
 
@@ -99,11 +98,10 @@ public class RavenJoinIntegrationTest {
         JoinResult result = join.join(JoinFilterFunctions.rangeFilter(filterLow, filterHigh)).asMemoryAllocatedResult();
 
         for (JoinResultItem item : result) {
-            for (PixelRange range : item.pixelRanges) {
-                int y = range.row;
-                for (int x = range.x1; x <= range.x2; x++) {
-                    actual[x][y] = true;
-                }
+            for (PixelValue value : item.pixelRanges) {
+                int y = value.y;
+                int x = value.x;
+                actual[x][y] = true;
             }
         }
 
@@ -165,11 +163,10 @@ public class RavenJoinIntegrationTest {
                 .asMemoryAllocatedResult();
 
         for (JoinResultItem item : result) {
-            for (PixelRange range : item.pixelRanges) {
-                int y = range.row;
-                for (int x = range.x1; x <= range.x2; x++) {
-                    actual[x][y] = true;
-                }
+            for (PixelValue value : item.pixelRanges) {
+                int y = value.y;
+                int x = value.x;
+                actual[x][y] = true;
             }
         }
 

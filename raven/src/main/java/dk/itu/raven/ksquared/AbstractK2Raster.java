@@ -7,10 +7,12 @@ import java.util.List;
 import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.join.IRasterFilterFunction;
+import dk.itu.raven.join.PixelValue;
 import dk.itu.raven.join.RangeExtremes;
 import dk.itu.raven.ksquared.dac.AbstractDAC;
 import dk.itu.raven.util.BitMap;
 import dk.itu.raven.util.GoodArrayList;
+import dk.itu.raven.util.LongArrayWrapper;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.PrimitiveArrayWrapper;
 
@@ -172,19 +174,15 @@ public abstract class AbstractK2Raster implements Serializable {
     }
 
     private void getWindow(int n, int r1, int r2, int c1, int c2, int z, long maxVal, PrimitiveArrayWrapper out,
-            IntPointer index,
-            int level, List<Pair<Integer, Integer>> indexRanks) {
-        int nKths = (n / k);
-        Pair<Integer, Integer> indexRank = indexRanks.get(level);
-        int rank = treeRank(z);
-        indexRank.first = z;
-        indexRank.second = rank;
+            IntPointer index) {
+        final int nKths = (n / k); // childsize
+        final int rank = treeRank(z);
+        final int initialI = r1 / nKths;
+        final int lastI = r2 / nKths;
+        final int initialJ = c1 / nKths;
+        final int lastJ = c2 / nKths;
 
         z = rank * k * k;
-        int initialI = r1 / nKths;
-        int lastI = r2 / nKths;
-        int initialJ = c1 / nKths;
-        int lastJ = c2 / nKths;
 
         int r1p, r2p, c1p, c2p, zp;
         long maxValp;
@@ -212,7 +210,6 @@ public abstract class AbstractK2Raster implements Serializable {
                     c2p = nKths - 1;
 
                 zp = z + i * k + j;
-
                 maxValp = computeVMax(maxVal, zp + 1);
 
                 if (!hasChildren(zp + 1)) {
@@ -221,7 +218,7 @@ public abstract class AbstractK2Raster implements Serializable {
                         out.set(index.val++, maxValp);
                     }
                 } else {
-                    getWindow(nKths, r1p, r2p, c1p, c2p, zp, maxValp, out, index, level + 1, indexRanks);
+                    getWindow(nKths, r1p, r2p, c1p, c2p, zp, maxValp, out, index);
                 }
 
             }
@@ -242,7 +239,7 @@ public abstract class AbstractK2Raster implements Serializable {
         for (int i = 0; i < maxLevel; i++) {
             indexRanks.set(i, new Pair<>(-1, 0));
         }
-        getWindow(this.n, r1, r2, c1, c2, -1, this.maxVal, out, new IntPointer(), 0, indexRanks);
+        getWindow(this.n, r1, r2, c1, c2, -1, this.maxVal, out, new IntPointer());
 
         return out;
     }
@@ -353,21 +350,21 @@ public abstract class AbstractK2Raster implements Serializable {
     }
 
     public void searchValuesInRanges(List<PixelRange> ranges,
-            List<PixelRange> out, Offset<Integer> offset, int r1,
+            List<PixelValue> out, Offset<Integer> offset, int r1,
             int r2, int c1, int c2, RangeExtremes[] rangeLimits, int[] rangePrefixsum, IRasterFilterFunction function) {
         searchValuesInRanges(ranges, out, offset, r1, r2, c1, c2, rangeLimits, rangePrefixsum, function, -1, 0,
                 0, 0, this.minVal, this.maxVal, this.n);
     }
 
     public void searchValuesInRanges(List<PixelRange> ranges,
-            List<PixelRange> out, Offset<Integer> offset, int r1, int r2, int c1, int c2, RangeExtremes[] rangeLimits,
+            List<PixelValue> out, Offset<Integer> offset, int r1, int r2, int c1, int c2, RangeExtremes[] rangeLimits,
             int[] rangePrefixsum, IRasterFilterFunction function, int z, int treeIndex, int baseX, int baseY,
             long minVal, long maxVal, int n) {
         searchValuesInRanges(ranges, out, offset, r1, r2, c1, c2, rangeLimits, rangePrefixsum, z, treeIndex, function,
                 baseX, baseY, minVal, maxVal, n, new Offset<Integer>(baseX, baseY));
     }
 
-    private void searchValuesInRanges(List<PixelRange> ranges, List<PixelRange> out, Offset<Integer> offset, int r1,
+    private void searchValuesInRanges(List<PixelRange> ranges, List<PixelValue> out, Offset<Integer> offset, int r1,
             int r2, int c1, int c2, RangeExtremes[] rangeLimits, int[] rangePrefixsum, int z, int treeIndex,
             IRasterFilterFunction function, int baseX, int baseY, long minVal, long maxVal, int n,
             Offset<Integer> treeOffset) {
@@ -445,9 +442,28 @@ public abstract class AbstractK2Raster implements Serializable {
                             continue;
                         }
 
-                        out.add(new PixelRange(range.row,
-                                Math.max(range.x1, xValue1),
-                                Math.min(range.x2, xValue2)));
+                        // if (nKths <= 1) {
+                        // out.add(new PixelValue(maxValp, xValue1, range.row));
+                        // continue;
+                        // }
+
+                        int row = range.row - offset.getY();
+                        int x1 = Math.max(range.x1, xValue1);
+                        int x2 = Math.min(range.x2, xValue2);
+                        PrimitiveArrayWrapper result = new LongArrayWrapper(new long[x2 - x1 + 1]);
+
+                        // getWindow(n, row, row, x1,
+                        // x2, z, maxVal,
+                        // result, new IntPointer());
+
+                        for (int x = x1; x <= x2; x++) {
+                            // out.add(new PixelValue(result.get(dx), x1 + dx, range.row));
+                            out.add(new PixelValue(0, x, range.row));
+                        }
+
+                        // out.add(new PixelRange(range.row,
+                        // Math.max(range.x1, xValue1),
+                        // Math.min(range.x2, xValue2)));
                     }
                 }
             }

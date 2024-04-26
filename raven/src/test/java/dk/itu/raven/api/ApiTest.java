@@ -14,7 +14,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.github.davidmoten.rtree2.geometry.Geometries;
 
-import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.io.IRasterReader;
 import dk.itu.raven.io.MatrixReader;
@@ -24,6 +23,7 @@ import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.io.cache.CacheOptions;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.JoinResult;
+import dk.itu.raven.join.PixelValue;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RandomMatrix;
 
@@ -209,11 +209,9 @@ public class ApiTest {
         int sum = 0;
         boolean[][] pixelIncluded = new boolean[width][height];
         for (var item : result) {
-            for (PixelRange range : item.pixelRanges) {
-                for (int x = range.x1; x <= range.x2; x++) {
-                    sum++;
-                    pixelIncluded[x][range.row] = true;
-                }
+            for (PixelValue value : item.pixelRanges) {
+                sum++;
+                pixelIncluded[value.x][value.y] = true;
             }
         }
 

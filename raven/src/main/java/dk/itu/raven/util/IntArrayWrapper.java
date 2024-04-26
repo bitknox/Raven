@@ -1,5 +1,7 @@
 package dk.itu.raven.util;
 
+import java.util.Iterator;
+
 public class IntArrayWrapper extends PrimitiveArrayWrapper {
     private int[] data;
 

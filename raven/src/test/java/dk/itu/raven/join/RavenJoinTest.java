@@ -47,17 +47,17 @@ public class RavenJoinTest {
             AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, i);
             RavenJoin join = new RavenJoin(k2, null, new Size(20, 30));
             join.setFunction(JoinFilterFunctions.acceptAll());
-            Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, new Square(0, 0, k2.getSize()),
+            Collection<PixelValue> ranges = join.extractCellsPolygon(poly, 0, new Square(0, 0, k2.getSize()),
                     k2.getValueRange().first, k2.getValueRange().second, rect,
                     false);
 
-            assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 0));
-            assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x2 == 1));
-            assertFalse(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 2));
-            assertTrue(ranges.stream().anyMatch(pr -> pr.row == 3 && pr.x1 == 0));
-            assertTrue(ranges.stream().anyMatch(pr -> pr.row == 3 && pr.x2 == 2));
-            assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x1 == 17));
-            assertTrue(ranges.stream().anyMatch(pr -> pr.row == 2 && pr.x2 == 19));
+            assertTrue(ranges.stream().anyMatch(pr -> pr.y == 2 && pr.x == 0));
+            assertTrue(ranges.stream().anyMatch(pr -> pr.y == 2 && pr.x == 1));
+            assertFalse(ranges.stream().anyMatch(pr -> pr.y == 2 && pr.x == 2));
+            assertTrue(ranges.stream().anyMatch(pr -> pr.y == 3 && pr.x == 0));
+            assertTrue(ranges.stream().anyMatch(pr -> pr.y == 3 && pr.x == 2));
+            assertTrue(ranges.stream().anyMatch(pr -> pr.y == 2 && pr.x == 17));
+            assertTrue(ranges.stream().anyMatch(pr -> pr.y == 2 && pr.x == 19));
         }
     }
 
@@ -73,23 +73,22 @@ public class RavenJoinTest {
             AbstractK2Raster k2 = new K2RasterBuilder().build(matrix, i);
             RavenJoin join = new RavenJoin(k2, null, new Size(11, 11));
             join.setFunction(JoinFilterFunctions.acceptAll());
-            Collection<PixelRange> ranges = join.extractCellsPolygon(poly, 0, new Square(0, 0, k2.getSize()),
+            Collection<PixelValue> ranges = join.extractCellsPolygon(poly, 0, new Square(0, 0, k2.getSize()),
                     k2.getValueRange().first, k2.getValueRange().second, rect, false);
 
             assertEquals(9, ranges.size());
-            assertTrue(ranges.stream().anyMatch(pr -> pr.row == 1));
-
-            int j = 1;
-            for (PixelRange range : ranges) {
-                assertEquals(new PixelRange(j, j, j), range);
-                j++;
+            assertTrue(ranges.stream().anyMatch(pr -> pr.y == 1));
+            int j;
+            for (j = 1; j < 10; j++) {
+                final int k = j;
+                assertTrue(ranges.stream().anyMatch(pr -> pr.x == k && pr.y == k));
             }
 
             for (j = 1; j < ranges.size(); j++) {
                 final int k = j;
-                assertTrue(ranges.stream().anyMatch(pr -> pr.row == k && pr.x1 == k && pr.x2 == k));
+                assertTrue(ranges.stream().anyMatch(pr -> pr.y == k && pr.x == k && pr.x == k));
             }
-            assertFalse(ranges.stream().anyMatch(pr -> pr.row == 10 && pr.x1 == 10 && pr.x2 == 9));
+            assertFalse(ranges.stream().anyMatch(pr -> pr.y == 10 && pr.x == 10 && pr.x == 9));
         }
     }
 
@@ -138,10 +137,8 @@ public class RavenJoinTest {
             }
 
             boolean[][] actual = new boolean[16][16];
-            for (PixelRange range : res.get(0).pixelRanges) {
-                for (int x = range.x1; x <= range.x2; x++) {
-                    actual[x][range.row] = true;
-                }
+            for (PixelValue range : res.get(0).pixelRanges) {
+                actual[range.x][range.y] = true;
             }
 
             for (int i = 0; i < 16; i++) {
@@ -151,10 +148,8 @@ public class RavenJoinTest {
             }
 
             boolean[][] actual2 = new boolean[16][16];
-            for (PixelRange range : res.get(1).pixelRanges) {
-                for (int x = range.x1; x <= range.x2; x++) {
-                    actual2[x][range.row] = true;
-                }
+            for (PixelValue range : res.get(1).pixelRanges) {
+                actual[range.x][range.y] = true;
             }
 
             for (int i = 0; i < 16; i++) {

@@ -11,7 +11,6 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import dk.itu.raven.api.RavenApi;
-import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.io.cache.CacheOptions;
 
 public class StreamedRavenJoinTest {
@@ -60,34 +59,30 @@ public class StreamedRavenJoinTest {
         Set<Point> parallelSet = new HashSet<>();
 
         for (JoinResultItem item : inMemoryResult) {
-            for (PixelRange range : item.pixelRanges) {
-                int y = range.row;
-                for (int x = range.x1; x <= range.x2; x++) {
-                    inMemorySet.add(new Point(x, range.row));
-                    assertTrue(x >= 0 && x < 1052 && y >= 0 && y < 784, "InMemory x: " + x + " y: " + y);
-                }
+            for (PixelValue range : item.pixelRanges) {
+                int y = range.y;
+                inMemorySet.add(new Point(range.x, y));
+                assertTrue(range.x >= 0 && range.x < 1052 && y >= 0 && y < 784, "InMemory x: " + range.x + " y: " + y);
             }
         }
 
         for (JoinResultItem item : streamedResult) {
-            for (PixelRange range : item.pixelRanges) {
-                int y = range.row;
-                for (int x = range.x1; x <= range.x2; x++) {
-                    assertTrue(inMemorySet.contains(new Point(x, range.row)));
-                    streamedSet.add(new Point(x, range.row));
-                    assertTrue(x >= 0 && x < 1052 && y >= 0 && y < 784, "Streamed x: " + x + " y: " + y);
-                }
+            for (PixelValue range : item.pixelRanges) {
+                int y = range.y;
+                int x = range.x;
+                assertTrue(inMemorySet.contains(new Point(x, y)));
+                streamedSet.add(new Point(x, y));
+                assertTrue(x >= 0 && x < 1052 && y >= 0 && y < 784, "Streamed x: " + x + " y: " + y);
             }
         }
 
         for (JoinResultItem item : parallelResult) {
-            for (PixelRange range : item.pixelRanges) {
-                int y = range.row;
-                for (int x = range.x1; x <= range.x2; x++) {
-                    assertTrue(inMemorySet.contains(new Point(x, range.row)));
-                    parallelSet.add(new Point(x, range.row));
-                    assertTrue(x >= 0 && x < 1052 && y >= 0 && y < 784, "Parallel x: " + x + " y: " + y);
-                }
+            for (PixelValue range : item.pixelRanges) {
+                int y = range.y;
+                int x = range.x;
+                assertTrue(inMemorySet.contains(new Point(x, y)));
+                parallelSet.add(new Point(x, y));
+                assertTrue(x >= 0 && x < 1052 && y >= 0 && y < 784, "Parallel x: " + x + " y: " + y);
             }
         }
 

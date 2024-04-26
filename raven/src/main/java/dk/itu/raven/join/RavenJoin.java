@@ -23,6 +23,7 @@ import dk.itu.raven.geometry.Size;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Pair;
+import dk.itu.raven.util.PrimitiveArrayWrapper;
 import dk.itu.raven.util.TreeExtensions;
 import dk.itu.raven.util.Tuple4;
 import dk.itu.raven.util.Tuple5;
@@ -109,9 +110,17 @@ public class RavenJoin extends AbstractRavenJoin {
 		return new Pair<>(inRanges, intersections);
 	}
 
-	public Collection<PixelRange> findAllPixelRanges(java.awt.Rectangle rasterBounding, boolean[] inRanges,
+	private void addRange(Collection<PixelValue> values, PixelRange range) {
+		PrimitiveArrayWrapper results = k2Raster.getWindow(range.row - offset.getY(), range.row - offset.getY(),
+				range.x1 - offset.getX(), range.x2 - offset.getX());
+		for (int i = 0; i < results.length(); i++) {
+			values.add(new PixelValue(results.get(i), range.x1 + i, range.row));
+		}
+	}
+
+	public Collection<PixelValue> findAllPixelRanges(java.awt.Rectangle rasterBounding, boolean[] inRanges,
 			Map<Long, Integer> intersections) {
-		List<PixelRange> ranges = new ArrayList<>();
+		List<PixelValue> values = new ArrayList<>();
 		int oldY = 0;
 		boolean inRange = inRanges[0];
 		int start = 0;
@@ -131,7 +140,7 @@ public class RavenJoin extends AbstractRavenJoin {
 						int x1 = start + rasterBounding.x;
 						int x2 = Math.min(rasterBounding.width - 1 + rasterBounding.x,
 								imageSize.width - 1);
-						ranges.add(new PixelRange(r, x1, x2));
+						addRange(values, new PixelRange(r, x1, x2));
 					}
 					// start a new pixel-line
 					oldY = j;
@@ -149,7 +158,7 @@ public class RavenJoin extends AbstractRavenJoin {
 					int r = y + rasterBounding.y;
 					int x1 = x + rasterBounding.x;
 					int x2 = x + rasterBounding.x;
-					ranges.add(new PixelRange(r, x1, x2));
+					addRange(values, new PixelRange(r, x1, x2));
 				}
 			} else {
 				if (inRange) {
@@ -157,7 +166,7 @@ public class RavenJoin extends AbstractRavenJoin {
 					int r = y + rasterBounding.y;
 					int x1 = start + rasterBounding.x;
 					int x2 = x + rasterBounding.x - 1;
-					ranges.add(new PixelRange(r, x1, x2));
+					addRange(values, new PixelRange(r, x1, x2));
 				} else {
 					inRange = true;
 					start = x;
@@ -173,17 +182,17 @@ public class RavenJoin extends AbstractRavenJoin {
 				int x1 = start + rasterBounding.x;
 				int x2 = Math.min(rasterBounding.width - 1 + rasterBounding.x,
 						imageSize.width - 1);
-				ranges.add(new PixelRange(r, x1, x2));
+				addRange(values, new PixelRange(r, x1, x2));
 			}
 			oldY = j;
 			inRange = inRanges[j];
 			start = 0;
 		}
 
-		return ranges;
+		return values;
 	}
 
-	public Collection<PixelRange> findFilteredPixelRanges(java.awt.Rectangle rasterBounding, boolean[] inRanges,
+	public Collection<PixelValue> findFilteredPixelRanges(java.awt.Rectangle rasterBounding, boolean[] inRanges,
 			Map<Long, Integer> intersections, Square area, long minValue, long maxValue, int k2Index) {
 
 		int[] rangeCounts = new int[rasterBounding.height + 1];
@@ -267,7 +276,7 @@ public class RavenJoin extends AbstractRavenJoin {
 			return new ArrayList<>();
 		}
 
-		List<PixelRange> out = new ArrayList<>();
+		List<PixelValue> out = new ArrayList<>();
 
 		int squareOffsetX = area.getTopX();
 		int squareOffsetY = area.getTopY();
@@ -352,7 +361,7 @@ public class RavenJoin extends AbstractRavenJoin {
 	 * @return A collection of pixels that are contained in the vector shape
 	 *         described by {@code polygon}
 	 */
-	protected Collection<PixelRange> extractCellsPolygon(Polygon polygon, int pk, Square area, long minValue,
+	protected Collection<PixelValue> extractCellsPolygon(Polygon polygon, int pk, Square area, long minValue,
 			long maxValue, java.awt.Rectangle rasterBounding, boolean prob) {
 
 		// if there is no intersection between the polygon and rasterBounding we can
