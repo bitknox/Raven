@@ -2,9 +2,13 @@
 	"name": "Join Time - Protected Areas (No Filter)",
 	"benchmarks": [
 		{
-			"name": ["Raven - GLC", "Raven - SWF", "Raven - Treecover"],
+			"name": "Raven",
 			"iterations": 5,
-			"colour": "darkred",
+			"group": [
+				"GLC",
+				"SWF",
+				"Treecover"
+			],
 			"command": {
 				"path": "java",
 				"args": [
@@ -33,9 +37,13 @@
 			}
 		},
 		{
-			"name": ["Raptor - GLC", "Raptor - SWF", "Raptor - Treecover"],
+			"name": "Raptor",
 			"iterations": 5,
-			"colour": "darkblue",
+			"group": [
+				"GLC",
+				"SWF",
+				"Treecover"
+			],
 			"command": {
 				"path": "java",
 				"args": [
@@ -57,5 +65,9 @@
 				"docker_mount_path": "/home/joinpro/data"
 			}
 		}
-	]
+	],
+	"colours": {
+		"Raven": "darkred",
+		"Raptor": "darkblue"
+	}
 }
