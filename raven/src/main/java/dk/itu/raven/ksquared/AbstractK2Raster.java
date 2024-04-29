@@ -36,6 +36,10 @@ public abstract class AbstractK2Raster implements Serializable {
         this.resultCreator = resultCreator;
     }
 
+    public IResultCreator getResultCreator() {
+        return resultCreator;
+    }
+
     public AbstractK2Raster(int k, long minVal, long maxVal, BitMap tree, int n, IntRank prefixSum,
             AbstractDAC lMin, AbstractDAC lMax) {
         this.resultCreator = new PixelValueCreator();

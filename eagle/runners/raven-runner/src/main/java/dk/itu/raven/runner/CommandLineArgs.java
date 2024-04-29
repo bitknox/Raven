@@ -1,6 +1,7 @@
 package dk.itu.raven.runner;
 
 import com.beust.jcommander.Parameter;
+import dk.itu.raven.io.commandline.ResultType;
 
 public class CommandLineArgs {
         @Parameter(names = { "-ir", "--input-raster" }, description = "Input raster file", required = true)
@@ -26,26 +27,30 @@ public class CommandLineArgs {
         public JoinType joinType = null;
 
         @Parameter(names = { "-c",
-                        "--cached" }, description = "Whether to use cached structures", arity=1)
+                        "--cached" }, description = "Whether to use cached structures", arity = 1)
         public boolean cached = true;
 
         @Parameter(names = { "-cl",
-			"--cache-location" }, description = "The parent directory to use for caches")
-	public String cacheDir = ".";
+                        "--cache-location" }, description = "The parent directory to use for caches")
+        public String cacheDir = ".";
 
         @Parameter(names = { "-i",
                         "--iterations" }, description = "The number of tests performed using these settings", required = true)
         public long iterations = -1;
 
         @Parameter(names = { "--k-size" }, description = "size of k in the k2-raster algorithm")
-	public int kSize = 2;
+        public int kSize = 2;
 
         @Parameter(names = { "--r-tree-min-children" }, description = "Minimum number of children in the R-tree")
-	public int rTreeMinChildren = 1;
+        public int rTreeMinChildren = 1;
 
-	@Parameter(names = { "--r-tree-max-children" }, description = "Maximum number of children in the R-tree")
-	public int rTreeMaxChildren = 8;
+        @Parameter(names = { "--r-tree-max-children" }, description = "Maximum number of children in the R-tree")
+        public int rTreeMaxChildren = 8;
 
-	@Parameter(names = { "--dac-fraction-size" }, description = "Size of the fraction used in the DAC algorithm")
-	public int dacFractionSize = 20;
+        @Parameter(names = { "--dac-fraction-size" }, description = "Size of the fraction used in the DAC algorithm")
+        public int dacFractionSize = 20;
+
+        @Parameter(names = { "-rt", "--result-type" }, description = "The type of result to use")
+        public ResultType resultType = ResultType.VALUE;
+
 }

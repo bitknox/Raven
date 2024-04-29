@@ -221,9 +221,15 @@ public class RavenJoin extends AbstractRavenJoin {
 						function, k2Index - 1, 0, area.getTopX() - offset.getX(), area.getTopY() - offset.getY(),
 						minValue, maxValue, area.getSize());
 			} else {
-				k2Raster.getWithinRanges(ranges, out, offset, r1, r2, c1, c2, rangeLimits, rangeCountPrefixsum,
-						k2Index - 1, 0, area.getTopX() - offset.getX(), area.getTopY() - offset.getY(),
-						maxValue, area.getSize());
+				if (k2Raster.getResultCreator().hasValues()) {
+					k2Raster.getWithinRanges(ranges, out, offset, r1, r2, c1, c2, rangeLimits, rangeCountPrefixsum,
+							k2Index - 1, 0, area.getTopX() - offset.getX(), area.getTopY() - offset.getY(),
+							maxValue, area.getSize());
+				} else {
+					for (PixelRange range : ranges) {
+						out.add(range);
+					}
+				}
 			}
 
 		}
