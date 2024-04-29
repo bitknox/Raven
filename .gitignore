@@ -19,6 +19,7 @@ dependency-reduced-pom.xml
 out/
 !requirements.txt
 results/
+!**/join/results
 results.json
 **/test/mount
 __pycache__

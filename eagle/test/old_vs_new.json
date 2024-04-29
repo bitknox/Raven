@@ -1,0 +1,95 @@
+{
+    "name": "Woody - Boundaries",
+    "benchmarks": [
+        {
+            "name": "old",
+            "iterations": 10,
+            "group": [
+                "all",
+                "50%",
+                "2%"
+            ],
+            "command": {
+                "path": "java",
+                "args": [
+                    "-jar",
+                    "/home/raven-runner-1.0-old-join.jar",
+                    "-iv",
+                    "/home/boundaries/ne_10m_admin_0_countries.shp",
+                    "-ir",
+                    "/home/woody",
+                    "-t",
+                    "parallel",
+                    "-ts",
+                    "2048",
+                    "-fl",
+                    [
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "-fh",
+                    [
+                        "255",
+                        "0",
+                        "1"
+                    ],
+                    "-cl",
+                    "/home/caches"
+                ]
+            },
+            "environment_options": {
+                "environment_type": "docker",
+                "docker_file_path": "./runners/raven-runner/",
+                "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+            }
+        },
+        {
+            "name": "new",
+            "iterations": 10,
+            "group": [
+                "all",
+                "50%",
+                "2%"
+            ],
+            "command": {
+                "path": "java",
+                "args": [
+                    "-jar",
+                    "/home/raven-runner-1.0-new-join.jar",
+                    "-iv",
+                    "/home/boundaries/ne_10m_admin_0_countries.shp",
+                    "-ir",
+                    "/home/woody",
+                    "-t",
+                    "parallel",
+                    "-ts",
+                    "2048",
+                    "-fl",
+                    [
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "-fh",
+                    [
+                        "255",
+                        "0",
+                        "1"
+                    ],
+                    "-cl",
+                    "/home/new-caches"
+                ]
+            },
+            "environment_options": {
+                "environment_type": "docker",
+                "docker_file_path": "./runners/raven-runner/",
+                "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+            }
+        }
+    ],
+    "colours": {
+        "old": "red",
+        "new": "darkred"
+    }
+}

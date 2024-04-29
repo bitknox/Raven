@@ -27,8 +27,8 @@ import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.ShapefileReader.ShapeFileBounds;
 import dk.itu.raven.io.VectorData;
 import dk.itu.raven.join.IJoinResult;
-import dk.itu.raven.join.PixelValue;
 import dk.itu.raven.join.Square;
+import dk.itu.raven.join.results.IResult;
 import dk.itu.raven.ksquared.K2Raster;
 import dk.itu.raven.util.TreeExtensions;
 
@@ -95,11 +95,9 @@ public class Visualizer {
 		rasterGraphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
 
 		for (var item : results) {
-			for (PixelValue value : item.pixelRanges) {
+			for (IResult value : item.pixelRanges) {
 				setColor(rasterGraphics, options.primaryColor);
-				rasterGraphics.drawLine(value.x, value.y,
-						value.x,
-						value.y);
+				value.draw(rasterGraphics);
 			}
 		}
 
@@ -289,13 +287,9 @@ public class Visualizer {
 		graphics.fillRect(0, 0, width, height); // give the whole image a white background
 
 		for (var item : results) {
-			for (PixelValue value : item.pixelRanges) {
+			for (IResult value : item.pixelRanges) {
 				setColor(graphics, options.primaryColor);
-				graphics.drawLine(
-						(int) (value.x * scale - bounds.minX * scale),
-						(int) (value.y * scale - bounds.minY * scale),
-						(int) (value.x * scale - bounds.minX * scale),
-						(int) (value.y * scale - bounds.minY * scale));
+				value.draw(graphics);
 			}
 		}
 

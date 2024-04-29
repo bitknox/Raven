@@ -20,7 +20,10 @@ import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.join.JoinResult;
 import dk.itu.raven.join.JoinResultItem;
-import dk.itu.raven.join.PixelValue;
+import dk.itu.raven.join.results.IResult;
+import dk.itu.raven.join.results.IResult.Pixel;
+import dk.itu.raven.join.results.PixelRangeCreator;
+import dk.itu.raven.join.results.PixelValueCreator;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RandomMatrix;
@@ -50,20 +53,22 @@ public class RavenJoinIntegrationTest {
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
 
         AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, new CacheOptions(null, false), 2, 1,
-                8);
+                8, new PixelRangeCreator());
         JoinResult result = join.join(JoinFilterFunctions.rangeFilter(filterLow, filterHigh)).asMemoryAllocatedResult();
 
         for (JoinResultItem item : result) {
-            for (PixelValue value : item.pixelRanges) {
-                int y = value.y;
-                int x = value.x;
-                actual[x][y] = true;
+            for (IResult value : item.pixelRanges) {
+                for (Pixel pixel : value) {
+                    int y = pixel.y;
+                    int x = pixel.x;
+                    actual[x][y] = true;
+                }
             }
         }
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                assertEquals(expected[x][y], actual[x][y]);
+                assertEquals(expected[x][y], actual[x][y], "index: " + x + ", " + y);
             }
         }
     }
@@ -74,7 +79,7 @@ public class RavenJoinIntegrationTest {
         int height = 2000;
         int filterLow = 50;
         int filterHigh = 950;
-        Matrix mat = new RandomMatrix(width, height, 1000);
+        Matrix mat = new RandomMatrix(4, width, height, 1000);
         List<Polygon> polygons = Arrays.asList(new Polygon(Arrays.asList(Geometries.point(100, 100),
                 Geometries.point(100, height - 100), Geometries.point(width - 100, height - 100),
                 Geometries.point(width - 100, 100))));
@@ -94,20 +99,22 @@ public class RavenJoinIntegrationTest {
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
 
         AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, new CacheOptions(null, false), 2, 1,
-                8);
+                8, new PixelValueCreator());
         JoinResult result = join.join(JoinFilterFunctions.rangeFilter(filterLow, filterHigh)).asMemoryAllocatedResult();
 
         for (JoinResultItem item : result) {
-            for (PixelValue value : item.pixelRanges) {
-                int y = value.y;
-                int x = value.x;
-                actual[x][y] = true;
+            for (IResult value : item.pixelRanges) {
+                for (Pixel pixel : value) {
+                    int y = pixel.y;
+                    int x = pixel.x;
+                    actual[x][y] = true;
+                }
             }
         }
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                assertEquals(expected[x][y], actual[x][y]);
+                assertEquals(expected[x][y], actual[x][y], "index: " + x + ", " + y);
             }
         }
     }
@@ -155,7 +162,7 @@ public class RavenJoinIntegrationTest {
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
 
         AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, new CacheOptions(null, false), 2, 1,
-                8);
+                8, new PixelRangeCreator());
         JoinResult result = join
                 .join(JoinFilterFunctions.multiSampleRangeFilter(
                         Arrays.asList(filterLow1, filterHigh1, filterLow2, filterHigh2, filterLow3, filterHigh3),
@@ -163,10 +170,12 @@ public class RavenJoinIntegrationTest {
                 .asMemoryAllocatedResult();
 
         for (JoinResultItem item : result) {
-            for (PixelValue value : item.pixelRanges) {
-                int y = value.y;
-                int x = value.x;
-                actual[x][y] = true;
+            for (IResult value : item.pixelRanges) {
+                for (Pixel pixel : value) {
+                    int y = pixel.y;
+                    int x = pixel.x;
+                    actual[x][y] = true;
+                }
             }
         }
 
