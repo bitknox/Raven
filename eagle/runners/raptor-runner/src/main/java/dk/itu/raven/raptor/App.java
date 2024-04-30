@@ -20,6 +20,11 @@ public class App {
                 .addObject(jct)
                 .build();
         commander.parse(args);
+        commander.setProgramName("Raptor Runner");
+        if (jct.help) {
+            commander.usage();
+            return;
+        }
 
         BenchResult benchResult = new BenchResult("Local Raptor Benchmark");
         benchResult.addLabel("Vector: " + benchResult.formatPath(jct.inputVector));

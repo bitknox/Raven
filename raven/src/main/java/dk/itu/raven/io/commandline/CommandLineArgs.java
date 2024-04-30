@@ -67,5 +67,5 @@ public class CommandLineArgs {
 	public int dacFractionSize = 20;
 
 	@Parameter(names = { "-rt", "--result-type" }, description = "The type of result to use")
-	public ResultType resultType = ResultType.VALUE;
+	public ResultType resultType = ResultType.RANGEVALUE;
 }

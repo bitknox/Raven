@@ -24,6 +24,11 @@ public class App {
                 .addObject(jct)
                 .build();
         commander.parse(args);
+        commander.setProgramName("Raven Runner");
+        if (jct.help) {
+            commander.usage();
+            return;
+        }
 
         api.setDACFraction(jct.dacFractionSize);
 

@@ -87,6 +87,8 @@ public class RavenApi {
 		switch (type) {
 			case RANGE:
 				return new PixelRangeCreator();
+			case RANGEVALUE:
+				return new PixelRangeCreator();
 			case VALUE:
 				return new PixelValueCreator();
 		}
