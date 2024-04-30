@@ -14,6 +14,10 @@
 					"/home/synthetic/vector/square/geom.shp",
 					"-cl",
 					"/home/raster-cache/",
+					"-fl",
+					"255",
+					"-fh",
+					"255",
 					"-ir",
 					[
 						"/home/synthetic/raster/selectivity/100",
