@@ -4,15 +4,7 @@
 		{
 			"name": "Raven",
 			"iterations": 100,
-			"group": [
-				"100%",
-				"50%",
-				"25%",
-				"12.5%",
-				"6.25%",
-				"3.125%",
-				"1.562%"
-			],
+			"group": ["100%", "50%", "25%", "12.5%", "6.25%", "3.125%", "1.562%"],
 			"command": {
 				"path": "java",
 				"args": [
@@ -43,47 +35,9 @@
 				"docker_file_path": "./runners/raven-runner/",
 				"docker_mount_path": "/home/joinpro/data"
 			}
-		},
-		{
-			"name": "Raptor",
-			"iterations": 100,
-			"group": [
-				"100%",
-				"50%",
-				"25%",
-				"12.5%",
-				"6.25%",
-				"3.125%",
-				"1.562%"
-			],
-			"command": {
-				"path": "java",
-				"args": [
-					"-jar",
-					"/home/runners/raptor-runner-1.0.jar",
-					"-iv",
-					"/home/synthetic/vector/square/geom.shp",
-					"-ir",
-					[
-						"/home/synthetic/raster/selectivity/100",
-						"/home/synthetic/raster/selectivity/50",
-						"/home/synthetic/raster/selectivity/25",
-						"/home/synthetic/raster/selectivity/12.5",
-						"/home/synthetic/raster/selectivity/6.25",
-						"/home/synthetic/raster/selectivity/3.125",
-						"/home/synthetic/raster/selectivity/1.562"
-					]
-				]
-			},
-			"environment_options": {
-				"environment_type": "docker",
-				"docker_file_path": "./runners/raptor-runner/",
-				"docker_mount_path": "/home/joinpro/data"
-			}
 		}
 	],
 	"colours": {
-		"Raven": "darkred",
-		"Raptor": "darkblue"
+		"Raven": "darkred"
 	}
 }
