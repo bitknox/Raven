@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Random;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.locationtech.jts.geom.Coordinate;
 
 import com.github.davidmoten.rtree2.RTree;
@@ -17,9 +19,11 @@ import com.github.davidmoten.rtree2.geometry.Geometries;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 import com.github.davidmoten.rtree2.geometry.Point;
 
+import dk.itu.raven.api.InternalApi;
 import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
+import dk.itu.raven.io.commandline.ResultType;
 import dk.itu.raven.join.results.IResult;
 import dk.itu.raven.join.results.PixelRange;
 import dk.itu.raven.ksquared.AbstractK2Raster;
@@ -108,8 +112,9 @@ public class RavenJoinTest {
         }
     }
 
-    @Test
-    public void testRavenJoin() {
+    @ParameterizedTest
+    @EnumSource(ResultType.class)
+    public void testRavenJoin(ResultType type) {
         int[][] matrix = new int[16][16];
         int fillValue = 42; // You can change this to any integer value
         for (int i = 0; i < 16; i++)
@@ -118,6 +123,7 @@ public class RavenJoinTest {
         matrix[6][6] = 0;
         for (int k = 2; k <= 10; k++) {
             AbstractK2Raster k2 = new K2RasterBuilder().build(new ArrayMatrix(matrix, 16, 16), k);
+            k2.setResultCreator(InternalApi.getResultCreator(type));
 
             RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
             Polygon p = new Polygon(new Coordinate[] { new Coordinate(1, 1), new Coordinate(3, 1), new Coordinate(3, 3),

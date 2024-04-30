@@ -26,6 +26,11 @@ public class App {
                 .addObject(jct)
                 .build();
         commander.parse(args);
+        commander.setProgramName("Beast Runner");
+        if (jct.help) {
+            commander.usage();
+            return;
+        }
 
         BenchResult benchResult = new BenchResult("Beast Join");
         benchResult.addLabel("Vector: " + benchResult.formatPath(jct.inputVector));

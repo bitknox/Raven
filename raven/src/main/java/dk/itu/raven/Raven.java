@@ -101,6 +101,7 @@ public class Raven {
         long endJoinNano = System.nanoTime();
         Logger.log("Join time: " + (endJoinNano - startJoinNano) / 1000000 + "ms",
                 LogLevel.INFO);
+        Logger.log("Done joining", LogLevel.INFO);
 
         // Visualize the result
         if (jct.outputPath != null) {
@@ -117,9 +118,8 @@ public class Raven {
             VisualizerOptions options = builder.build();
 
             visual.drawResult(result, shapefileReader, options);
+            Logger.log("Done visualizing", LogLevel.INFO);
         }
-
-        Logger.log("Done joining", LogLevel.INFO);
     }
 
 }

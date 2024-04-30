@@ -5,6 +5,9 @@ import java.io.Serializable;
 import com.beust.jcommander.Parameter;
 
 public class CommandLineArgs implements Serializable {
+        @Parameter(names = { "--help", "-h" }, help = true)
+	public boolean help = false;
+        
         @Parameter(names = { "-ir", "--input-raster" }, description = "Input raster file", required = true)
         public String inputRaster = null;
 

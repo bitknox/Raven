@@ -17,6 +17,7 @@ import dk.itu.raven.io.VectorData;
 import dk.itu.raven.io.cache.CacheOptions;
 import dk.itu.raven.io.cache.CachedRasterStructure;
 import dk.itu.raven.io.cache.RasterCache;
+import dk.itu.raven.io.commandline.ResultType;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.EmptyRavenJoin;
 import dk.itu.raven.join.JoinChunk;
@@ -31,6 +32,9 @@ import dk.itu.raven.ksquared.K2RasterIntBuilder;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.util.matrix.Matrix;
+import dk.itu.raven.join.results.PixelRangeCreator;
+import dk.itu.raven.join.results.PixelRangeValueCreator;
+import dk.itu.raven.join.results.PixelValueCreator;
 
 public class InternalApi {
 
@@ -169,6 +173,17 @@ public class InternalApi {
         } else {
             return new StreamedRavenJoin(stream);
         }
+    }
 
+    static public IResultCreator getResultCreator(ResultType type) {
+        switch (type) {
+            case RANGE:
+                return new PixelRangeCreator();
+            case RANGEVALUE:
+                return new PixelRangeValueCreator();
+            case VALUE:
+                return new PixelValueCreator();
+        }
+        return null;
     }
 }

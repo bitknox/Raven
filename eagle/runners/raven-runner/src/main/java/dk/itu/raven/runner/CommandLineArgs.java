@@ -4,6 +4,9 @@ import com.beust.jcommander.Parameter;
 import dk.itu.raven.io.commandline.ResultType;
 
 public class CommandLineArgs {
+        @Parameter(names = { "--help", "-h" }, help = true)
+	public boolean help = false;
+        
         @Parameter(names = { "-ir", "--input-raster" }, description = "Input raster file", required = true)
         public String inputRaster = null;
 
@@ -51,6 +54,6 @@ public class CommandLineArgs {
         public int dacFractionSize = 20;
 
         @Parameter(names = { "-rt", "--result-type" }, description = "The type of result to use")
-        public ResultType resultType = ResultType.VALUE;
+        public ResultType resultType = ResultType.RANGEVALUE;
 
 }
