@@ -3,7 +3,7 @@
 	"benchmarks": [
 		{
 			"name": "Raven",
-			"iterations": 100,
+			"iterations": 5,
 			"group": ["100%", "50%", "25%", "12.5%", "6.25%", "3.125%", "1.562%"],
 			"command": {
 				"path": "java",
