@@ -10,10 +10,6 @@ import dk.itu.raven.io.cache.CacheOptions;
 import dk.itu.raven.io.commandline.ResultType;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.StreamedRavenJoin;
-import dk.itu.raven.join.results.IResultCreator;
-import dk.itu.raven.join.results.PixelRangeCreator;
-import dk.itu.raven.join.results.PixelRangeValueCreator;
-import dk.itu.raven.join.results.PixelValueCreator;
 import dk.itu.raven.ksquared.dac.AbstractDAC;
 
 /**
@@ -37,7 +33,7 @@ public class RavenApi {
 		ShapefileReader vectorReader = createShapefileReader(vectorPath);
 
 		return InternalApi.getJoin(rasterReader, vectorReader, cacheOptions, kSize, rTreeMinChildren, rTreeMaxChildren,
-				getResultCreator(resultType));
+				InternalApi.getResultCreator(resultType));
 	}
 
 	/**
@@ -55,7 +51,7 @@ public class RavenApi {
 		ShapefileReader vectorReader = createShapefileReader(vectorPath);
 
 		return InternalApi.getStreamedJoin(rasterReader, vectorReader, widthStep, heightStep, parallel, cacheOptions,
-				kSize, rTreeMinChildren, rTreeMaxChildren, getResultCreator(resultType));
+				kSize, rTreeMinChildren, rTreeMaxChildren, InternalApi.getResultCreator(resultType));
 	}
 
 	/**
@@ -84,15 +80,4 @@ public class RavenApi {
 		AbstractDAC.FACT_RANK = size;
 	}
 
-	private IResultCreator getResultCreator(ResultType type) {
-		switch (type) {
-			case RANGE:
-				return new PixelRangeCreator();
-			case RANGEVALUE:
-				return new PixelRangeValueCreator();
-			case VALUE:
-				return new PixelValueCreator();
-		}
-		return null;
-	}
 }

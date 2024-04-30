@@ -6,7 +6,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import com.github.davidmoten.rtree2.geometry.Geometries;
 
@@ -16,21 +17,22 @@ import dk.itu.raven.io.MatrixReader;
 import dk.itu.raven.io.MockedShapefileReader;
 import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.io.cache.CacheOptions;
+import dk.itu.raven.io.commandline.ResultType;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.join.JoinResult;
 import dk.itu.raven.join.JoinResultItem;
 import dk.itu.raven.join.results.IResult;
 import dk.itu.raven.join.results.IResult.Pixel;
-import dk.itu.raven.join.results.PixelRangeCreator;
-import dk.itu.raven.join.results.PixelValueCreator;
+import dk.itu.raven.join.results.IResultCreator;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RandomMatrix;
 
 public class RavenJoinIntegrationTest {
-    @Test
-    public void testRavenJoinWithFilter() throws IOException {
+    @ParameterizedTest
+    @EnumSource(ResultType.class)
+    public void testRavenJoinWithFilter(ResultType type) throws IOException {
         int width = 2000;
         int height = 2000;
         int filterLow = 50;
@@ -51,9 +53,10 @@ public class RavenJoinIntegrationTest {
 
         IRasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
+        IResultCreator resultCreator = InternalApi.getResultCreator(type);
 
         AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, new CacheOptions(null, false), 2, 1,
-                8, new PixelRangeCreator());
+                8, resultCreator);
         JoinResult result = join.join(JoinFilterFunctions.rangeFilter(filterLow, filterHigh)).asMemoryAllocatedResult();
 
         for (JoinResultItem item : result) {
@@ -73,8 +76,9 @@ public class RavenJoinIntegrationTest {
         }
     }
 
-    @Test
-    public void testRavenJoinWithFilter2() throws IOException {
+    @ParameterizedTest
+    @EnumSource(ResultType.class)
+    public void testRavenJoinWithFilter2(ResultType type) throws IOException {
         int width = 2000;
         int height = 2000;
         int filterLow = 50;
@@ -97,9 +101,10 @@ public class RavenJoinIntegrationTest {
 
         IRasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
+        IResultCreator resultCreator = InternalApi.getResultCreator(type);
 
         AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, new CacheOptions(null, false), 2, 1,
-                8, new PixelValueCreator());
+                8, resultCreator);
         JoinResult result = join.join(JoinFilterFunctions.rangeFilter(filterLow, filterHigh)).asMemoryAllocatedResult();
 
         for (JoinResultItem item : result) {
@@ -119,8 +124,9 @@ public class RavenJoinIntegrationTest {
         }
     }
 
-    @Test
-    public void testRavenJoinWithSampleFilter() throws IOException {
+    @ParameterizedTest
+    @EnumSource(ResultType.class)
+    public void testRavenJoinWithSampleFilter(ResultType type) throws IOException {
         int width = 2000;
         int height = 2000;
 
@@ -160,9 +166,10 @@ public class RavenJoinIntegrationTest {
 
         IRasterReader rasterReader = new MatrixReader(mat, new TFWFormat(1, 0, 0, -1, 0, 0));
         MockedShapefileReader shapefileReader = new MockedShapefileReader(polygons);
+        IResultCreator resultCreator = InternalApi.getResultCreator(type);
 
         AbstractRavenJoin join = InternalApi.getJoin(rasterReader, shapefileReader, new CacheOptions(null, false), 2, 1,
-                8, new PixelRangeCreator());
+                8, resultCreator);
         JoinResult result = join
                 .join(JoinFilterFunctions.multiSampleRangeFilter(
                         Arrays.asList(filterLow1, filterHigh1, filterLow2, filterHigh2, filterLow3, filterHigh3),

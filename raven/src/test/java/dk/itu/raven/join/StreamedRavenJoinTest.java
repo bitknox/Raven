@@ -8,7 +8,8 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import dk.itu.raven.api.RavenApi;
 import dk.itu.raven.io.cache.CacheOptions;
@@ -38,19 +39,20 @@ public class StreamedRavenJoinTest {
         }
     }
 
-    @Test
-    public void testAllApproaches() throws IOException {
+    @ParameterizedTest
+    @EnumSource(ResultType.class)
+    public void testAllApproaches(ResultType type) throws IOException {
         RavenApi ravenApi = new RavenApi();
         String rasterPath = "src/test/java/dk/itu/raven/data/wildfires";
         String vectorPath = "src/test/java/dk/itu/raven/data/cb_2018_us_state_500k/cb_2018_us_state_500k.shp";
         AbstractRavenJoin inMemoryJoin = ravenApi.getJoin(rasterPath, vectorPath, new CacheOptions(null, false), 2, 1,
-                8, ResultType.RANGE);
+                8, type);
         AbstractRavenJoin streamedJoin = ravenApi.getStreamedJoin(rasterPath, vectorPath, 200, 200, false,
                 new CacheOptions(null, false), 2, 1,
-                8, ResultType.RANGE);
+                8, type);
         AbstractRavenJoin parallelJoin = ravenApi.getStreamedJoin(rasterPath, vectorPath, 200, 200, true,
                 new CacheOptions(null, false), 2, 1,
-                8, ResultType.RANGE);
+                8, type);
 
         IJoinResult inMemoryResult = inMemoryJoin.join().asMemoryAllocatedResult();
         IJoinResult streamedResult = streamedJoin.join().asMemoryAllocatedResult();
@@ -97,5 +99,6 @@ public class StreamedRavenJoinTest {
 
         assertEquals(inMemorySet.size(), streamedSet.size());
         assertEquals(inMemorySet.size(), parallelSet.size());
+        assertEquals(inMemorySet.size(), 824230);
     }
 }
