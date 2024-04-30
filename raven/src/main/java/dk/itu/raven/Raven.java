@@ -1,6 +1,5 @@
 package dk.itu.raven;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -84,11 +83,10 @@ public class Raven {
             join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize,
                     jct.tileSize, jct.parallel,
                     cacheOptions, jct.kSize, jct.rTreeMinChildren,
-                    jct.rTreeMaxChildren);
+                    jct.rTreeMaxChildren, jct.resultType);
         } else {
             join = api.getJoin(jct.inputRaster, jct.inputVector, cacheOptions,
-                    jct.kSize,
-                    jct.rTreeMinChildren, jct.rTreeMaxChildren);
+                    jct.kSize, jct.rTreeMinChildren, jct.rTreeMaxChildren, jct.resultType);
         }
         IJoinResult result = join.join(function);
 

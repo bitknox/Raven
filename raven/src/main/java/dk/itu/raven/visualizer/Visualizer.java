@@ -21,14 +21,14 @@ import com.github.davidmoten.rtree2.geometry.Geometry;
 import com.github.davidmoten.rtree2.geometry.Point;
 
 import dk.itu.raven.geometry.GeometryUtil;
-import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.io.ShapefileReader;
-import dk.itu.raven.io.VectorData;
 import dk.itu.raven.io.ShapefileReader.ShapeFileBounds;
+import dk.itu.raven.io.VectorData;
 import dk.itu.raven.join.IJoinResult;
 import dk.itu.raven.join.Square;
+import dk.itu.raven.join.results.IResult;
 import dk.itu.raven.ksquared.K2Raster;
 import dk.itu.raven.util.TreeExtensions;
 
@@ -95,11 +95,9 @@ public class Visualizer {
 		rasterGraphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
 
 		for (var item : results) {
-			for (PixelRange range : item.pixelRanges) {
+			for (IResult value : item.pixelRanges) {
 				setColor(rasterGraphics, options.primaryColor);
-				rasterGraphics.drawLine(range.x1, range.row,
-						range.x2,
-						range.row);
+				value.draw(rasterGraphics);
 			}
 		}
 
@@ -289,13 +287,9 @@ public class Visualizer {
 		graphics.fillRect(0, 0, width, height); // give the whole image a white background
 
 		for (var item : results) {
-			for (PixelRange range : item.pixelRanges) {
+			for (IResult value : item.pixelRanges) {
 				setColor(graphics, options.primaryColor);
-				graphics.drawLine(
-						(int) (range.x1 * scale - bounds.minX * scale),
-						(int) (range.row * scale - bounds.minY * scale),
-						(int) (range.x2 * scale - bounds.minX * scale),
-						(int) (range.row * scale - bounds.minY * scale));
+				value.draw(graphics);
 			}
 		}
 

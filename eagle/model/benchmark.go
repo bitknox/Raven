@@ -79,8 +79,8 @@ func FromInputBenchmark(inputBenchmark *Input) []*Benchmark {
 		if len(inputBenchmark.Name.List) != 1 && len(inputBenchmark.Group.List) != 1 {
 			panic("The name list and group list have different lengths")
 		}
-		length = max(len(inputBenchmark.Name.List), len(inputBenchmark.Group.List))
 	}
+	length = max(len(inputBenchmark.Name.List), len(inputBenchmark.Group.List))
 	if len(inputBenchmark.Name.List) == 1 {
 		arg := &inputBenchmark.Name
 		err := extendList(arg, length)

@@ -12,10 +12,10 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
-import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.io.serialization.Serializer;
 import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.join.Square;
+import dk.itu.raven.join.results.PixelRange;
 import dk.itu.raven.util.PrimitiveArrayWrapper;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;

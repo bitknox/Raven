@@ -1,0 +1,97 @@
+{
+    "name": "GLC - Protected Areas",
+    "benchmarks": [
+        {
+            "name": "old",
+            "iterations": 10,
+            "group": [
+                "all",
+                "5%",
+                "0.005%"
+            ],
+            "command": {
+                "path": "java",
+                "args": [
+                    "-Xmx8g",
+                    "-jar",
+                    "/home/raven-runner-1.0-old-join.jar",
+                    "-iv",
+                    "/home/protected_areas/ProtectedArea.shp",
+                    "-ir",
+                    "/home/glc2000",
+                    "-t",
+                    "parallel",
+                    "-ts",
+                    "2048",
+                    "-fl",
+                    [
+                        "0",
+                        "2",
+                        "22"
+                    ],
+                    "-fh",
+                    [
+                        "255",
+                        "8",
+                        "22"
+                    ],
+                    "-cl",
+                    "/home/caches"
+                ]
+            },
+            "environment_options": {
+                "environment_type": "docker",
+                "docker_file_path": "./runners/raven-runner/",
+                "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+            }
+        },
+        {
+            "name": "new",
+            "iterations": 10,
+            "group": [
+                "all",
+                "5%",
+                "0.005%"
+            ],
+            "command": {
+                "path": "java",
+                "args": [
+                    "-Xmx8g",
+                    "-jar",
+                    "/home/raven-runner-1.0-new-join.jar",
+                    "-iv",
+                    "/home/protected_areas/ProtectedArea.shp",
+                    "-ir",
+                    "/home/glc2000",
+                    "-t",
+                    "parallel",
+                    "-ts",
+                    "2048",
+                    "-fl",
+                    [
+                        "0",
+                        "2",
+                        "22"
+                    ],
+                    "-fh",
+                    [
+                        "255",
+                        "8",
+                        "22"
+                    ],
+                    "-cl",
+                    "/home/new-caches"
+                ]
+            },
+            "environment_options": {
+                "environment_type": "docker",
+                "docker_file_path": "./runners/raven-runner/",
+                "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+            }
+        }
+    ],
+    "colours": {
+        "old": "red",
+        "new": "darkred"
+    }
+}

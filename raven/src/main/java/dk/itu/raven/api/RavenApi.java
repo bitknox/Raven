@@ -7,8 +7,12 @@ import dk.itu.raven.io.IRasterReader;
 import dk.itu.raven.io.MultiFileRasterReader;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.cache.CacheOptions;
+import dk.itu.raven.io.commandline.ResultType;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.StreamedRavenJoin;
+import dk.itu.raven.join.results.IResultCreator;
+import dk.itu.raven.join.results.PixelRangeCreator;
+import dk.itu.raven.join.results.PixelValueCreator;
 import dk.itu.raven.ksquared.dac.AbstractDAC;
 
 /**
@@ -18,7 +22,6 @@ import dk.itu.raven.ksquared.dac.AbstractDAC;
  * wish.
  */
 public class RavenApi {
-
 	/**
 	 * constructs a RavenJoin object
 	 * 
@@ -28,11 +31,12 @@ public class RavenApi {
 	 * @throws IOException
 	 */
 	public AbstractRavenJoin getJoin(String rasterPath, String vectorPath, CacheOptions cacheOptions, int kSize,
-			int rTreeMinChildren, int rTreeMaxChildren) throws IOException {
+			int rTreeMinChildren, int rTreeMaxChildren, ResultType resultType) throws IOException {
 		IRasterReader rasterReader = createRasterReader(rasterPath);
 		ShapefileReader vectorReader = createShapefileReader(vectorPath);
 
-		return InternalApi.getJoin(rasterReader, vectorReader, cacheOptions, kSize, rTreeMinChildren, rTreeMaxChildren);
+		return InternalApi.getJoin(rasterReader, vectorReader, cacheOptions, kSize, rTreeMinChildren, rTreeMaxChildren,
+				getResultCreator(resultType));
 	}
 
 	/**
@@ -45,12 +49,12 @@ public class RavenApi {
 	 */
 	public StreamedRavenJoin getStreamedJoin(String rasterPath, String vectorPath,
 			int widthStep, int heightStep, boolean parallel, CacheOptions cacheOptions, int kSize, int rTreeMinChildren,
-			int rTreeMaxChildren) throws IOException {
+			int rTreeMaxChildren, ResultType resultType) throws IOException {
 		IRasterReader rasterReader = createRasterReader(rasterPath);
 		ShapefileReader vectorReader = createShapefileReader(vectorPath);
 
 		return InternalApi.getStreamedJoin(rasterReader, vectorReader, widthStep, heightStep, parallel, cacheOptions,
-				kSize, rTreeMinChildren, rTreeMaxChildren);
+				kSize, rTreeMinChildren, rTreeMaxChildren, getResultCreator(resultType));
 	}
 
 	/**
@@ -77,5 +81,15 @@ public class RavenApi {
 
 	public void setDACFraction(int size) {
 		AbstractDAC.FACT_RANK = size;
+	}
+
+	private IResultCreator getResultCreator(ResultType type) {
+		switch (type) {
+			case RANGE:
+				return new PixelRangeCreator();
+			case VALUE:
+				return new PixelValueCreator();
+		}
+		return null;
 	}
 }

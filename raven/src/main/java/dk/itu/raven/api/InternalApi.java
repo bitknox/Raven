@@ -24,6 +24,7 @@ import dk.itu.raven.join.ParallelStreamedRavenJoin;
 import dk.itu.raven.join.RavenJoin;
 import dk.itu.raven.join.SpatialDataChunk;
 import dk.itu.raven.join.StreamedRavenJoin;
+import dk.itu.raven.join.results.IResultCreator;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.ksquared.K2RasterBuilder;
 import dk.itu.raven.ksquared.K2RasterIntBuilder;
@@ -43,7 +44,8 @@ public class InternalApi {
      */
     static Stream<JoinChunk> streamStructures(ShapefileReader featureReader,
             IRasterReader rasterReader, int widthStep,
-            int heightStep, CacheOptions cacheOptions, int kSize, int rTreeMinChildren, int rTreeMaxChildren)
+            int heightStep, CacheOptions cacheOptions, int kSize, int rTreeMinChildren, int rTreeMaxChildren,
+            IResultCreator resultCreator)
             throws IOException {
         if (cacheOptions.isCaching)
             cacheOptions.isCaching = rasterReader.getDirectory().isPresent();
@@ -68,6 +70,7 @@ public class InternalApi {
                     Logger.log("Using cached raster structure " + chunk.getCacheKeyName(), LogLevel.DEBUG);
                     try {
                         CachedRasterStructure c = cache.readItem(chunk.getCacheKeyName());
+                        c.raster.setResultCreator(resultCreator);
                         return new JoinChunk(c.raster, c.offset, chunk.getTree());
                     } catch (Exception e) {
                         Logger.log("Item was in cache index, but not found on disk", LogLevel.ERROR);
@@ -77,6 +80,7 @@ public class InternalApi {
                 // cache has not been hit, generate structure
                 Logger.log("matrix[0,0]: " + chunk.getMatrix().get(0, 0), LogLevel.DEBUG);
                 AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix(), kSize);
+                raster.setResultCreator(resultCreator);
 
                 // write the structure to the cache
                 try {
@@ -94,6 +98,7 @@ public class InternalApi {
                     Optional.empty(), rtree, geometries);
             return rasterStream.map(chunk -> {
                 AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix(), kSize);
+                raster.setResultCreator(resultCreator);
                 return new JoinChunk(raster, chunk.getOffset(), chunk.getTree());
             });
         }
@@ -132,11 +137,11 @@ public class InternalApi {
 
     static AbstractRavenJoin getJoin(IRasterReader rasterReader, ShapefileReader vectorReader,
             CacheOptions cacheOptions,
-            int kSize, int rTreeMinChildren, int rTreeMaxChildren)
+            int kSize, int rTreeMinChildren, int rTreeMaxChildren, IResultCreator resultCreator)
             throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
         Optional<RavenJoin> streamedJoin = getStreamedJoin(rasterReader, vectorReader, metadata.getWidth(),
-                metadata.getHeight(), false, cacheOptions, kSize, rTreeMinChildren, rTreeMaxChildren)
+                metadata.getHeight(), false, cacheOptions, kSize, rTreeMinChildren, rTreeMaxChildren, resultCreator)
                 .getRavenJoins().findFirst();
         if (streamedJoin.isPresent()) {
             return streamedJoin.get();
@@ -147,12 +152,12 @@ public class InternalApi {
 
     static StreamedRavenJoin getStreamedJoin(IRasterReader rasterReader, ShapefileReader vectorReader, int widthStep,
             int heightStep, boolean parallel, CacheOptions cacheOptions, int kSize, int rTreeMinChildren,
-            int rTreeMaxChildren)
+            int rTreeMaxChildren, IResultCreator resultCreator)
             throws IOException {
         ImageMetadata metadata = rasterReader.getImageMetadata();
         Size imageSize = new Size(metadata.getWidth(), metadata.getHeight());
         var structures = streamStructures(vectorReader, rasterReader, widthStep, heightStep, cacheOptions, kSize,
-                rTreeMinChildren, rTreeMaxChildren);
+                rTreeMinChildren, rTreeMaxChildren, resultCreator);
         Stream<RavenJoin> stream = structures.filter(chunk -> {
             return chunk.getRtree().root().isPresent();
         }).map(chunk -> {

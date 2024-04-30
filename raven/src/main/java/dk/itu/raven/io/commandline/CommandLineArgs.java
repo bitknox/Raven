@@ -65,4 +65,7 @@ public class CommandLineArgs {
 
 	@Parameter(names = { "--dac-fraction-size" }, description = "Size of the fraction used in the DAC algorithm")
 	public int dacFractionSize = 20;
+
+	@Parameter(names = { "-rt", "--result-type" }, description = "The type of result to use")
+	public ResultType resultType = ResultType.VALUE;
 }

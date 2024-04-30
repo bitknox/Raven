@@ -14,7 +14,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.github.davidmoten.rtree2.geometry.Geometries;
 
-import dk.itu.raven.geometry.PixelRange;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.io.IRasterReader;
 import dk.itu.raven.io.MatrixReader;
@@ -24,6 +23,9 @@ import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.io.cache.CacheOptions;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.JoinResult;
+import dk.itu.raven.join.results.IResult;
+import dk.itu.raven.join.results.IResult.Pixel;
+import dk.itu.raven.join.results.PixelRangeCreator;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RandomMatrix;
 
@@ -209,10 +211,10 @@ public class ApiTest {
         int sum = 0;
         boolean[][] pixelIncluded = new boolean[width][height];
         for (var item : result) {
-            for (PixelRange range : item.pixelRanges) {
-                for (int x = range.x1; x <= range.x2; x++) {
+            for (IResult value : item.pixelRanges) {
+                for (Pixel pixel : value) {
                     sum++;
-                    pixelIncluded[x][range.row] = true;
+                    pixelIncluded[pixel.x][pixel.y] = true;
                 }
             }
         }
@@ -230,11 +232,13 @@ public class ApiTest {
             throws IOException {
         AbstractRavenJoin join;
         if (streamed == 0) {
-            join = getStreamedJoin(rasterReader, vectorReader, 4, 4, false, new CacheOptions(null, false), 2, 1, 8);
+            join = getStreamedJoin(rasterReader, vectorReader, 4, 4, false, new CacheOptions(null, false), 2, 1, 8,
+                    new PixelRangeCreator());
         } else if (streamed == 1) {
-            join = getStreamedJoin(rasterReader, vectorReader, 4, 4, true, new CacheOptions(null, false), 2, 1, 8);
+            join = getStreamedJoin(rasterReader, vectorReader, 4, 4, true, new CacheOptions(null, false), 2, 1, 8,
+                    new PixelRangeCreator());
         } else {
-            join = getJoin(rasterReader, vectorReader, new CacheOptions(null, false), 2, 1, 8);
+            join = getJoin(rasterReader, vectorReader, new CacheOptions(null, false), 2, 1, 8, new PixelRangeCreator());
         }
         JoinResult result = join.join().asMemoryAllocatedResult();
         return result;

@@ -1,11 +1,14 @@
-package dk.itu.raven.geometry;
+package dk.itu.raven.join.results;
 
+import java.awt.Graphics2D;
+import java.util.Iterator;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Stores a range of continuous pixels in a compressed format
  */
-public class PixelRange {
+public class PixelRange implements IResult {
     public int row;
     public int x1, x2;
 
@@ -37,5 +40,27 @@ public class PixelRange {
     @Override
     public int hashCode() {
         return Objects.hash(row, x1, x2);
+    }
+
+    @Override
+    public Iterator<Pixel> iterator() {
+        return new Iterator<Pixel>() {
+            private int x = x1;
+
+            @Override
+            public boolean hasNext() {
+                return x <= x2;
+            }
+
+            @Override
+            public Pixel next() {
+                return new IResult.Pixel(x++, row, Optional.empty());
+            }
+        };
+    }
+
+    @Override
+    public void draw(Graphics2D graphics) {
+        graphics.drawLine(x1, row, x2, row);
     }
 }
