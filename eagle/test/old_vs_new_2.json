@@ -3,11 +3,11 @@
     "benchmarks": [
         {
             "name": "old",
-            "iterations": 20,
+            "iterations": 10,
             "group": [
                 "all",
-                "0.005%",
-                "5%"
+                "5%",
+                "0.005%"
             ],
             "command": {
                 "path": "java",
@@ -47,11 +47,11 @@
         },
         {
             "name": "new",
-            "iterations": 20,
+            "iterations": 10,
             "group": [
                 "all",
-                "0.005%",
-                "5%"
+                "5%",
+                "0.005%"
             ],
             "command": {
                 "path": "java",

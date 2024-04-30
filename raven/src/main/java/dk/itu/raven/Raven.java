@@ -1,6 +1,5 @@
 package dk.itu.raven;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
