@@ -7,7 +7,7 @@
                 "Raven - RangeValues",
                 "Raven - Ranges"
             ],
-            "iterations": 20,
+            "iterations": 10,
             "group": [
                 "2-8"
             ],
@@ -24,10 +24,6 @@
                     "parallel",
                     "-ts",
                     "2048",
-                    "-fl",
-                    "2",
-                    "-fh",
-                    "8",
                     "-cl",
                     "/home/newer-caches",
                     "-rt",

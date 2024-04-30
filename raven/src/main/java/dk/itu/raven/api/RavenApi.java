@@ -12,6 +12,7 @@ import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.StreamedRavenJoin;
 import dk.itu.raven.join.results.IResultCreator;
 import dk.itu.raven.join.results.PixelRangeCreator;
+import dk.itu.raven.join.results.PixelRangeValueCreator;
 import dk.itu.raven.join.results.PixelValueCreator;
 import dk.itu.raven.ksquared.dac.AbstractDAC;
 
@@ -88,7 +89,7 @@ public class RavenApi {
 			case RANGE:
 				return new PixelRangeCreator();
 			case RANGEVALUE:
-				return new PixelRangeCreator();
+				return new PixelRangeValueCreator();
 			case VALUE:
 				return new PixelValueCreator();
 		}
