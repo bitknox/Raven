@@ -513,7 +513,6 @@ public abstract class AbstractK2Raster implements Serializable {
                 else
                     c2p = nKths - 1;
                 zp = z + i * k + j;
-                maxValp = computeVMax(maxVal, zp + 1);
 
                 boolean addCells = false;
                 int baseXp = baseX + j * nKths;
@@ -524,6 +523,7 @@ public abstract class AbstractK2Raster implements Serializable {
 
                 int treeIndexp = treeIndex * k + i + 1;
                 if (!hasChildren(zp + 1)) {
+                    maxValp = computeVMax(maxVal, zp + 1);
                     addCells = true;
                 } else {
                     boolean containsNoRanges = rangeLimits[treeIndexp].x1 > c2p + baseXp - treeOffset.getX()
@@ -531,6 +531,7 @@ public abstract class AbstractK2Raster implements Serializable {
                     if (containsNoRanges) {
                         continue;
                     } else {
+                        maxValp = computeVMax(maxVal, zp + 1);
                         getWithinRanges(ranges, out, offset, r1p, r2p, c1p, c2p, rangeLimits, rangePrefixsum,
                                 zp, treeIndexp, baseXp, baseYp, maxValp, nKths, treeOffset);
                     }
