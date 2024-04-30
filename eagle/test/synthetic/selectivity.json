@@ -15,6 +15,10 @@
 					"-cl",
 					"/home/raster-cache/",
 					"-ir",
+					"-fl",
+					"255",
+					"-fh",
+					"255",
 					[
 						"/home/synthetic/raster/selectivity/100",
 						"/home/synthetic/raster/selectivity/50",
