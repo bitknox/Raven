@@ -5,13 +5,14 @@
 			"name": "Raven",
 			"iterations": 100,
 			"group": [
-				"100%",
-				"50%",
-				"25%",
-				"12.5%",
-				"6.25%",
-				"3.125%",
-				"1.562%"
+				"2 colours",
+				"4 colours",
+				"8 colours",
+				"16 colours",
+				"32 colours",
+				"64 colours",
+				"128 colours",
+				"256 colours"
 			],
 			"command": {
 				"path": "java",
