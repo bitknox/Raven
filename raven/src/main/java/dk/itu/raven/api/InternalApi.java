@@ -52,7 +52,7 @@ public class InternalApi {
             IResultCreator resultCreator)
             throws IOException {
         if (cacheOptions.isCaching)
-            cacheOptions.isCaching = rasterReader.getDirectory().isPresent();
+            cacheOptions.isCaching = rasterReader.getDirectoryName().isPresent();
 
         // load geometries from shapefile
         VectorData geometries = featureReader.readShapefile();
@@ -65,7 +65,7 @@ public class InternalApi {
             // step
             RasterCache<CachedRasterStructure> cache = new RasterCache<CachedRasterStructure>(
                     cacheOptions.getCacheDir(),
-                    rasterReader.getDirectory().get() + "-" + widthStep + "-" + heightStep);
+                    rasterReader.getDirectoryName().get() + "-" + widthStep + "-" + heightStep);
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
                     Optional.of(cache), rtree, geometries);
             return rasterStream.map(chunk -> {
@@ -75,7 +75,7 @@ public class InternalApi {
                     try {
                         CachedRasterStructure c = cache.readItem(chunk.getCacheKeyName());
                         c.raster.setResultCreator(resultCreator);
-                        return new JoinChunk(c.raster, c.offset, chunk.getTree());
+                        return new JoinChunk(c.raster, c.offset, chunk.getTree(), chunk.getDirectory());
                     } catch (Exception e) {
                         Logger.log("Item was in cache index, but not found on disk", LogLevel.ERROR);
                         System.exit(-1);
@@ -95,7 +95,7 @@ public class InternalApi {
                 }
 
                 // create the raster structure an potentially cache it
-                return new JoinChunk(raster, chunk.getOffset(), chunk.getTree());
+                return new JoinChunk(raster, chunk.getOffset(), chunk.getTree(), chunk.getDirectory());
             });
         } else {
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
@@ -103,7 +103,7 @@ public class InternalApi {
             return rasterStream.map(chunk -> {
                 AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix(), kSize);
                 raster.setResultCreator(resultCreator);
-                return new JoinChunk(raster, chunk.getOffset(), chunk.getTree());
+                return new JoinChunk(raster, chunk.getOffset(), chunk.getTree(), chunk.getDirectory());
             });
         }
 
@@ -166,7 +166,7 @@ public class InternalApi {
             return chunk.getRtree().root().isPresent();
         }).map(chunk -> {
             return new RavenJoin(chunk.getRaster(), chunk.getRtree(), chunk.getOffset(),
-                    imageSize);
+                    imageSize, chunk.getDirectory());
         });
         if (parallel) {
             return new ParallelStreamedRavenJoin(stream);

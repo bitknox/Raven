@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 import javax.imageio.IIOImage;
@@ -14,6 +15,9 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
+
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
 
 import com.github.davidmoten.rtree2.Node;
 import com.github.davidmoten.rtree2.RTree;
@@ -23,13 +27,20 @@ import com.github.davidmoten.rtree2.geometry.Point;
 import dk.itu.raven.geometry.GeometryUtil;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
+import dk.itu.raven.io.ImageIORasterReader;
+import dk.itu.raven.io.Reprojector;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.ShapefileReader.ShapeFileBounds;
+import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.io.VectorData;
 import dk.itu.raven.join.IJoinResult;
+import dk.itu.raven.join.JoinResult;
+import dk.itu.raven.join.JoinResultItem;
 import dk.itu.raven.join.Square;
 import dk.itu.raven.join.results.IResult;
 import dk.itu.raven.ksquared.K2Raster;
+import dk.itu.raven.util.Logger;
+import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.util.TreeExtensions;
 
 /**
@@ -94,15 +105,34 @@ public class Visualizer {
 		setColor(rasterGraphics, options.background);
 		rasterGraphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
 
-		for (var item : results) {
-			for (IResult value : item.pixelRanges) {
-				setColor(rasterGraphics, options.primaryColor);
-				value.draw(rasterGraphics);
-			}
+		Optional<JoinResultItem> item = results.find(jri -> jri.file.isPresent());
+		if (item.isPresent()) {
+			results = results.filter(jri -> jri.file.equals(item.get().file));
+		} else {
+			results = new JoinResult();
 		}
 
-		if (options.drawFeatures) {
-			drawFeatures(rasterGraphics, features, options.secondaryColor);
+		drawResults(results, options, rasterGraphics);
+
+		if (options.drawFeatures && item.isPresent()) {
+			File file = item.get().file.get(); // both get's are safe here
+
+			ImageIORasterReader reader = new ImageIORasterReader(file);
+			CoordinateReferenceSystem targetCRS = reader.getCRS();
+			TFWFormat g2m = reader.getG2M();
+			MathTransform transform = null;
+			try {
+				transform = Reprojector.calculateFullTransform(vectorData.getCRS(), targetCRS,
+						g2m);
+				for (int i = 0; i < features.size(); i++) {
+					features.set(i, features.get(i).transform(transform));
+				}
+				drawFeatures(rasterGraphics, features, options.secondaryColor);
+			} catch (Exception e) {
+				e.printStackTrace();
+				Logger.log("Cannot draw vector data", LogLevel.ERROR);
+			}
+
 		}
 		if (options.useOutput) {
 			writeImage(image, options.outputPath, options.outputFormat);
@@ -286,12 +316,7 @@ public class Visualizer {
 		setColor(graphics, options.background);
 		graphics.fillRect(0, 0, width, height); // give the whole image a white background
 
-		for (var item : results) {
-			for (IResult value : item.pixelRanges) {
-				setColor(graphics, options.primaryColor);
-				value.draw(graphics);
-			}
-		}
+		drawResults(results, options, graphics);
 
 		Color color = options.secondaryColor;
 
@@ -314,6 +339,15 @@ public class Visualizer {
 		}
 
 		return image;
+	}
+
+	private void drawResults(IJoinResult results, VisualizerOptions options, Graphics2D graphics) {
+		for (var item : results) {
+			for (IResult value : item.pixelRanges) {
+				setColor(graphics, options.primaryColor);
+				value.draw(graphics);
+			}
+		}
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package dk.itu.raven.io;
 
 import java.awt.Rectangle;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -59,6 +60,7 @@ public abstract class RasterReader implements IRasterReader {
 			try {
 				Offset<Integer> offset = new Offset<>(w.x, w.y);
 				SpatialDataChunk chunk = new SpatialDataChunk();
+				chunk.setDirectory(getDirectory());
 				chunk.setOffset(offset);
 				chunk.setTree(rtree);
 				if (metadata.getDirectoryName().isPresent()) {
@@ -80,7 +82,12 @@ public abstract class RasterReader implements IRasterReader {
 	}
 
 	@Override
-	public Optional<String> getDirectory() {
+	public Optional<String> getDirectoryName() {
+		return Optional.empty();
+	}
+
+	@Override
+	public Optional<File> getDirectory() {
 		return Optional.empty();
 	}
 

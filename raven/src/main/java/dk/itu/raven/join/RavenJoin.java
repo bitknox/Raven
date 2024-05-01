@@ -1,9 +1,11 @@
 package dk.itu.raven.join;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Stack;
 import java.util.TreeMap;
 
@@ -23,11 +25,11 @@ import dk.itu.raven.join.results.IResult;
 import dk.itu.raven.join.results.PixelRange;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.util.Logger;
+import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.TreeExtensions;
 import dk.itu.raven.util.Tuple4;
 import dk.itu.raven.util.Tuple5;
-import dk.itu.raven.util.Logger.LogLevel;
 
 public class RavenJoin extends AbstractRavenJoin {
 	private enum QuadOverlapType {
@@ -47,17 +49,19 @@ public class RavenJoin extends AbstractRavenJoin {
 	private Offset<Integer> offset;
 	private Size imageSize;
 	private IRasterFilterFunction function;
+	private Optional<File> file;
 
 	public RavenJoin(AbstractK2Raster k2Raster, RTree<String, Geometry> tree,
-			Offset<Integer> offset, Size imageSize) {
+			Offset<Integer> offset, Size imageSize, Optional<File> file) {
 		this.k2Raster = k2Raster;
 		this.tree = tree;
 		this.offset = offset;
 		this.imageSize = imageSize;
+		this.file = file;
 	}
 
 	public RavenJoin(AbstractK2Raster k2Raster, RTree<String, Geometry> tree, Size imageSize) {
-		this(k2Raster, tree, new Offset<>(0, 0), imageSize);
+		this(k2Raster, tree, new Offset<>(0, 0), imageSize, Optional.empty());
 	}
 
 	private Pair<boolean[], Map<Long, Integer>> findIntersections(Polygon polygon, java.awt.Rectangle rasterBounding) {
@@ -318,7 +322,8 @@ public class RavenJoin extends AbstractRavenJoin {
 			// all geometries we store are polygons
 			def.add(new JoinResultItem(entry.geometry(),
 					extractCellsPolygon((Polygon) entry.geometry(), pk, area, minValue, maxValue, rasterBounding,
-							prob)));
+							prob),
+					file));
 		}
 	}
 

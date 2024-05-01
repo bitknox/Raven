@@ -4,7 +4,9 @@ package dk.itu.raven.join;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -68,6 +70,17 @@ public class StreamedJoinResult implements IJoinResult {
         JoinResult result = new JoinResult(items);
 
         return result;
+    }
+
+    @Override
+    public StreamedJoinResult filter(Predicate<? super JoinResultItem> predicate) {
+        return new StreamedJoinResult(
+                this.stream.<JoinResult>map(jr -> jr.filter(predicate)).filter(jr -> jr.size() > 0));
+    }
+
+    @Override
+    public Optional<JoinResultItem> find(Predicate<? super JoinResultItem> predicate) {
+        return stream.<Optional<JoinResultItem>>map(jr -> jr.find(predicate)).findFirst().flatMap(o -> o);
     }
 
 }
