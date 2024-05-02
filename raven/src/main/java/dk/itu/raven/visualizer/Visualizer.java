@@ -211,8 +211,8 @@ public class Visualizer {
 		double scaleX = this.width / (maxX - minX);
 		double scaleY = this.height / (maxY - minY);
 		double scale = Math.min(scaleX, scaleY);
-		MathTransform transform = new AffineTransform2D(scale, 0, 0, -scale, (this.width - minX - maxX) / 2,
-				(this.height - minY - maxY) / 2);
+		MathTransform transform = new AffineTransform2D(scale, 0, 0, -scale, (this.width - scale * (minX + maxX)) / 2,
+				(this.height + scale * (minY + maxY)) / 2);
 		try {
 			for (int i = 0; i < features.size(); i++) {
 				features.set(i, features.get(i).transform(transform));
