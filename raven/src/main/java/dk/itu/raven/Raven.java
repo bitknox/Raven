@@ -110,6 +110,7 @@ public class Raven {
             VisualizerOptionsBuilder builder = new VisualizerOptionsBuilder();
 
             builder.setOutputPath(jct.outputPath);
+            builder.setOutputFormat(jct.outputExtension);
             builder.setUseOutput(true);
             builder.setCropToVector(jct.cropToVector);
             builder.setPrimaryColor(new RandomColor());

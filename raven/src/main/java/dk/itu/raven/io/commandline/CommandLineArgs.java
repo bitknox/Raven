@@ -24,8 +24,12 @@ public class CommandLineArgs {
 	@Parameter(names = { "-iv", "--input-vector" }, description = "Input vector file", required = true)
 	public String inputVector = null;
 
-	@Parameter(names = { "-o", "--output" }, description = "Optional join visualization output file")
+	@Parameter(names = { "-o", "--output" }, description = "Optional join visualization output folder")
 	public String outputPath = null;
+
+	@Parameter(names = { "-fe",
+			"--file-extension" }, description = "The file-extension of the images produced by the visualizer (requires a folder to take effect)")
+	public String outputExtension = "png";
 
 	@Parameter(names = { "-r",
 			"--filter-ranges" }, description = "Filter function. If one range is given it will filter based on the packed value. If a range is given for every sample, it will accept only values that fall within the range for all samples. Min/max value for each range should be separated by a hyphen, different ranges should be separated by either a comma of a space", splitter = RangeSplitter.class)
@@ -68,4 +72,5 @@ public class CommandLineArgs {
 
 	@Parameter(names = { "-rt", "--result-type" }, description = "The type of result to use")
 	public ResultType resultType = ResultType.RANGEVALUE;
+
 }

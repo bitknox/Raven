@@ -23,6 +23,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
+import org.geotools.referencing.operation.transform.AffineTransform2D;
 
 import com.github.davidmoten.rtree2.Node;
 import com.github.davidmoten.rtree2.RTree;
@@ -31,6 +32,7 @@ import com.github.davidmoten.rtree2.geometry.Geometry;
 import com.github.davidmoten.rtree2.geometry.Point;
 import com.github.davidmoten.rtree2.geometry.Rectangle;
 
+import dk.itu.raven.api.InternalApi;
 import dk.itu.raven.geometry.GeometryUtil;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
@@ -43,7 +45,7 @@ import dk.itu.raven.io.VectorData;
 import dk.itu.raven.join.Square;
 import dk.itu.raven.join.results.IJoinResult;
 import dk.itu.raven.join.results.IResult;
-import dk.itu.raven.ksquared.K2Raster;
+import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.util.TreeExtensions;
@@ -86,7 +88,7 @@ public class Visualizer {
 	 * @param options  visualizer options
 	 * @return The imagebuffer
 	 */
-	public BufferedImage drawResult(IJoinResult results, ShapefileReader shapeFileReader,
+	public void drawResult(IJoinResult results, ShapefileReader shapeFileReader,
 			VisualizerOptions options) throws IOException {
 		var vectorData = getFeatures(shapeFileReader);
 		List<Polygon> features = vectorData.getFeatures();
@@ -106,12 +108,6 @@ public class Visualizer {
 			format = BufferedImage.TYPE_INT_ARGB;
 		}
 
-		BufferedImage image = new BufferedImage(width, height, format);
-
-		Graphics2D rasterGraphics = image.createGraphics();
-		setColor(rasterGraphics, options.background);
-		rasterGraphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
-
 		Set<File> files = new HashSet<>();
 		results.asMemoryAllocatedResult().forAll(item -> {
 			if (item.file.isPresent() && !files.contains(item.file.get())) {
@@ -119,7 +115,11 @@ public class Visualizer {
 			}
 		});
 		for (File file : files) {
-			results = results.filter(jri -> jri.file.isPresent() && jri.file.get().equals(file));
+			BufferedImage image = new BufferedImage(width, height, format);
+			Graphics2D rasterGraphics = image.createGraphics();
+			setColor(rasterGraphics, options.background);
+			rasterGraphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
+			IJoinResult currentFileResults = results.filter(jri -> jri.file.isPresent() && jri.file.get().equals(file));
 
 			Logger.log("drawing " + file.getAbsolutePath(), LogLevel.INFO);
 
@@ -137,7 +137,7 @@ public class Visualizer {
 
 				}
 			}
-			drawResults(results, options, rasterGraphics, indexColorModel);
+			drawResults(currentFileResults, options, rasterGraphics, indexColorModel);
 
 			if (options.drawFeatures) {
 
@@ -173,12 +173,10 @@ public class Visualizer {
 
 			}
 			if (options.useOutput) {
-				writeImage(image, options.outputPath, options.outputFormat);
+				writeImage(image, options,
+						file.getName());
 			}
-			break;
 		}
-
-		return image;
 	}
 
 	private void setColor(Graphics2D graphics, Color color) {
@@ -198,16 +196,45 @@ public class Visualizer {
 		}
 	}
 
+	private void scale(List<Polygon> features) {
+		double minX = Double.POSITIVE_INFINITY;
+		double maxX = Double.NEGATIVE_INFINITY;
+		double minY = Double.POSITIVE_INFINITY;
+		double maxY = Double.NEGATIVE_INFINITY;
+		for (Polygon poly : features) {
+			minX = Math.min(minX, poly.mbr().x1());
+			maxX = Math.max(maxX, poly.mbr().x2());
+			minY = Math.min(minY, poly.mbr().y1());
+			maxY = Math.max(maxY, poly.mbr().y2());
+		}
+
+		double scaleX = this.width / (maxX - minX);
+		double scaleY = this.height / (maxY - minY);
+		double scale = Math.min(scaleX, scaleY);
+		MathTransform transform = new AffineTransform2D(scale, 0, 0, -scale, (this.width - minX - maxX) / 2,
+				(this.height - minY - maxY) / 2);
+		try {
+			for (int i = 0; i < features.size(); i++) {
+				features.set(i, features.get(i).transform(transform));
+			}
+		} catch (Exception e) {
+			Logger.log(e, LogLevel.ERROR);
+			Logger.log("Unable to scale vector data to fit image size", LogLevel.ERROR);
+		}
+	}
+
 	/**
 	 * Draws the outline of vector data
 	 * 
-	 * @param features all polygons that should be drawn
+	 * @param features a reader returning all polygons that should be drawn
 	 * @param options  visualizer options
 	 * @return A buffered image showing the outlines of all polygons in
 	 *         {@code features}
 	 */
 	public BufferedImage drawShapefile(ShapefileReader shapeFileReader, VisualizerOptions options) throws IOException {
 		List<Polygon> features = getFeatures(shapeFileReader).getFeatures();
+		scale(features);
+
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D vectorGraphics = image.createGraphics();
 
@@ -217,18 +244,37 @@ public class Visualizer {
 		drawFeatures(vectorGraphics, features, options.primaryColor);
 
 		if (options.useOutput) {
-			writeImage(image, options.outputPath, options.outputFormat);
+			writeImage(image, options, "shapefile");
 		}
 		return image;
 	}
 
-	/**
-	 * 
-	 * @param features The vectorfile features
-	 * @return
-	 */
-	public BufferedImage drawShapefile(ShapefileReader shapeFileReader) throws IOException {
-		return drawShapefile(shapeFileReader, new VisualizerOptionsBuilder().build());
+	public BufferedImage drawRtree(ShapefileReader reader, int minChildren, int maxChildren, VisualizerOptions options)
+			throws IOException {
+		List<Polygon> features = reader.readShapefile().getFeatures();
+		scale(features);
+		return drawRtree(InternalApi.generateRTree(features, minChildren, maxChildren), features,
+				options);
+	}
+
+	public BufferedImage drawRtree(RTree<String, Geometry> rtree, List<Polygon> features, VisualizerOptions options)
+			throws IOException {
+		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
+		Graphics2D vectorGraphics = image.createGraphics();
+
+		setColor(vectorGraphics, options.background);
+		vectorGraphics.fillRect(0, 0, this.width, this.height);
+
+		if (options.drawFeatures) {
+			drawFeatures(vectorGraphics, features, options.secondaryColor);
+		}
+
+		drawMbr(rtree.root().get(), vectorGraphics, options.primaryColor);
+
+		if (options.useOutput) {
+			writeImage(image, options, "rtree");
+		}
+		return image;
 	}
 
 	/**
@@ -261,10 +307,8 @@ public class Visualizer {
 	 * @param level          The number of lower levels yet to be drawn
 	 * @param graphics       The graphics object we are drawing on top of
 	 */
-	private void drawK2Squares(K2Raster k2Raster, int k2Index, Square rasterBounding, int level, Graphics2D graphics,
-			Color color) {
-		if (level == 0)
-			return;
+	private void drawK2Squares(AbstractK2Raster k2Raster, int k2Index, Square rasterBounding, int level,
+			Graphics2D graphics, Color color) {
 		setColor(graphics, color);
 		int[] children = k2Raster.getChildren(k2Index);
 		int childSize = rasterBounding.getSize() / k2Raster.k;
@@ -274,7 +318,7 @@ public class Visualizer {
 			graphics.drawRect(childRasterBounding.getTopX(), childRasterBounding.getTopY(),
 					childRasterBounding.getSize(),
 					childRasterBounding.getSize());
-			drawK2Squares(k2Raster, child, childRasterBounding, level - 1, graphics, color);
+			drawK2Squares(k2Raster, child, childRasterBounding, level + 1, graphics, color);
 		}
 	}
 
@@ -283,100 +327,14 @@ public class Visualizer {
 	 * @param k2Raster The K2-Raster datastructure
 	 * @return A bufferd image representing the datastructure
 	 */
-	public BufferedImage drawK2SquareImage(K2Raster k2Raster, VisualizerOptions options) throws IOException {
-		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
+	public BufferedImage drawK2SquareImage(AbstractK2Raster k2Raster, VisualizerOptions options) throws IOException {
+		BufferedImage image = new BufferedImage(k2Raster.getSize(), k2Raster.getSize(), BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics = image.createGraphics();
 		setColor(graphics, Color.white);
-		graphics.fillRect(0, 0, this.width, this.height);
+		graphics.fillRect(0, 0, k2Raster.getSize(), k2Raster.getSize());
 		drawK2Squares(k2Raster, 0, new Square(0, 0, k2Raster.getSize()), 0, graphics, options.primaryColor);
 
-		writeImage(image, options.outputPath, options.outputFormat);
-
-		return image;
-	}
-
-	/**
-	 * draws vector shapes, K2Raster tree nodes and R*-tree nodes on top of
-	 * eachother
-	 * 
-	 * Uses the primary color for the K2Raster nodes, the secondary color for the
-	 * R*-tree nodes, and the trinary color for the features
-	 * 
-	 * @param features the polygons to be drawn
-	 * @param tree     the R*-tree, this will be drawn as MBRs for all nodes in the
-	 *                 tree
-	 * @param k2Raster the K2Raster tree to be drawn
-	 * @return A buffered image containing both vector shapes, MBRs from the R*-tree
-	 *         and K2 raster nodes drawn on top of eachother
-	 */
-	public BufferedImage drawVectorRasterOverlap(ShapefileReader shapeFileReader, RTree<String, Geometry> tree,
-			K2Raster k2Raster, int k2RecursionDepth, VisualizerOptions options) throws IOException {
-		Iterable<Polygon> features = getFeatures(shapeFileReader).getFeatures();
-
-		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
-		Graphics2D graphics = image.createGraphics();
-
-		setColor(graphics, options.background);
-		graphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
-
-		drawK2Squares(k2Raster, 0, new Square(0, 0, k2Raster.getSize()), k2RecursionDepth, graphics,
-				options.primaryColor);
-
-		graphics.setStroke(new BasicStroke(1));
-		if (options.drawFeatures) {
-			drawFeatures(graphics, features, options.trinaryColor);
-		}
-
-		drawMbr(tree.root().get(), graphics, options.secondaryColor);
-
-		if (options.useOutput) {
-			writeImage(image, options.outputPath, options.outputFormat);
-		}
-
-		return image;
-
-	}
-
-	public BufferedImage drawAllVectorData(IJoinResult results, ShapefileReader shapeFileReader,
-			VisualizerOptions options) throws IOException {
-		var vectorData = getFeatures(shapeFileReader);
-		List<Polygon> features = vectorData.getFeatures();
-		ShapeFileBounds bounds = vectorData.getBounds();
-
-		int width = this.width;
-
-		double scale = width / (bounds.maxX - bounds.minX);
-
-		int height = (int) (scale * (bounds.maxY - bounds.minY));
-
-		int format = BufferedImage.TYPE_BYTE_INDEXED;
-		BufferedImage image = new BufferedImage(width, height, format);
-		Graphics2D graphics = image.createGraphics();
-
-		setColor(graphics, options.background);
-		graphics.fillRect(0, 0, width, height); // give the whole image a white background
-
-		drawResults(results, options, graphics, Optional.empty());
-
-		Color color = options.secondaryColor;
-
-		for (Geometry geom : features) {
-			Polygon poly = (Polygon) geom;
-			setColor(graphics, color);
-			Point old = poly.getFirst();
-			for (Point next : poly) {
-				int sx = (int) (old.x() * scale - bounds.minX * scale);
-				int sy = (int) (old.y() * scale - bounds.minY * scale);
-				int ex = (int) (next.x() * scale - bounds.minX * scale);
-				int ey = (int) (next.y() * scale - bounds.minY * scale);
-				graphics.drawLine(sx, sy, ex, ey);
-				old = next;
-			}
-		}
-
-		if (options.useOutput) {
-			writeImage(image, options.outputPath, options.outputFormat);
-		}
+		writeImage(image, options, "K2");
 
 		return image;
 	}
@@ -410,13 +368,15 @@ public class Visualizer {
 	 * @param outputPath   The path where the images is written
 	 * @param outputFormat The image format
 	 */
-	private void writeImage(BufferedImage image, String outputPath, String outputFormat) throws IOException {
-		ImageWriter writer = ImageIO.getImageWritersByFormatName(outputFormat).next();
+	private void writeImage(BufferedImage image, VisualizerOptions options, String name) throws IOException {
+		ImageWriter writer = ImageIO.getImageWritersByFormatName(options.outputFormat).next();
 		ImageWriteParam param = writer.getDefaultWriteParam();
 		param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
 		param.setCompressionQuality(0.5f); // Adjust the quality parameter as needed
 
-		File fOutputFile = new File(outputPath);
+		new File(options.outputPath).mkdir();
+
+		File fOutputFile = new File(options.outputPath + "/" + name + "." + options.outputFormat);
 		ImageOutputStream ios = ImageIO.createImageOutputStream(fOutputFile);
 		writer.setOutput(ios);
 		writer.write(null, new IIOImage(image, null, null), param);
