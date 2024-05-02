@@ -7,6 +7,7 @@ public class VisualizerOptionsBuilder {
 	private String outputFormat = "tif";
 	private boolean useOutput = false;
 	private boolean cropToVector = true;
+	private boolean useOriginalColours = false;
 	private boolean drawFeatures = true;
 	private Color background = Color.WHITE;
 	private Color primaryColor = Color.black;
@@ -54,8 +55,13 @@ public class VisualizerOptionsBuilder {
 		return this;
 	}
 
+	public VisualizerOptionsBuilder setUseOriginalColours(boolean useOriginalColours) {
+		this.useOriginalColours = useOriginalColours;
+		return this;
+	}
+
 	public VisualizerOptions build() {
 		return new VisualizerOptions(primaryColor, outputPath, outputFormat, useOutput, cropToVector,
-				background, drawFeatures, secondaryColor, trinaryColor);
+				background, drawFeatures, secondaryColor, trinaryColor, useOriginalColours);
 	}
 }

@@ -2,6 +2,7 @@ package dk.itu.raven.io;
 
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.io.File;
 import java.io.IOException;
 
@@ -68,5 +69,20 @@ public class ImageIORasterReader extends FileRasterReader {
         reader.dispose();
         stream.close();
         return new ImageMetadata(width, height, samplesPerPixel, bitsPerSample, getDirectoryName());
+    }
+
+    public ColorModel getColorModel() throws IOException {
+        FileImageInputStream stream = new FileImageInputStream(tiff);
+        ImageReader reader = ImageIO.getImageReaders(stream).next();
+        reader.setInput(stream);
+
+        ImageReadParam param = reader.getDefaultReadParam();
+        int minX = 0;
+        int minY = 0;
+        int maxX = Math.min(1, reader.getWidth(0));
+        int maxY = Math.min(1, reader.getHeight(0));
+        param.setSourceRegion(new java.awt.Rectangle(minX, minY, maxX - minX, maxY - minY));
+        BufferedImage img = reader.read(0, param);
+        return img.getColorModel();
     }
 }

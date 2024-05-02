@@ -4,11 +4,14 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 
@@ -42,8 +45,8 @@ import dk.itu.raven.join.results.IJoinResult;
 import dk.itu.raven.join.results.IResult;
 import dk.itu.raven.ksquared.K2Raster;
 import dk.itu.raven.util.Logger;
-import dk.itu.raven.util.TreeExtensions;
 import dk.itu.raven.util.Logger.LogLevel;
+import dk.itu.raven.util.TreeExtensions;
 
 /**
  * Class reponsible for making visualizations for shapefile data, join results,
@@ -102,7 +105,9 @@ public class Visualizer {
 		} else {
 			format = BufferedImage.TYPE_INT_ARGB;
 		}
+
 		BufferedImage image = new BufferedImage(width, height, format);
+
 		Graphics2D rasterGraphics = image.createGraphics();
 		setColor(rasterGraphics, options.background);
 		rasterGraphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
@@ -116,12 +121,26 @@ public class Visualizer {
 		for (File file : files) {
 			results = results.filter(jri -> jri.file.isPresent() && jri.file.get().equals(file));
 
-			Logger.log("drawing " + file.getAbsolutePath(), LogLevel.INFO); // both get's are safe
-																			// here
-			drawResults(results, options, rasterGraphics);
+			Logger.log("drawing " + file.getAbsolutePath(), LogLevel.INFO);
+
+			ImageIORasterReader reader = new ImageIORasterReader(file);
+			Optional<IndexColorModel> indexColorModel = Optional.empty();
+			if (options.useOriginalColours) {
+				ColorModel colorModel = reader.getColorModel();
+				if (colorModel instanceof IndexColorModel) {
+					indexColorModel = Optional.of((IndexColorModel) colorModel);
+					image = new BufferedImage(width, height, format, indexColorModel.get());
+					rasterGraphics = image.createGraphics();
+					rasterGraphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
+				} else {
+					Logger.log("No IndexColorModel", LogLevel.WARNING);
+
+				}
+			}
+			drawResults(results, options, rasterGraphics, indexColorModel);
 
 			if (options.drawFeatures) {
-				ImageIORasterReader reader = new ImageIORasterReader(file);
+
 				CoordinateReferenceSystem targetCRS = reader.getCRS();
 				TFWFormat g2m = reader.getG2M();
 				MathTransform transform = null;
@@ -337,7 +356,7 @@ public class Visualizer {
 		setColor(graphics, options.background);
 		graphics.fillRect(0, 0, width, height); // give the whole image a white background
 
-		drawResults(results, options, graphics);
+		drawResults(results, options, graphics, Optional.empty());
 
 		Color color = options.secondaryColor;
 
@@ -362,12 +381,26 @@ public class Visualizer {
 		return image;
 	}
 
-	private void drawResults(IJoinResult results, VisualizerOptions options, Graphics2D graphics) {
+	private void drawResults(IJoinResult results, VisualizerOptions options, Graphics2D graphics,
+			Optional<IndexColorModel> indexColourModel) {
+		Set<Long> colours = new HashSet<>();
 		for (var item : results) {
 			for (IResult value : item.pixelRanges) {
-				setColor(graphics, options.primaryColor);
+				if (indexColourModel.isPresent() && value.getValue().isPresent()
+						&& indexColourModel.get().getPixelSize() == 8) {
+					colours.add(value.getValue().get());
+					setColor(graphics,
+							new Color(indexColourModel.get().getRGB(value.getValue().get().intValue())));
+				} else {
+					setColor(graphics, options.primaryColor);
+				}
 				value.draw(graphics);
 			}
+		}
+
+		System.out.println(colours.size());
+		for (Long colour : colours) {
+			System.out.println(colour);
 		}
 	}
 
