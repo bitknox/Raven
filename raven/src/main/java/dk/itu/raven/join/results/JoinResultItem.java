@@ -1,12 +1,10 @@
-package dk.itu.raven.join;
+package dk.itu.raven.join.results;
 
 import java.io.File;
 import java.util.Collection;
 import java.util.Optional;
 
 import com.github.davidmoten.rtree2.geometry.Geometry;
-
-import dk.itu.raven.join.results.IResult;
 
 public class JoinResultItem {
     public Geometry geometry;

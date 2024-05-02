@@ -22,6 +22,8 @@ import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.join.results.IResult;
+import dk.itu.raven.join.results.JoinResult;
+import dk.itu.raven.join.results.JoinResultItem;
 import dk.itu.raven.join.results.PixelRange;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.util.Logger;

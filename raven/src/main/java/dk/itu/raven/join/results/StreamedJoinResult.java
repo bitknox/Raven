@@ -1,5 +1,5 @@
 
-package dk.itu.raven.join;
+package dk.itu.raven.join.results;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -82,5 +82,4 @@ public class StreamedJoinResult implements IJoinResult {
     public Optional<JoinResultItem> find(Predicate<? super JoinResultItem> predicate) {
         return stream.<Optional<JoinResultItem>>map(jr -> jr.find(predicate)).findFirst().flatMap(o -> o);
     }
-
 }

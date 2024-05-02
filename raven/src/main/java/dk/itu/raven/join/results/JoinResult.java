@@ -1,9 +1,10 @@
-package dk.itu.raven.join;
+package dk.itu.raven.join.results;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class JoinResult implements IJoinResult {
@@ -75,5 +76,11 @@ public class JoinResult implements IJoinResult {
         if (index < 0)
             return Optional.empty();
         return Optional.of(list.get(index));
+    }
+
+    public void forAll(Consumer<JoinResultItem> function) {
+        for (JoinResultItem item : list) {
+            function.accept(item);
+        }
     }
 }

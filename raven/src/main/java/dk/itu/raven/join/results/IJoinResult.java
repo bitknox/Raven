@@ -1,4 +1,4 @@
-package dk.itu.raven.join;
+package dk.itu.raven.join.results;
 
 import java.util.Iterator;
 import java.util.Optional;

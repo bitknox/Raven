@@ -26,15 +26,15 @@ import dk.itu.raven.join.RavenJoin;
 import dk.itu.raven.join.SpatialDataChunk;
 import dk.itu.raven.join.StreamedRavenJoin;
 import dk.itu.raven.join.results.IResultCreator;
+import dk.itu.raven.join.results.PixelRangeCreator;
+import dk.itu.raven.join.results.PixelRangeValueCreator;
+import dk.itu.raven.join.results.PixelValueCreator;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.ksquared.K2RasterBuilder;
 import dk.itu.raven.ksquared.K2RasterIntBuilder;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.util.matrix.Matrix;
-import dk.itu.raven.join.results.PixelRangeCreator;
-import dk.itu.raven.join.results.PixelRangeValueCreator;
-import dk.itu.raven.join.results.PixelValueCreator;
 
 public class InternalApi {
 

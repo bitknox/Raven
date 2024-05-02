@@ -6,9 +6,11 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -21,8 +23,10 @@ import org.geotools.api.referencing.operation.MathTransform;
 
 import com.github.davidmoten.rtree2.Node;
 import com.github.davidmoten.rtree2.RTree;
+import com.github.davidmoten.rtree2.geometry.Geometries;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 import com.github.davidmoten.rtree2.geometry.Point;
+import com.github.davidmoten.rtree2.geometry.Rectangle;
 
 import dk.itu.raven.geometry.GeometryUtil;
 import dk.itu.raven.geometry.Polygon;
@@ -33,15 +37,13 @@ import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.ShapefileReader.ShapeFileBounds;
 import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.io.VectorData;
-import dk.itu.raven.join.IJoinResult;
-import dk.itu.raven.join.JoinResult;
-import dk.itu.raven.join.JoinResultItem;
 import dk.itu.raven.join.Square;
+import dk.itu.raven.join.results.IJoinResult;
 import dk.itu.raven.join.results.IResult;
 import dk.itu.raven.ksquared.K2Raster;
 import dk.itu.raven.util.Logger;
-import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.util.TreeExtensions;
+import dk.itu.raven.util.Logger.LogLevel;
 
 /**
  * Class reponsible for making visualizations for shapefile data, join results,
@@ -105,37 +107,56 @@ public class Visualizer {
 		setColor(rasterGraphics, options.background);
 		rasterGraphics.fillRect(0, 0, this.width, this.height); // give the whole image a white background
 
-		Optional<JoinResultItem> item = results.find(jri -> jri.file.isPresent());
-		if (item.isPresent()) {
-			results = results.filter(jri -> jri.file.equals(item.get().file));
-		} else {
-			results = new JoinResult();
-		}
-
-		drawResults(results, options, rasterGraphics);
-
-		if (options.drawFeatures && item.isPresent()) {
-			File file = item.get().file.get(); // both get's are safe here
-
-			ImageIORasterReader reader = new ImageIORasterReader(file);
-			CoordinateReferenceSystem targetCRS = reader.getCRS();
-			TFWFormat g2m = reader.getG2M();
-			MathTransform transform = null;
-			try {
-				transform = Reprojector.calculateFullTransform(vectorData.getCRS(), targetCRS,
-						g2m);
-				for (int i = 0; i < features.size(); i++) {
-					features.set(i, features.get(i).transform(transform));
-				}
-				drawFeatures(rasterGraphics, features, options.secondaryColor);
-			} catch (Exception e) {
-				e.printStackTrace();
-				Logger.log("Cannot draw vector data", LogLevel.ERROR);
+		Set<File> files = new HashSet<>();
+		results.asMemoryAllocatedResult().forAll(item -> {
+			if (item.file.isPresent() && !files.contains(item.file.get())) {
+				files.add(item.file.get());
 			}
+		});
+		for (File file : files) {
+			results = results.filter(jri -> jri.file.isPresent() && jri.file.get().equals(file));
 
-		}
-		if (options.useOutput) {
-			writeImage(image, options.outputPath, options.outputFormat);
+			Logger.log("drawing " + file.getAbsolutePath(), LogLevel.INFO); // both get's are safe
+																			// here
+			drawResults(results, options, rasterGraphics);
+
+			if (options.drawFeatures) {
+				ImageIORasterReader reader = new ImageIORasterReader(file);
+				CoordinateReferenceSystem targetCRS = reader.getCRS();
+				TFWFormat g2m = reader.getG2M();
+				MathTransform transform = null;
+				try {
+					transform = Reprojector.calculateFullTransform(vectorData.getCRS(), targetCRS,
+							g2m);
+					MathTransform inverseTransform = transform.inverse();
+					double[] topLeftPixel = new double[] { 0, 0 };
+					double[] bottomRightPixel = new double[] { reader.getImageMetadata().getWidth(),
+							reader.getImageMetadata().getHeight() };
+					double[] topLeftLatLong = new double[2];
+					double[] bottomRightLatLong = new double[2];
+
+					inverseTransform.transform(topLeftPixel, 0, topLeftLatLong, 0, 1);
+					inverseTransform.transform(bottomRightPixel, 0, bottomRightLatLong, 0, 1);
+
+					Rectangle rasterBounds = Geometries.rectangle(topLeftLatLong[0], bottomRightLatLong[1],
+							bottomRightLatLong[0], topLeftLatLong[1]);
+					List<Polygon> overlapping = new ArrayList<>();
+					for (Polygon poly : features) {
+						if (rasterBounds.intersects(poly.mbr())) {
+							overlapping.add(poly.transform(transform));
+						}
+					}
+					drawFeatures(rasterGraphics, overlapping, options.secondaryColor);
+				} catch (Exception e) {
+					e.printStackTrace();
+					Logger.log("Cannot draw vector data", LogLevel.ERROR);
+				}
+
+			}
+			if (options.useOutput) {
+				writeImage(image, options.outputPath, options.outputFormat);
+			}
+			break;
 		}
 
 		return image;
