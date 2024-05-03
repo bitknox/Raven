@@ -1,5 +1,6 @@
 package dk.itu.raven;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -115,6 +116,7 @@ public class Raven {
             builder.setCropToVector(jct.cropToVector);
             builder.setPrimaryColor(new RandomColor());
             builder.setDrawFeatures(true);
+            builder.setSecondaryColor(Color.BLACK);
             builder.setUseOriginalColours(true);
 
             VisualizerOptions options = builder.build();
