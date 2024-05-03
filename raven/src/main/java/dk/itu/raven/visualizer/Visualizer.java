@@ -356,9 +356,9 @@ public class Visualizer {
 			}
 		}
 
-		System.out.println(colours.size());
+		Logger.log(colours.size(), LogLevel.DEBUG);
 		for (Long colour : colours) {
-			System.out.println(colour);
+			Logger.log(colour, LogLevel.DEBUG);
 		}
 	}
 
