@@ -1,7 +1,10 @@
 package dk.itu.raven.join;
 
+import java.io.File;
+
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
+import java.util.Optional;
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
@@ -17,6 +20,7 @@ public class SpatialDataChunk {
     private Offset<Integer> offset;
     private CoordinateReferenceSystem crs;
     private TFWFormat g2m;
+    private Optional<File> directory;
 
     public SpatialDataChunk() {
     }
@@ -45,6 +49,10 @@ public class SpatialDataChunk {
         this.name = name;
     }
 
+    public void setDirectory(Optional<File> directory) {
+        this.directory = directory;
+    }
+
     public Matrix getMatrix() {
         return matrix;
     }
@@ -67,6 +75,10 @@ public class SpatialDataChunk {
 
     public String getName() {
         return name;
+    }
+
+    public Optional<File> getDirectory() {
+        return this.directory;
     }
 
     public String getCacheKeyName() {

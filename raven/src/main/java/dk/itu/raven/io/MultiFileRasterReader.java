@@ -30,10 +30,10 @@ public class MultiFileRasterReader implements IRasterReader {
 
 	private Stream<ImageIORasterReader> readers;
 	private ImageMetadata metadata;
-	private String dirName;
+	private File directory;
 
 	public MultiFileRasterReader(File directory) throws IOException {
-		this.dirName = directory.getName();
+		this.directory = directory;
 		List<File> files = Arrays.asList(directory.listFiles());
 		ImageIORasterReader reader = new ImageIORasterReader(files.get(0));
 		this.metadata = reader.getImageMetadata();
@@ -123,7 +123,12 @@ public class MultiFileRasterReader implements IRasterReader {
 	}
 
 	@Override
-	public Optional<String> getDirectory() {
-		return Optional.of(dirName);
+	public Optional<String> getDirectoryName() {
+		return Optional.of(directory.getName());
+	}
+
+	@Override
+	public Optional<File> getDirectory() {
+		return Optional.of(directory);
 	}
 }

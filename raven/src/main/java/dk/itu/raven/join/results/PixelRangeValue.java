@@ -27,4 +27,9 @@ public class PixelRangeValue extends PixelRange {
             }
         };
     }
+
+    @Override
+    public Optional<Long> getValue() {
+        return Optional.of(value);
+    }
 }

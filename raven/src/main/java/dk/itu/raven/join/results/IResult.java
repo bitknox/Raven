@@ -16,4 +16,6 @@ public interface IResult extends Iterable<IResult.Pixel> {
     }
 
     public void draw(Graphics2D graphics);
+
+    public Optional<Long> getValue();
 }

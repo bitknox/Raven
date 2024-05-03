@@ -1,10 +1,13 @@
 package dk.itu.raven.api;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.github.davidmoten.rtree2.Entries;
+import com.github.davidmoten.rtree2.Entry;
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
@@ -26,15 +29,15 @@ import dk.itu.raven.join.RavenJoin;
 import dk.itu.raven.join.SpatialDataChunk;
 import dk.itu.raven.join.StreamedRavenJoin;
 import dk.itu.raven.join.results.IResultCreator;
+import dk.itu.raven.join.results.PixelRangeCreator;
+import dk.itu.raven.join.results.PixelRangeValueCreator;
+import dk.itu.raven.join.results.PixelValueCreator;
 import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.ksquared.K2RasterBuilder;
 import dk.itu.raven.ksquared.K2RasterIntBuilder;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.util.matrix.Matrix;
-import dk.itu.raven.join.results.PixelRangeCreator;
-import dk.itu.raven.join.results.PixelRangeValueCreator;
-import dk.itu.raven.join.results.PixelValueCreator;
 
 public class InternalApi {
 
@@ -52,7 +55,7 @@ public class InternalApi {
             IResultCreator resultCreator)
             throws IOException {
         if (cacheOptions.isCaching)
-            cacheOptions.isCaching = rasterReader.getDirectory().isPresent();
+            cacheOptions.isCaching = rasterReader.getDirectoryName().isPresent();
 
         // load geometries from shapefile
         VectorData geometries = featureReader.readShapefile();
@@ -65,7 +68,7 @@ public class InternalApi {
             // step
             RasterCache<CachedRasterStructure> cache = new RasterCache<CachedRasterStructure>(
                     cacheOptions.getCacheDir(),
-                    rasterReader.getDirectory().get() + "-" + widthStep + "-" + heightStep);
+                    rasterReader.getDirectoryName().get() + "-" + widthStep + "-" + heightStep);
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
                     Optional.of(cache), rtree, geometries);
             return rasterStream.map(chunk -> {
@@ -75,7 +78,7 @@ public class InternalApi {
                     try {
                         CachedRasterStructure c = cache.readItem(chunk.getCacheKeyName());
                         c.raster.setResultCreator(resultCreator);
-                        return new JoinChunk(c.raster, c.offset, chunk.getTree());
+                        return new JoinChunk(c.raster, c.offset, chunk.getTree(), chunk.getDirectory());
                     } catch (Exception e) {
                         Logger.log("Item was in cache index, but not found on disk", LogLevel.ERROR);
                         System.exit(-1);
@@ -95,7 +98,7 @@ public class InternalApi {
                 }
 
                 // create the raster structure an potentially cache it
-                return new JoinChunk(raster, chunk.getOffset(), chunk.getTree());
+                return new JoinChunk(raster, chunk.getOffset(), chunk.getTree(), chunk.getDirectory());
             });
         } else {
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
@@ -103,7 +106,7 @@ public class InternalApi {
             return rasterStream.map(chunk -> {
                 AbstractK2Raster raster = generateRasterStructure(chunk.getMatrix(), kSize);
                 raster.setResultCreator(resultCreator);
-                return new JoinChunk(raster, chunk.getOffset(), chunk.getTree());
+                return new JoinChunk(raster, chunk.getOffset(), chunk.getTree(), chunk.getDirectory());
             });
         }
 
@@ -131,7 +134,7 @@ public class InternalApi {
      * @param geometries
      * @return the R* tree
      */
-    static RTree<String, Geometry> generateRTree(List<Polygon> geometries, int minChildren, int maxChildren) {
+    public static RTree<String, Geometry> generateRTree(List<Polygon> geometries, int minChildren, int maxChildren) {
         RTree<String, Geometry> rtree = RTree.star().minChildren(minChildren).maxChildren(maxChildren).create();
         for (Polygon polygon : geometries) {
             rtree = rtree.add(null, polygon);
@@ -166,7 +169,7 @@ public class InternalApi {
             return chunk.getRtree().root().isPresent();
         }).map(chunk -> {
             return new RavenJoin(chunk.getRaster(), chunk.getRtree(), chunk.getOffset(),
-                    imageSize);
+                    imageSize, chunk.getDirectory());
         });
         if (parallel) {
             return new ParallelStreamedRavenJoin(stream);

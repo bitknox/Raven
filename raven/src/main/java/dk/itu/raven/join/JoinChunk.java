@@ -1,5 +1,8 @@
 package dk.itu.raven.join;
 
+import java.io.File;
+import java.util.Optional;
+
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
@@ -11,12 +14,14 @@ public class JoinChunk {
     private Offset<Integer> offset;
 
     private RTree<String, Geometry> rtree;
+    private Optional<File> directory;
 
     public JoinChunk(AbstractK2Raster raster, Offset<Integer> offset,
-            RTree<String, Geometry> rtree) {
+            RTree<String, Geometry> rtree, Optional<File> directory) {
         this.raster = raster;
         this.offset = offset;
         this.rtree = rtree;
+        this.directory = directory;
     }
 
     public AbstractK2Raster getRaster() {
@@ -29,5 +34,9 @@ public class JoinChunk {
 
     public RTree<String, Geometry> getRtree() {
         return rtree;
+    }
+
+    public Optional<File> getDirectory() {
+        return this.directory;
     }
 }

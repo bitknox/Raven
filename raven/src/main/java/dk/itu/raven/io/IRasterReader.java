@@ -1,5 +1,6 @@
 package dk.itu.raven.io;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -19,5 +20,7 @@ public interface IRasterReader {
 			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree, VectorData vectorData)
 			throws IOException;
 
-	public Optional<String> getDirectory();
+	public Optional<String> getDirectoryName();
+
+	public Optional<File> getDirectory();
 }

@@ -1,8 +1,11 @@
-package dk.itu.raven.join;
+package dk.itu.raven.join.results;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class JoinResult implements IJoinResult {
 
@@ -60,4 +63,24 @@ public class JoinResult implements IJoinResult {
         return this;
     }
 
+    @Override
+    public JoinResult filter(Predicate<? super JoinResultItem> predicate) {
+        return new JoinResult(this.list.stream().filter(predicate).toList());
+    }
+
+    @Override
+    public Optional<JoinResultItem> find(Predicate<? super JoinResultItem> predicate) {
+        int index = list.size() - 1;
+        while (index >= 0 && !predicate.test(list.get(index)))
+            ;
+        if (index < 0)
+            return Optional.empty();
+        return Optional.of(list.get(index));
+    }
+
+    public void forAll(Consumer<JoinResultItem> function) {
+        for (JoinResultItem item : list) {
+            function.accept(item);
+        }
+    }
 }

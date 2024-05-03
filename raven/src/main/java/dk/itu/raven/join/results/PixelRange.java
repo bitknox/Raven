@@ -63,4 +63,9 @@ public class PixelRange implements IResult {
     public void draw(Graphics2D graphics) {
         graphics.drawLine(x1, row, x2, row);
     }
+
+    @Override
+    public Optional<Long> getValue() {
+        return Optional.empty();
+    }
 }

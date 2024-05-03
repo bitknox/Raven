@@ -1,5 +1,7 @@
 package dk.itu.raven.join;
 
+import dk.itu.raven.join.results.IJoinResult;
+
 public abstract class AbstractRavenJoin {
 
     protected abstract IJoinResult joinImplementation(IRasterFilterFunction function);

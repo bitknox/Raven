@@ -2,6 +2,8 @@ package dk.itu.raven.join;
 
 import java.util.stream.Stream;
 
+import dk.itu.raven.join.results.StreamedJoinResult;
+
 public class StreamedRavenJoin extends AbstractRavenJoin {
     private Stream<RavenJoin> ravenJoins;
 

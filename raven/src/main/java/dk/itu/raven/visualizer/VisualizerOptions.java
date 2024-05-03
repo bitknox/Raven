@@ -7,12 +7,12 @@ import java.awt.Color;
  */
 public class VisualizerOptions {
 	public String outputPath, outputFormat;
-	public boolean useOutput, cropToVector, drawFeatures;
+	public boolean useOutput, cropToVector, drawFeatures, useOriginalColours;
 	public Color primaryColor, secondaryColor, trinaryColor, background;
 
 	public VisualizerOptions(Color primaryColor, String outputPath, String outputFormat,
 			boolean useOutput, boolean cropToVector, Color background, boolean drawFeatures, Color secondaryColor,
-			Color trinaryColor) {
+			Color trinaryColor, boolean useOriginalColours) {
 		this.primaryColor = primaryColor;
 		this.outputPath = outputPath;
 		this.outputFormat = outputFormat;
@@ -22,6 +22,7 @@ public class VisualizerOptions {
 		this.drawFeatures = drawFeatures;
 		this.secondaryColor = secondaryColor;
 		this.trinaryColor = trinaryColor;
+		this.useOriginalColours = useOriginalColours;
 	}
 
 }
