@@ -17,6 +17,8 @@ import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
+import com.github.davidmoten.rtree2.Entries;
+import com.github.davidmoten.rtree2.Entry;
 import com.github.davidmoten.rtree2.geometry.Geometries;
 
 import dk.itu.raven.geometry.Polygon;
@@ -63,7 +65,7 @@ public class ShapefileReader {
 		FileDataStore myData = FileDataStoreFinder.getDataStore(file);
 		SimpleFeatureSource source = myData.getFeatureSource();
 		bounds.reset();
-		List<Polygon> features = new ArrayList<>();
+		List<Entry<String, com.github.davidmoten.rtree2.geometry.Geometry>> features = new ArrayList<>();
 		FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures();
 
 		CoordinateReferenceSystem crs = source.getSchema().getCoordinateReferenceSystem();
@@ -90,7 +92,7 @@ public class ShapefileReader {
 	}
 
 	private void extractGeometries(Geometry geometry,
-			List<Polygon> features) {
+			List<Entry<String, com.github.davidmoten.rtree2.geometry.Geometry>> features) {
 		if (geometry.getNumGeometries() > 1) {
 			for (int i = 0; i < geometry.getNumGeometries(); i++) {
 				Geometry geom = geometry.getGeometryN(i);
@@ -102,7 +104,7 @@ public class ShapefileReader {
 	}
 
 	private void createPolygons(Coordinate[] coordinates,
-			List<Polygon> features) {
+			List<Entry<String, com.github.davidmoten.rtree2.geometry.Geometry>> features) {
 		double[] points = new double[2 * coordinates.length];
 		double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
 		double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
@@ -113,7 +115,8 @@ public class ShapefileReader {
 			Coordinate coord = coordinates[i];
 			if (start.x == coord.x && start.y == coord.y && endIndex > 0) {
 				this.bounds.updateBounds(minX, minY, maxX, maxY);
-				features.add(new Polygon(points, endIndex, Geometries.rectangle(minX, minY, maxX, maxY)));
+				features.add(Entries.entry(null,
+						new Polygon(points, endIndex, Geometries.rectangle(minX, minY, maxX, maxY))));
 				endIndex = 0;
 				minX = Double.MAX_VALUE;
 				minY = Double.MAX_VALUE;

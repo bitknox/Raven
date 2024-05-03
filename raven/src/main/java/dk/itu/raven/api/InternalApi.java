@@ -1,17 +1,14 @@
 package dk.itu.raven.api;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.github.davidmoten.rtree2.Entries;
 import com.github.davidmoten.rtree2.Entry;
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
-import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.geometry.Size;
 import dk.itu.raven.io.IRasterReader;
 import dk.itu.raven.io.ImageMetadata;
@@ -134,11 +131,10 @@ public class InternalApi {
      * @param geometries
      * @return the R* tree
      */
-    public static RTree<String, Geometry> generateRTree(List<Polygon> geometries, int minChildren, int maxChildren) {
-        RTree<String, Geometry> rtree = RTree.star().minChildren(minChildren).maxChildren(maxChildren).create();
-        for (Polygon polygon : geometries) {
-            rtree = rtree.add(null, polygon);
-        }
+    public static RTree<String, Geometry> generateRTree(List<Entry<String, Geometry>> geometries, int minChildren,
+            int maxChildren) {
+        RTree<String, Geometry> rtree = RTree.star().minChildren(minChildren).maxChildren(maxChildren)
+                .create(geometries);
         return rtree;
     }
 
