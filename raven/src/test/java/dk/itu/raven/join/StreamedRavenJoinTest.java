@@ -14,7 +14,9 @@ import org.junit.jupiter.params.provider.EnumSource;
 import dk.itu.raven.api.RavenApi;
 import dk.itu.raven.io.cache.CacheOptions;
 import dk.itu.raven.io.commandline.ResultType;
+import dk.itu.raven.join.results.IJoinResult;
 import dk.itu.raven.join.results.IResult;
+import dk.itu.raven.join.results.JoinResultItem;
 
 public class StreamedRavenJoinTest {
     public class Point {

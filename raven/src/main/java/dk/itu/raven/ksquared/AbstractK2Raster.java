@@ -461,7 +461,7 @@ public abstract class AbstractK2Raster implements Serializable {
 
                             resultCreator.createResults(new PixelRange(range.row,
                                     Math.max(range.x1, xValue1),
-                                    Math.min(range.x2, xValue2)), -1, out);
+                                    Math.min(range.x2, xValue2)), maxValp, out);
 
                         }
                     }

@@ -36,4 +36,9 @@ public class PixelValue implements IResult {
     public void draw(Graphics2D graphics) {
         graphics.drawLine(x, y, x, y);
     }
+
+    @Override
+    public Optional<Long> getValue() {
+        return Optional.of(value);
+    }
 }

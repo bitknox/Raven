@@ -16,13 +16,13 @@ import dk.itu.raven.util.Logger;
 public abstract class FileRasterReader extends RasterReader {
 	File tiff;
 	File tfw;
-	String dirName;
+	File directory;
 
 	CoordinateReferenceSystem crs;
 	TFWFormat g2m;
 
 	public FileRasterReader(File directory) throws IOException {
-		this.dirName = directory.getName();
+		this.directory = directory;
 		for (File file : directory.listFiles()) {
 
 			if (file.getName().endsWith(".tif") ||
@@ -93,7 +93,12 @@ public abstract class FileRasterReader extends RasterReader {
 	}
 
 	@Override
-	public Optional<String> getDirectory() {
-		return Optional.of(dirName);
+	public Optional<String> getDirectoryName() {
+		return Optional.of(directory.getName());
+	}
+
+	@Override
+	public Optional<File> getDirectory() {
+		return Optional.of(directory);
 	}
 }

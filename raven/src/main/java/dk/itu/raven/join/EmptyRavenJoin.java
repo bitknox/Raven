@@ -1,5 +1,8 @@
 package dk.itu.raven.join;
 
+import dk.itu.raven.join.results.IJoinResult;
+import dk.itu.raven.join.results.JoinResult;
+
 public class EmptyRavenJoin extends AbstractRavenJoin {
 
 	@Override
