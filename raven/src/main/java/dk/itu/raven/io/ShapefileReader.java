@@ -18,7 +18,6 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
 import com.github.davidmoten.rtree2.geometry.Geometries;
-import com.github.davidmoten.rtree2.geometry.Point;
 
 import dk.itu.raven.geometry.Polygon;
 import dk.itu.raven.util.Logger;
@@ -104,19 +103,19 @@ public class ShapefileReader {
 
 	private void createPolygons(Coordinate[] coordinates,
 			List<Polygon> features) {
-		List<Point> points = new ArrayList<>();
+		double[] points = new double[2 * coordinates.length];
 		double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
 		double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
 		Coordinate start = coordinates[0];
-		Point p;
+		int endIndex = 0;
 
 		for (int i = 0; i < coordinates.length; i++) {
 			Coordinate coord = coordinates[i];
-			if (start.x == coord.x && start.y == coord.y && points.size() > 0) {
+			if (start.x == coord.x && start.y == coord.y && endIndex > 0) {
 				this.bounds.updateBounds(minX, minY, maxX, maxY);
 				features
-						.add(new Polygon(points, Geometries.rectangle(minX, minY, maxX, maxY)));
-				points = new ArrayList<>();
+						.add(new Polygon(points, endIndex, Geometries.rectangle(minX, minY, maxX, maxY)));
+				endIndex = 0;
 				minX = Double.MAX_VALUE;
 				minY = Double.MAX_VALUE;
 				maxX = Double.NEGATIVE_INFINITY;
@@ -125,12 +124,12 @@ public class ShapefileReader {
 					start = coordinates[i + 1];
 				}
 			} else {
-				p = Geometries.point(coord.x, coord.y);
-				minX = Math.min(minX, p.x());
-				maxX = Math.max(maxX, p.x());
-				minY = Math.min(minY, p.y());
-				maxY = Math.max(maxY, p.y());
-				points.add(p);
+				minX = Math.min(minX, coord.x);
+				maxX = Math.max(maxX, coord.x);
+				minY = Math.min(minY, coord.y);
+				maxY = Math.max(maxY, coord.y);
+				points[endIndex++] = coord.x;
+				points[endIndex++] = coord.y;
 			}
 		}
 	}
