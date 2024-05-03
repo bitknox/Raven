@@ -113,8 +113,7 @@ public class ShapefileReader {
 			Coordinate coord = coordinates[i];
 			if (start.x == coord.x && start.y == coord.y && endIndex > 0) {
 				this.bounds.updateBounds(minX, minY, maxX, maxY);
-				features
-						.add(new Polygon(points, endIndex, Geometries.rectangle(minX, minY, maxX, maxY)));
+				features.add(new Polygon(points, endIndex, Geometries.rectangle(minX, minY, maxX, maxY)));
 				endIndex = 0;
 				minX = Double.MAX_VALUE;
 				minY = Double.MAX_VALUE;

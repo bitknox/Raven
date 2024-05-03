@@ -62,12 +62,13 @@ public class Polygon implements Geometry, Iterator<Point>, Iterable<Point> {
         double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
         int idx = 0;
         for (Coordinate coord : coordinates) {
-            this.points[idx++] = coord.x;
-            this.points[idx++] = coord.y;
-            minX = Math.min(minX, coord.x);
-            maxX = Math.max(maxX, coord.x);
-            minY = Math.min(minY, coord.y);
-            maxY = Math.max(maxY, coord.y);
+            Point p = tfw.transFromCoordinateToPixel(coord.x, coord.y);
+            this.points[idx++] = p.x();
+            this.points[idx++] = p.y();
+            minX = Math.min(minX, p.x());
+            maxX = Math.max(maxX, p.x());
+            minY = Math.min(minY, p.y());
+            maxY = Math.max(maxY, p.y());
         }
         this.mbr = Geometries.rectangle(minX, minY, maxX, maxY);
     }
@@ -116,7 +117,7 @@ public class Polygon implements Geometry, Iterator<Point>, Iterable<Point> {
 
     @Override
     public Iterator<Point> iterator() {
-        this.currentIteratorIndex = 1;
+        this.currentIteratorIndex = 2;
         return this;
     }
 
@@ -127,7 +128,9 @@ public class Polygon implements Geometry, Iterator<Point>, Iterable<Point> {
 
     @Override
     public Point next() {
-        Point point = Geometries.point(this.points[currentIteratorIndex++], this.points[currentIteratorIndex++]);
+        int index = (currentIteratorIndex) % this.points.length;
+        Point point = Geometries.point(this.points[index], this.points[index + 1]);
+        currentIteratorIndex += 2;
         return point;
     }
 
@@ -137,11 +140,11 @@ public class Polygon implements Geometry, Iterator<Point>, Iterable<Point> {
     }
 
     public int size() {
-        return this.points.length;
+        return this.points.length / 2;
     }
 
     public Point getPoint(int index) {
-        if (index > this.points.length)
+        if (index > size())
             throw new IndexOutOfBoundsException(index);
         index = (index * 2) % this.points.length;
         Point point = Geometries.point(this.points[index], this.points[index + 1]);// when accessing the point one
@@ -151,7 +154,7 @@ public class Polygon implements Geometry, Iterator<Point>, Iterable<Point> {
     }
 
     public Coordinate[] getCoordinates() {
-        Coordinate[] coords = new Coordinate[this.points.length + 1];
+        Coordinate[] coords = new Coordinate[this.points.length / 2 + 1];
         for (int i = 0; i < this.points.length; i += 2) {
             Point point = Geometries.point(this.points[i], this.points[i + 1]);
             coords[i] = new Coordinate(point.x(), point.y());
