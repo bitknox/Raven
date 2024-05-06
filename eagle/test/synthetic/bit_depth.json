@@ -1,0 +1,47 @@
+{
+    "name": "Bit Depth",
+    "benchmarks": [
+        {
+            "name": "Raven",
+            "iterations": 5,
+            "group": [
+                "8 bits",
+                "16 bits",
+                "24 bits"
+            ],
+            "command": {
+                "path": "java",
+                "args": [
+                    "-jar",
+                    "/home/runners/raven-runner-1.0.jar",
+                    "-iv",
+                    "/home/synthetic/vector/square/geom.shp",
+                    "-cl",
+                    "/home/raster-cache/",
+                    "-fl",
+                    "255",
+                    "-fh",
+                    "255",
+                    "-ir",
+                    [
+                        "/home/synthetic/raster/bitdepth/8",
+                        "/home/synthetic/raster/bitdepth/16",
+                        "/home/synthetic/raster/bitdepth/24"
+                    ],
+                    "-t",
+                    "parallel",
+                    "-ts",
+                    "2048"
+                ]
+            },
+            "environment_options": {
+                "environment_type": "docker",
+                "docker_file_path": "./runners/raven-runner/",
+                "docker_mount_path": "/home/joinpro/data"
+            }
+        }
+    ],
+    "colours": {
+        "Raven": "darkred"
+    }
+}
