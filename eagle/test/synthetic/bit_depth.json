@@ -5,9 +5,9 @@
             "name": "Raven",
             "iterations": 5,
             "group": [
-                "8 bits",
-                "16 bits",
-                "24 bits"
+                "8-bit",
+                "16-bit",
+                "24-bit"
             ],
             "command": {
                 "path": "java",
@@ -18,10 +18,6 @@
                     "/home/synthetic/vector/square/geom.shp",
                     "-cl",
                     "/home/raster-cache/",
-                    "-fl",
-                    "255",
-                    "-fh",
-                    "255",
                     "-ir",
                     [
                         "/home/synthetic/raster/bitdepth/8",

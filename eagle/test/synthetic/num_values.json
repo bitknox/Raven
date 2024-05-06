@@ -1,0 +1,61 @@
+{
+    "name": "Bit Depth",
+    "benchmarks": [
+        {
+            "name": "Raven",
+            "iterations": 5,
+            "group": [
+                "3 colours",
+                "9 colours",
+                "27 colours",
+                "81 colours",
+                "243 colours",
+                "729 colours",
+                "2187 colours",
+                "6561 colours",
+                "19683 colours",
+                "59049 colours"
+            ],
+            "command": {
+                "path": "java",
+                "args": [
+                    "-jar",
+                    "/home/runners/raven-runner-1.0.jar",
+                    "-iv",
+                    "/home/synthetic/vector/square/geom.shp",
+                    "-cl",
+                    "/home/raster-cache/",
+                    "-fl",
+                    "0",
+                    "-fh",
+                    "19683",
+                    "-ir",
+                    [
+                        "/home/synthetic/raster/num_values/3",
+                        "/home/synthetic/raster/num_values/9",
+                        "/home/synthetic/raster/num_values/27",
+                        "/home/synthetic/raster/num_values/81",
+                        "/home/synthetic/raster/num_values/243",
+                        "/home/synthetic/raster/num_values/729",
+                        "/home/synthetic/raster/num_values/2187",
+                        "/home/synthetic/raster/num_values/6561",
+                        "/home/synthetic/raster/num_values/19683",
+                        "/home/synthetic/raster/num_values/59049"
+                    ],
+                    "-t",
+                    "parallel",
+                    "-ts",
+                    "2048"
+                ]
+            },
+            "environment_options": {
+                "environment_type": "docker",
+                "docker_file_path": "./runners/raven-runner/",
+                "docker_mount_path": "/home/joinpro/data"
+            }
+        }
+    ],
+    "colours": {
+        "Raven": "darkred"
+    }
+}
