@@ -4,15 +4,12 @@
 		{
 			"name": "Raven",
 			"iterations": 5,
-			"group": [
-				"GLC",
-				"SWF",
-				"Treecover"
-			],
+			"group": ["GLC", "SWF", "Treecover"],
 			"command": {
 				"path": "java",
 				"args": [
 					"-jar",
+					"-Xmx14g",
 					"/home/runners/raven-runner-1.0.jar",
 					"-iv",
 					"/home/real/vector/protected_areas/ProtectedArea.shp",
@@ -25,17 +22,9 @@
 						"/home/real/raster/treecover"
 					],
 					"-fl",
-					[
-						"22",
-						"1",
-						"81"
-					],
+					["22", "1", "81"],
 					"-fh",
-					[
-						"22",
-						"1",
-						"84"
-					],
+					["22", "1", "84"],
 					"-t",
 					"parallel",
 					"-ts",
@@ -51,15 +40,12 @@
 		{
 			"name": "Raptor",
 			"iterations": 5,
-			"group": [
-				"GLC",
-				"SWF",
-				"Treecover"
-			],
+			"group": ["GLC", "SWF", "Treecover"],
 			"command": {
 				"path": "java",
 				"args": [
 					"-jar",
+					"-Xmx14g",
 					"/home/runners/raptor-runner-1.0.jar",
 					"-iv",
 					"/home/real/vector/protected_areas/ProtectedArea.shp",
@@ -70,17 +56,9 @@
 						"/home/real/raster/treecover"
 					],
 					"-fl",
-					[
-						"22",
-						"1",
-						"81"
-					],
+					["22", "1", "81"],
 					"-fh",
-					[
-						"22",
-						"1",
-						"84"
-					]
+					["22", "1", "84"]
 				]
 			},
 			"environment_options": {
