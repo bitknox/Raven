@@ -1,0 +1,47 @@
+{
+    "name": "Woody - Protected",
+    "benchmarks": [
+        {
+            "name": [
+                "R*",
+                "STR"
+            ],
+            "iterations": 5,
+            "group": "2%",
+            "command": {
+                "path": "java",
+                "args": [
+                    "-jar",
+                    "-Xmx10g",
+                    [
+                        "/home/raven-runner-1.0-r-star.jar",
+                        "/home/raven-runner-1.0-str.jar"
+                    ],
+                    "-iv",
+                    "/home/protected_areas/ProtectedArea.shp",
+                    "-ir",
+                    "/home/woody",
+                    "-t",
+                    "parallel",
+                    "-ts",
+                    "2048",
+                    "-fl",
+                    "1",
+                    "-fh",
+                    "1",
+                    "-cl",
+                    "/home/caches"
+                ]
+            },
+            "environment_options": {
+                "environment_type": "docker",
+                "docker_file_path": "./runners/raven-runner/",
+                "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+            }
+        }
+    ],
+    "colours": {
+        "R*": "darkred",
+        "STR": "red"
+    }
+}

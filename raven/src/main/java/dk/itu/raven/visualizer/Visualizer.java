@@ -25,6 +25,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
 
+import com.github.davidmoten.rtree2.Entry;
 import com.github.davidmoten.rtree2.Node;
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometries;
@@ -91,7 +92,7 @@ public class Visualizer {
 	public void drawResult(IJoinResult results, ShapefileReader shapeFileReader,
 			VisualizerOptions options) throws IOException {
 		var vectorData = getFeatures(shapeFileReader);
-		List<Polygon> features = vectorData.getFeatures();
+		List<Entry<String, Geometry>> features = vectorData.getFeatures();
 		ShapeFileBounds bounds = vectorData.getBounds();
 
 		int width = this.width;
@@ -160,9 +161,9 @@ public class Visualizer {
 					Rectangle rasterBounds = Geometries.rectangle(topLeftLatLong[0], bottomRightLatLong[1],
 							bottomRightLatLong[0], topLeftLatLong[1]);
 					List<Polygon> overlapping = new ArrayList<>();
-					for (Polygon poly : features) {
-						if (rasterBounds.intersects(poly.mbr())) {
-							overlapping.add(poly.transform(transform));
+					for (Entry<String, Geometry> poly : features) {
+						if (rasterBounds.intersects(poly.geometry().mbr())) {
+							overlapping.add(((Polygon) poly.geometry()).transform(transform));
 						}
 					}
 					drawFeatures(rasterGraphics, overlapping, options.secondaryColor);
@@ -223,6 +224,14 @@ public class Visualizer {
 		}
 	}
 
+	private List<Polygon> getPolygons(List<Entry<String, Geometry>> entries) {
+		List<Polygon> polygons = new ArrayList<>();
+		for (var entry : entries) {
+			polygons.add((Polygon) entry.geometry());
+		}
+		return polygons;
+	}
+
 	/**
 	 * Draws the outline of vector data
 	 * 
@@ -232,8 +241,8 @@ public class Visualizer {
 	 *         {@code features}
 	 */
 	public BufferedImage drawShapefile(ShapefileReader shapeFileReader, VisualizerOptions options) throws IOException {
-		List<Polygon> features = getFeatures(shapeFileReader).getFeatures();
-		scale(features);
+		List<Polygon> polygons = getPolygons(getFeatures(shapeFileReader).getFeatures());
+		scale(polygons);
 
 		BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D vectorGraphics = image.createGraphics();
@@ -241,7 +250,7 @@ public class Visualizer {
 		setColor(vectorGraphics, options.background);
 		vectorGraphics.fillRect(0, 0, this.width, this.height);
 
-		drawFeatures(vectorGraphics, features, options.primaryColor);
+		drawFeatures(vectorGraphics, polygons, options.primaryColor);
 
 		if (options.useOutput) {
 			writeImage(image, options, "shapefile");
@@ -251,10 +260,10 @@ public class Visualizer {
 
 	public BufferedImage drawRtree(ShapefileReader reader, int minChildren, int maxChildren, VisualizerOptions options)
 			throws IOException {
-		List<Polygon> features = reader.readShapefile().getFeatures();
+		var entries = reader.readShapefile().getFeatures();
+		List<Polygon> features = getPolygons(entries);
 		scale(features);
-		return drawRtree(InternalApi.generateRTree(features, minChildren, maxChildren), features,
-				options);
+		return drawRtree(InternalApi.generateRTree(entries, minChildren, maxChildren), features, options);
 	}
 
 	public BufferedImage drawRtree(RTree<String, Geometry> rtree, List<Polygon> features, VisualizerOptions options)
