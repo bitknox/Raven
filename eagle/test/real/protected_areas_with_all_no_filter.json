@@ -4,15 +4,12 @@
 		{
 			"name": "Raven",
 			"iterations": 5,
-			"group": [
-				"GLC",
-				"SWF",
-				"Treecover"
-			],
+			"group": ["GLC", "SWF", "Treecover"],
 			"command": {
 				"path": "java",
 				"args": [
 					"-jar",
+					"-Xmx14g",
 					"/home/runners/raven-runner-1.0.jar",
 					"-iv",
 					"/home/real/vector/protected_areas/ProtectedArea.shp",
@@ -39,15 +36,12 @@
 		{
 			"name": "Raptor",
 			"iterations": 5,
-			"group": [
-				"GLC",
-				"SWF",
-				"Treecover"
-			],
+			"group": ["GLC", "SWF", "Treecover"],
 			"command": {
 				"path": "java",
 				"args": [
 					"-jar",
+					"-Xmx14g",
 					"/home/runners/raptor-runner-1.0.jar",
 					"-iv",
 					"/home/real/vector/protected_areas/ProtectedArea.shp",
