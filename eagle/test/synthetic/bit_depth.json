@@ -20,14 +20,16 @@
                     "/home/raster-cache/",
                     "-ir",
                     [
-                        "/home/synthetic/raster/bit_depth/8",
-                        "/home/synthetic/raster/bit_depth/16",
-                        "/home/synthetic/raster/bit_depth/24"
+                        "/home/synthetic/raster/bit_depth/8b",
+                        "/home/synthetic/raster/bit_depth/16b",
+                        "/home/synthetic/raster/bit_depth/24b"
                     ],
                     "-t",
                     "parallel",
                     "-ts",
-                    "2048"
+                    "2048",
+                    "-rt",
+                    "RANGE"
                 ]
             },
             "environment_options": {
