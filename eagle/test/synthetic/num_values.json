@@ -12,7 +12,15 @@
                 "32 colours",
                 "64 colours",
                 "128 colours",
-                "256 colours"
+                "256 colours",
+                "512 colours",
+                "1024 colours",
+                "2048 colours",
+                "4096 colours",
+                "8192 colours",
+                "16384 colours",
+                "32768 colours",
+                "65536 colours"
             ],
             "command": {
                 "path": "java",
@@ -23,10 +31,6 @@
                     "/home/synthetic/vector/square/geom.shp",
                     "-cl",
                     "/home/raster-cache/",
-                    "-fl",
-                    "0",
-                    "-fh",
-                    "19683",
                     "-ir",
                     [
                         "/home/synthetic/raster/num_values/2_values",
@@ -36,7 +40,15 @@
                         "/home/synthetic/raster/num_values/32_values",
                         "/home/synthetic/raster/num_values/64_values",
                         "/home/synthetic/raster/num_values/128_values",
-                        "/home/synthetic/raster/num_values/256_values"
+                        "/home/synthetic/raster/num_values/256_values",
+                        "/home/synthetic/raster/num_values/512_values",
+                        "/home/synthetic/raster/num_values/1024_values",
+                        "/home/synthetic/raster/num_values/2048_values",
+                        "/home/synthetic/raster/num_values/4096_values",
+                        "/home/synthetic/raster/num_values/8192_values",
+                        "/home/synthetic/raster/num_values/16384_values",
+                        "/home/synthetic/raster/num_values/32768_values",
+                        "/home/synthetic/raster/num_values/65536_values"
                     ],
                     "-t",
                     "parallel",

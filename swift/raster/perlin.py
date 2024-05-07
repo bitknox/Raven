@@ -4,13 +4,19 @@ from PIL import Image
 import math
 import scipy.stats as st
 
+max_values = 256
+
 
 # Normalize the world to 0-255
-def rgb_norm(world):
+def rgb_norm(world, num_values):
     world_min = np.min(world)
     world_max = np.max(world)
     norm = lambda x: np.uint8(
-        min(255, ((x - world_min) / (world_max - world_min)) * 256)
+        min(
+            max_values - 1,
+            int(((x - world_min) / (world_max - world_min)) * num_values)
+            * (max_values // num_values),
+        )
     )
     return np.vectorize(norm)
 
@@ -52,8 +58,8 @@ def convert_to_rgb(m):
 
 
 # Prep the world for saving
-def prep_world(world):
-    norm = rgb_norm(world)
+def prep_world(world, num_values):
+    norm = rgb_norm(world, num_values)
     world = norm(world)
     world = np.vectorize(colour_pixel)(world)
     return world
@@ -94,7 +100,8 @@ def generate_selectivity_cutoff_function(selectivity, sigma, mean):
 def generate_perlin(shape, scale, octaves, persistence, lacunarity, seed, selectivity):
     world = generate_perlin_inner(shape, scale, octaves, persistence, lacunarity, seed)
     if selectivity is None:
-        world = prep_world(world)
+        world = prep_world(world, 256)
+
         img = Image.fromarray(world.astype(np.uint8), mode="P")
         img.putpalette(data=colours)
     else:
