@@ -65,7 +65,7 @@ public class InternalApi {
             // step
             RasterCache<CachedRasterStructure> cache = new RasterCache<CachedRasterStructure>(
                     cacheOptions.getCacheDir(),
-                    rasterReader.getDirectoryName().get() + "-" + widthStep + "-" + heightStep);
+                    rasterReader.getDirectoryName().get() + "-" + widthStep + "-" + heightStep + "-k" + kSize);
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
                     Optional.of(cache), rtree, geometries);
             return rasterStream.map(chunk -> {
