@@ -1,18 +1,25 @@
 import argparse
 from plotterutil import *
 from reader import read_json
+import os
 
 parser = argparse.ArgumentParser(
     description="plots results of benchmarks as a bar chart showing average running times, as well as separate charts showing the progressing of running time of each experiment over time.",
 )
-parser.add_argument("-i", "--input", help="a path to the result JSON file to plot")
 parser.add_argument(
-    "-o", "--output", help="a path to the folder the images should be placed in"
+    "-i", "--input", help="a path to the result JSON file to plot", required=True
+)
+parser.add_argument(
+    "-o",
+    "--output",
+    help="a path to the folder the images should be placed in",
+    default=None,
 )
 parser.add_argument(
     "-id",
     "--identifier",
     help="an identifier added to the end of the file to prevent overriding",
+    default="",
 )
 parser.add_argument(
     "-sp",
@@ -28,6 +35,9 @@ parser.add_argument(
     help="generate separate bar-charts for the different groups. If not given, one bar-chart will be generated containing all groups.",
 )
 args = parser.parse_args()
+
+if args.output is None:
+    args.output = os.path.dirname(args.input)
 
 file = open(args.input, "r")
 

@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import rcParams
 from collections import OrderedDict, defaultdict
+from data import data
 
 
-def addlabels(y, indices, groups, group_members, ticks):
+def addlabels(data: data, indices, ticks):
     white_font = {
         "family": "DejaVu Sans",
         "size": 12,
@@ -20,20 +21,20 @@ def addlabels(y, indices, groups, group_members, ticks):
     max_val = 0
 
     for i in indices:
-        max_val = max(max_val, y[i])
+        max_val = max(max_val, data.times[i])
 
     for x, i in enumerate(indices):
         font = white_font
         va = "top"
-        yi = y[i] / 2
-        if y[i] < 0.1 * max_val:
-            yi = y[i] * 1.25
+        yi = data.times[i] / 2
+        if data.times[i] < 0.1 * max_val:
+            yi = data.times[i] + data.errors_hi_95p[i] * 1.1
             font = black_font
             va = "bottom"
 
-        difference = y[i] / y[group_members[groups[i]][0]]
-        if i == group_members[groups[i]][0]:
-            if len(group_members[groups[i]]) > 1:
+        difference = data.times[i] / data.times[data.group_members[data.groups[i]][0]]
+        if i == data.group_members[data.groups[i]][0]:
+            if len(data.group_members[data.groups[i]]) > 1:
                 text = "(Reference)"
             else:
                 text = ""
@@ -58,7 +59,7 @@ def addlabels(y, indices, groups, group_members, ticks):
             va=va,
         )  # custom properties
         text = plt.annotate(
-            "{:0.2f}s".format(y[i]),
+            "{:0.2f}s".format(data.times[i]),
             xycoords=text,
             xy=(0.5, 1.1),
             ha="center",
@@ -115,6 +116,9 @@ def draw_plot(indices, data, path, id, y_lim):
 
     _, ax = plt.subplots(figsize=(2 * len(indices), 5))
 
+    if y_lim is None:
+        ax.margins(None, 0.15)
+
     plt.suptitle(data.title, fontsize=20, y=1)
     if num_groups == 1:
         plt.title(next(iter(groups_set)), fontsize=15, weight="bold")
@@ -141,7 +145,7 @@ def draw_plot(indices, data, path, id, y_lim):
     )
     plt.ylabel("Join time (s)")
 
-    addlabels(data.times, indices, data.groups, data.group_members, ticks)
+    addlabels(data, indices, ticks)
 
     plt.errorbar(
         ticks,
