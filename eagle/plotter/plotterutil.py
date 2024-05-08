@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import rcParams
 from collections import OrderedDict, defaultdict
 from data import data
 
