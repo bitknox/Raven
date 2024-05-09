@@ -33,11 +33,16 @@ def addlabels(y, indices, groups, group_members, ticks):
 
         difference = y[i] / y[group_members[groups[i]][0]]
         if i == group_members[groups[i]][0]:
-            text = "(Reference)"
+            if len(group_members[groups[i]]) > 1:
+                text = "(Reference)"
+            else:
+                text = ""
         elif difference < 1:
             text = "(-" + str(round((1 - difference) * 100)) + "%)"
-        else:
+        elif difference > 1:
             text = "(+" + str(round((difference - 1) * 100)) + "%)"
+        else:
+            text = "(±0%)"
 
         annotation_font = {i: font[i] for i in font}
         annotation_font["size"] -= 2
