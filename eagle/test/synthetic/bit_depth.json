@@ -20,9 +20,9 @@
                     "/home/raster-cache/",
                     "-ir",
                     [
-                        "/home/synthetic/raster/bit_depth/8b",
-                        "/home/synthetic/raster/bit_depth/16b",
-                        "/home/synthetic/raster/bit_depth/24b"
+                        "/home/synthetic/raster/bit_depth2/8bit",
+                        "/home/synthetic/raster/bit_depth2/16bit",
+                        "/home/synthetic/raster/bit_depth2/24bit"
                     ],
                     "-t",
                     "parallel",
