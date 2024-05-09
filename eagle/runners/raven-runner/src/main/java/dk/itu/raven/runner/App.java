@@ -1,14 +1,20 @@
 package dk.itu.raven.runner;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
+
+import org.geotools.util.logging.Logging;
 
 import com.beust.jcommander.JCommander;
 import com.google.gson.Gson;
-import org.geotools.util.logging.Logging;
 
-//import com.github.bitknox.Raven;
 import dk.itu.raven.api.RavenApi;
+import dk.itu.raven.io.IRasterReader;
+import dk.itu.raven.io.ImageMetadata;
+import dk.itu.raven.io.MultiFileRasterReader;
 import dk.itu.raven.io.cache.CacheOptions;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.JoinFilterFunctions;
@@ -48,20 +54,30 @@ public class App {
             System.err.println("Running iteration " + (i + 1) + " of " + jct.iterations + " iterations.");
             long start = System.currentTimeMillis();
             AbstractRavenJoin join;
-            if (jct.joinType.equals(JoinType.STREAMED)) {
-                join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, false,
+            join = switch (jct.joinType) {
+                case STREAMED -> api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, false,
                         cacheOptions, jct.kSize, jct.rTreeMinChildren, jct.rTreeMaxChildren, jct.resultType);
-            } else if (jct.joinType.equals(JoinType.PARALLEL)) {
-                join = api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, true,
+                case PARALLEL -> api.getStreamedJoin(jct.inputRaster, jct.inputVector, jct.tileSize, jct.tileSize, true,
                         cacheOptions, jct.kSize, jct.rTreeMinChildren, jct.rTreeMaxChildren, jct.resultType);
-            } else {
-                join = api.getJoin(jct.inputRaster, jct.inputVector, cacheOptions, jct.kSize, jct.rTreeMinChildren,
+                default -> api.getJoin(jct.inputRaster, jct.inputVector, cacheOptions, jct.kSize, jct.rTreeMinChildren,
                         jct.rTreeMaxChildren, jct.resultType);
-            }
-            if (jct.filterLow == Integer.MIN_VALUE && jct.filterHigh == Integer.MAX_VALUE) {
+            };
+            if (jct.filterLow == null && jct.filterHigh == null) {
                 join.join(JoinFilterFunctions.acceptAll()).count();
+            } else if (jct.filterLow.size() == 1 && jct.filterHigh.size() == 1) {
+                join.join(JoinFilterFunctions.rangeFilter(jct.filterLow.get(0), jct.filterHigh.get(0))).count();
             } else {
-                join.join(JoinFilterFunctions.rangeFilter(jct.filterLow, jct.filterHigh)).count();
+                IRasterReader rasterReader = new MultiFileRasterReader(new File(jct.inputRaster));
+                ImageMetadata metadata = rasterReader.getImageMetadata();
+                List<Long> ranges = new ArrayList<>();
+                if (jct.filterLow.size() != jct.filterHigh.size()) {
+                    throw new IllegalArgumentException("length of filter low list is different from length of filter max list");
+                }
+                for (int j = 0; j < jct.filterLow.size(); j++) {
+                    ranges.add(jct.filterLow.get(j));
+                    ranges.add(jct.filterHigh.get(j));
+                }
+                join.join(JoinFilterFunctions.multiSampleRangeFilter(ranges,metadata.getBitsPerSample(),metadata.getTotalBitsPerPixel())).count();
             }
             long end = System.currentTimeMillis();
             long time = end - start;

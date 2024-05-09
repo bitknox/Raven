@@ -3,8 +3,26 @@ import numpy as np
 from PIL import Image
 import math
 import scipy.stats as st
+import random
 
 max_values = 256
+
+
+def rgb_random_values(world, num_values):
+    world_min = np.min(world)
+    world_max = np.max(world)
+
+    def norm(x):
+        random.seed(
+            min(
+                max_values - 1,
+                int(((x - world_min) / (world_max - world_min)) * num_values)
+                * (max_values // num_values),
+            )
+        )
+        return np.uint(random.randint(0, 2**24 - 1))
+
+    return np.vectorize(norm)
 
 
 # Normalize the world to 0-255
@@ -49,7 +67,7 @@ def convert_to_rgb(m):
     new_m = np.zeros([m.shape[0], m.shape[1], 3])
     for i in range(m.shape[0]):
         for j in range(m.shape[1]):
-            value = 131072 * (cutoff[m[i][j]] + 1) - 1
+            value = m[i][j]
             new_m[i][j][0] = np.uint8((value >> 16) & 0xFF)
             new_m[i][j][1] = np.uint8((value >> 8) & 0xFF)
             new_m[i][j][2] = np.uint8((value >> 0) & 0xFF)
