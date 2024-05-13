@@ -3,7 +3,7 @@ from collections import OrderedDict, defaultdict
 from data import data
 
 
-def addlabels(data: data, indices, ticks):
+def addlabels(data: data, indices, ticks, y_lim):
     white_font = {
         "family": "DejaVu Sans",
         "size": 12,
@@ -22,10 +22,14 @@ def addlabels(data: data, indices, ticks):
     for i in indices:
         max_val = max(max_val, data.times[i])
 
+    if y_lim is None:
+        y_lim = max_val
+    max_val = min(max_val, y_lim)
+
     for x, i in enumerate(indices):
         font = white_font
         va = "top"
-        yi = data.times[i] / 2
+        yi = min(y_lim, data.times[i]) / 2
         if data.times[i] < 0.1 * max_val:
             yi = data.times[i] + data.errors_hi_95p[i] * 1.1
             font = black_font
@@ -118,10 +122,7 @@ def draw_plot(indices, data, path, id, y_lim):
 
     _, ax = plt.subplots(figsize=(width, 5))
 
-    if y_lim is None:
-        ax.margins(padding / width, 0.1)
-    else:
-        ax.margins(padding / width, None)
+    ax.margins(padding / width, 0.1)
 
     plt.suptitle(data.title, fontsize=20, y=1)
     if num_groups == 1:
@@ -149,7 +150,7 @@ def draw_plot(indices, data, path, id, y_lim):
     )
     plt.ylabel("Join time (s)")
 
-    addlabels(data, indices, ticks)
+    addlabels(data, indices, ticks, y_lim)
 
     plt.errorbar(
         ticks,
@@ -185,7 +186,7 @@ def draw_plot(indices, data, path, id, y_lim):
         )
     else:
         plt.xticks([], [])
-    plt.ylim(bottom=0, top=y_lim)
+    plt.ylim((0, y_lim))
 
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(
@@ -212,7 +213,7 @@ def draw_sub_plots(data, path, id, y_lim):
         plt.tick_params(axis="x", rotation=30)
         ax.margins(x=0)
         plt.title("Join Times for " + test["name"])
-        plt.ylim(bottom=0, top=y_lim)
+        plt.ylim((0, y_lim))
         write_labels(test["labels"])
 
         plt.savefig(
