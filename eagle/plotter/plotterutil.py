@@ -87,7 +87,7 @@ def write_labels(labels):
 
 
 def draw_plot(indices, data, path, id, y_lim):
-    bar_width = 0.8
+    bar_width = 1
     group_gap = 1
     non_group_gap = 1.25
 
@@ -113,10 +113,15 @@ def draw_plot(indices, data, path, id, y_lim):
         groups_set.add(data.groups[index])
     num_groups = len(groups_set)
 
-    _, ax = plt.subplots(figsize=(2 * len(indices), 5))
+    padding = 0.8
+    width = 2 * (ticks[-1] + bar_width) + 2 * padding
+
+    _, ax = plt.subplots(figsize=(width, 5))
 
     if y_lim is None:
-        ax.margins(None, 0.15)
+        ax.margins(padding / width, 0.1)
+    else:
+        ax.margins(padding / width, None)
 
     plt.suptitle(data.title, fontsize=20, y=1)
     if num_groups == 1:
