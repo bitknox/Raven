@@ -63,7 +63,7 @@ public class InternalApi {
             // create a cache for the raster structures
             // the cache key is the name of the dataset directory and the width and height
             // step
-            RasterCache<CachedRasterStructure> cache = new RasterCache<CachedRasterStructure>(
+            RasterCache<CachedRasterStructure> cache = new RasterCache<>(
                     cacheOptions.getCacheDir(),
                     rasterReader.getDirectoryName().get() + "-" + widthStep + "-" + heightStep + "-k" + kSize);
             Stream<SpatialDataChunk> rasterStream = rasterReader.rasterPartitionStream(widthStep, heightStep,
@@ -128,7 +128,9 @@ public class InternalApi {
     /**
      * Generates a R* tree from the vector data
      * 
-     * @param geometries
+     * @param geometries the geometires that should be included in the R-tree
+     * @param minChildren minimum children, this parameter is passed on to the R-tree
+     * @param maxChildren maximum children, this parameter is passed on to the R-tree
      * @return the R* tree
      */
     public static RTree<String, Geometry> generateRTree(List<Entry<String, Geometry>> geometries, int minChildren,
@@ -176,12 +178,15 @@ public class InternalApi {
 
     static public IResultCreator getResultCreator(ResultType type) {
         switch (type) {
-            case RANGE:
+            case RANGE -> {
                 return new PixelRangeCreator();
-            case RANGEVALUE:
+            }
+            case RANGEVALUE -> {
                 return new PixelRangeValueCreator();
-            case VALUE:
+            }
+            case VALUE -> {
                 return new PixelValueCreator();
+            }
         }
         return null;
     }

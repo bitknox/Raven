@@ -25,6 +25,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
 
+import com.github.davidmoten.rtree2.Entries;
 import com.github.davidmoten.rtree2.Entry;
 import com.github.davidmoten.rtree2.Node;
 import com.github.davidmoten.rtree2.RTree;
@@ -197,6 +198,35 @@ public class Visualizer {
 		}
 	}
 
+	private void scaleEntries(List<Entry<String,Geometry>> features) {
+		double minX = Double.POSITIVE_INFINITY;
+		double maxX = Double.NEGATIVE_INFINITY;
+		double minY = Double.POSITIVE_INFINITY;
+		double maxY = Double.NEGATIVE_INFINITY;
+		for (Entry<String,Geometry> poly : features) {
+			Rectangle mbr = poly.geometry().mbr();
+			minX = Math.min(minX, mbr.x1());
+			maxX = Math.max(maxX, mbr.x2());
+			minY = Math.min(minY, mbr.y1());
+			maxY = Math.max(maxY, mbr.y2());
+		}
+
+		double scaleX = this.width / (maxX - minX);
+		double scaleY = this.height / (maxY - minY);
+		double scale = Math.min(scaleX, scaleY);
+		MathTransform transform = new AffineTransform2D(scale, 0, 0, -scale, (this.width - scale * (minX + maxX)) / 2,
+				(this.height + scale * (minY + maxY)) / 2);
+		try {
+			for (int i = 0; i < features.size(); i++) {
+				Polygon poly = ((Polygon) features.get(i).geometry()).transform(transform);
+				features.set(i, Entries.entry(null, poly));
+			}
+		} catch (Exception e) {
+			Logger.log(e, LogLevel.ERROR);
+			Logger.log("Unable to scale vector data to fit image size", LogLevel.ERROR);
+		}
+	}
+
 	private void scale(List<Polygon> features) {
 		double minX = Double.POSITIVE_INFINITY;
 		double maxX = Double.NEGATIVE_INFINITY;
@@ -261,8 +291,8 @@ public class Visualizer {
 	public BufferedImage drawRtree(ShapefileReader reader, int minChildren, int maxChildren, VisualizerOptions options)
 			throws IOException {
 		var entries = reader.readShapefile().getFeatures();
+		scaleEntries(entries);
 		List<Polygon> features = getPolygons(entries);
-		scale(features);
 		return drawRtree(InternalApi.generateRTree(entries, minChildren, maxChildren), features, options);
 	}
 
@@ -278,13 +308,16 @@ public class Visualizer {
 			drawFeatures(vectorGraphics, features, options.secondaryColor);
 		}
 
-		drawMbr(rtree.root().get(), vectorGraphics, options.primaryColor);
+		int lineWidth = rtree.calculateDepth();
+		drawMbr(rtree.root().get(), vectorGraphics, options.primaryColor,lineWidth);
 
 		if (options.useOutput) {
 			writeImage(image, options, "rtree");
 		}
 		return image;
 	}
+
+
 
 	/**
 	 * Draws the minimum bounding rectangle for a R*-tree node. (Recursively drawing
@@ -293,8 +326,8 @@ public class Visualizer {
 	 * @param node     The R*-tree node
 	 * @param graphics The graphics object we are drawing on top of
 	 */
-	private void drawMbr(Node<String, Geometry> node, Graphics2D graphics, Color color) {
-		graphics.setStroke(new BasicStroke(1));
+	private void drawMbr(Node<String, Geometry> node, Graphics2D graphics, Color color, int lineWidth) {
+		graphics.setStroke(new BasicStroke(lineWidth));
 		for (Node<String, Geometry> child : TreeExtensions.getChildren(node)) {
 			setColor(graphics, color);
 			int width = (int) (child.geometry().mbr().x2() - child.geometry().mbr().x1());
@@ -302,9 +335,10 @@ public class Visualizer {
 			graphics.drawRect((int) child.geometry().mbr().x1(), (int) child.geometry().mbr().y1(),
 					width, height);
 			if (!TreeExtensions.isLeaf(child)) {
-				drawMbr(child, graphics, color);
+				drawMbr(child, graphics, color, Math.max(1,lineWidth - 1));
 			}
 		}
+		graphics.setStroke(new BasicStroke(1));
 	}
 
 	/**

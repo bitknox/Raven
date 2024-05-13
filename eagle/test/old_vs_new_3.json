@@ -1,0 +1,49 @@
+{
+    "name": "single- vs multi-range filters",
+    "benchmarks": [
+        {
+            "name": "Raven",
+            "iterations": 20,
+            "group": [
+                "1 range",
+                "3 ranges"
+            ],
+            "command": {
+                "path": "java",
+                "args": [
+                    "-Xmx8g",
+                    "-jar",
+                    "/home/raven-runner-1.0.jar",
+                    "-iv",
+                    "/home/square/geom.shp",
+                    "-ir",
+                    "/home/voronoi",
+                    "-t",
+                    "parallel",
+                    "-ts",
+                    "2048",
+                    "-fl",
+                    [
+                        "100",
+                        "0,0,100"
+                    ],
+                    "-fh",
+                    [
+                        "6579455",
+                        "100,100,255"
+                    ],
+                    "-cl",
+                    "/home/caches"
+                ]
+            },
+            "environment_options": {
+                "environment_type": "docker",
+                "docker_file_path": "./runners/raven-runner/",
+                "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+            }
+        }
+    ],
+    "colours": {
+        "Raven": "darkred"
+    }
+}

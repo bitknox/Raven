@@ -1,6 +1,9 @@
 package dk.itu.raven.runner;
 
+import java.util.List;
+
 import com.beust.jcommander.Parameter;
+
 import dk.itu.raven.io.commandline.ResultType;
 
 public class CommandLineArgs {
@@ -14,12 +17,12 @@ public class CommandLineArgs {
         public String inputVector = null;
 
         @Parameter(names = { "-fl",
-                        "--filter-low" }, description = "Lower value for the filter range")
-        public long filterLow = (long) Integer.MIN_VALUE;
+                        "--filter-low" }, description = "Lower value for the filter range", splitter = RangeSplitter.class)
+        public List<Long> filterLow = null;
 
         @Parameter(names = { "-fh",
-                        "--filter-high" }, description = "Upper value for the filter range")
-        public long filterHigh = (long) Integer.MAX_VALUE;
+                        "--filter-high" }, description = "Upper value for the filter range", splitter = RangeSplitter.class)
+        public List<Long> filterHigh = null;
 
         @Parameter(names = { "-ts",
                         "--tile-size" }, description = "The size of the tiles (only used if the join is streamed)")
