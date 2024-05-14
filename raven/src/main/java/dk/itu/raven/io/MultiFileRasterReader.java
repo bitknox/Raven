@@ -25,6 +25,7 @@ import dk.itu.raven.io.cache.RasterCache;
 import dk.itu.raven.join.SpatialDataChunk;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
+import dk.itu.raven.util.TreeExtensions;
 
 public class MultiFileRasterReader implements IRasterReader {
 
@@ -84,6 +85,8 @@ public class MultiFileRasterReader implements IRasterReader {
 
 						Logger.log("Bounds: " + bounds.x1() + ", " + bounds.y1() + ", " + bounds.x2() + ", "
 								+ bounds.y2(), Logger.LogLevel.INFO);
+
+						System.out.println(TreeExtensions.getAlpha(rtree, bounds));
 
 						Iterable<Entry<String, Geometry>> overlapping = rtree.search(bounds);
 						if (!overlapping.iterator().hasNext()) {

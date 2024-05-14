@@ -27,12 +27,13 @@ import dk.itu.raven.visualizer.Visualizer;
 import dk.itu.raven.visualizer.VisualizerOptions;
 import dk.itu.raven.visualizer.VisualizerOptionsBuilder;
 
+
+
 /**
  * Main class for the raven application
  * 
  */
 public class Raven {
-
     public static void main(String[] args) throws IOException {
         CommandLineArgs jct = new CommandLineArgs();
         JCommander commander = JCommander.newBuilder().addObject(jct).build();
@@ -121,7 +122,8 @@ public class Raven {
 
             VisualizerOptions options = builder.build();
 
-            visual.drawResult(result, shapefileReader, options);
+            // visual.drawResult(result, shapefileReader, options);
+            visual.drawRtree(shapefileReader, 2, 8, options);
             Logger.log("Done visualizing", LogLevel.INFO);
         }
     }
