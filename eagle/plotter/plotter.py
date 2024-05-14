@@ -27,7 +27,9 @@ parser.add_argument(
     action="store_true",
     help="whether a separate plot should be made for each experiment showing how the running time evolved over time",
 )
-parser.add_argument("-ylim", "--y-limit", help="the top y-limit of the produced plots")
+parser.add_argument(
+    "-ylim", "--y-limit", help="the top y-limit of the produced plots", type=float
+)
 parser.add_argument(
     "-sg",
     "--split-groups",
@@ -46,7 +48,7 @@ data = read_json(file)
 if args.y_limit == None:
     y_lim = None
 else:
-    y_lim = int(args.y_limit)
+    y_lim = float(args.y_limit)
 
 # CALL DRAW FUNCTIONS
 

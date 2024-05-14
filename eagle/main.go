@@ -65,7 +65,7 @@ func main() {
 
 			timestamp := time.Now().Format("2006_01_02_15-04-05")
 
-			resultsPath := fmt.Sprintf("%s/results %s.json", resultOutputDirectory, timestamp)
+			resultsPath := fmt.Sprintf("%s/%s %s.json", resultOutputDirectory, suite.Name, timestamp)
 
 			var experiment = model.BenchmarkSuiteResult{}
 			experiment.Results = results
