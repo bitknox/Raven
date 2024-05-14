@@ -31,7 +31,9 @@ def addlabels(data: data, indices, ticks, y_lim):
         va = "top"
         yi = min(y_lim, data.times[i]) / 2
         if data.times[i] < 0.1 * max_val:
-            yi = data.times[i] + data.errors_hi_95p[i] * 1.1
+            yi = (
+                data.times[i] + data.errors_hi_95p[i] + 0.01 * max_val
+            )  # place the text slightly above the 95 percentile mark
             font = black_font
             va = "bottom"
 
@@ -52,7 +54,7 @@ def addlabels(data: data, indices, ticks, y_lim):
         annotation_font["size"] -= 2
         annotation_font["weight"] = "regular"
 
-        text = plt.text(
+        text_box = plt.text(
             ticks[x],
             yi,
             text,
@@ -60,15 +62,29 @@ def addlabels(data: data, indices, ticks, y_lim):
             multialignment="center",
             ha="center",
             va=va,
-        )  # custom properties
-        text = plt.annotate(
-            "{:0.2f}s".format(data.times[i]),
-            xycoords=text,
-            xy=(0.5, 1.1),
+        )
+
+        if data.times[i] < 10:
+            text = "{:0.2f} s".format(data.times[i])
+        elif data.times[i] < 100:
+            text = "{:0.1f} s".format(data.times[i])
+        else:
+            text = "{:.0f} s".format(data.times[i])
+
+        if data.times[i] > 60:
+            text = "{:0.0f} min\n {:0.0f} s".format(
+                data.times[i] / 60, data.times[i] % 60
+            )
+
+        plt.annotate(
+            text,
+            xycoords=text_box,
+            xy=(0.5, 1.3),
             ha="center",
             color=font["color"],
             weight=font["weight"],
             size=font["size"],
+            linespacing=0.9,
         )
 
 
@@ -91,9 +107,11 @@ def write_labels(labels):
 
 
 def draw_plot(indices, data, path, id, y_lim):
-    bar_width = 1
+    relative_bar_width = 0.9  # the relative width of the bar, the only important thing is its value relative to the two gaps below
     group_gap = 1
     non_group_gap = 1.25
+    absolute_bar_width = 1.25  # determines the width of the graph and therefore also the width of the bars in the image
+    padding = 0.4  # padding at the left and right edge of the plot
 
     relevant_names = [data.names[i] for i in indices]
     relevant_times = [data.times[i] for i in indices]
@@ -117,8 +135,7 @@ def draw_plot(indices, data, path, id, y_lim):
         groups_set.add(data.groups[index])
     num_groups = len(groups_set)
 
-    padding = 0.8
-    width = 2 * (ticks[-1] + bar_width) + 2 * padding
+    width = absolute_bar_width * (ticks[-1] + relative_bar_width) + 2 * padding
 
     _, ax = plt.subplots(figsize=(width, 5))
 
@@ -146,7 +163,7 @@ def draw_plot(indices, data, path, id, y_lim):
         relevant_times,
         color=relevant_colours,
         label=relevant_names,
-        width=bar_width,
+        width=relative_bar_width,
     )
     plt.ylabel("Join time (s)")
 
