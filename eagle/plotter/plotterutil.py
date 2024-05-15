@@ -106,8 +106,58 @@ def write_labels(labels):
     )
 
 
-def draw_plot(indices, data, path, id, y_lim):
-    relative_bar_width = 0.9  # the relative width of the bar, the only important thing is its value relative to the two gaps below
+def draw_plot(indices, data, path, id, y_lim, line_plot, x_label):
+    if not line_plot:
+        draw_bars(indices, data, y_lim)
+    else:
+        draw_line(indices, data, y_lim)
+
+    if x_label:
+        plt.xlabel(x_label)
+
+    plt.savefig(
+        path + "/" + data.title + " " + id + ".png",
+        bbox_inches="tight",
+    )
+    plt.clf()
+
+
+def get_unique_groups(indices, data):
+    groups_set = set()
+    for index in indices:
+        groups_set.add(data.groups[index])
+    return groups_set
+
+
+def setup_plot(data, width, padding, groups_set):
+    num_groups = len(groups_set)
+    _, ax = plt.subplots(figsize=(width, 5))
+
+    ax.margins(padding / width, 0.1)
+
+    plt.suptitle(data.title, fontsize=20, y=1)
+    if num_groups == 1:
+        plt.title(next(iter(groups_set)), fontsize=15, weight="bold")
+
+    plt.grid(axis="y", which="major", linewidth=1, alpha=0.3, linestyle="dashed")
+    plt.grid(
+        color="gray",
+        linestyle="dashed",
+        linewidth=1,
+        alpha=0.3,
+        axis="y",
+        which="minor",
+    )
+    plt.tick_params(axis="x", rotation=30)
+    ax.minorticks_on()
+    ax.set_axisbelow(True)
+    plt.ylabel("Join time (s)")
+
+    return ax
+
+
+def draw_bars(indices, data, y_lim):
+    relative_bar_width = 0.9
     group_gap = 1
     non_group_gap = 1.25
     absolute_bar_width = 1.25  # determines the width of the graph and therefore also the width of the bars in the image
@@ -130,33 +180,11 @@ def draw_plot(indices, data, path, id, y_lim):
         group: sum(group_placements[group]) / len(group_placements[group])
         for group in group_placements
     }
-    groups_set = set()
-    for index in indices:
-        groups_set.add(data.groups[index])
-    num_groups = len(groups_set)
 
     width = absolute_bar_width * (ticks[-1] + relative_bar_width) + 2 * padding
-
-    _, ax = plt.subplots(figsize=(width, 5))
-
-    ax.margins(padding / width, 0.1)
-
-    plt.suptitle(data.title, fontsize=20, y=1)
-    if num_groups == 1:
-        plt.title(next(iter(groups_set)), fontsize=15, weight="bold")
-
-    ax.grid(axis="y", which="major", linewidth=1, alpha=0.3, linestyle="dashed")
-    plt.grid(
-        color="gray",
-        linestyle="dashed",
-        linewidth=1,
-        alpha=0.3,
-        axis="y",
-        which="minor",
-    )
-    ax.minorticks_on()
-    ax.set_axisbelow(True)
-    plt.tick_params(axis="x", rotation=30)
+    groups_set = get_unique_groups(indices, data)
+    num_groups = len(groups_set)
+    ax = setup_plot(data, width, padding, groups_set)
 
     plt.bar(
         ticks,
@@ -165,7 +193,6 @@ def draw_plot(indices, data, path, id, y_lim):
         label=relevant_names,
         width=relative_bar_width,
     )
-    plt.ylabel("Join time (s)")
 
     addlabels(data, indices, ticks, y_lim)
 
@@ -213,11 +240,33 @@ def draw_plot(indices, data, path, id, y_lim):
         by_label.values(), by_label.keys(), loc="upper left", ncols=1, fontsize=10
     )
 
-    plt.savefig(
-        path + "/" + data.title + " " + id + ".png",
-        bbox_inches="tight",
-    )
-    plt.clf()
+
+def draw_line(indices, data: data, y_lim):
+    import re
+
+    groups_set = get_unique_groups(indices, data)
+
+    if len(groups_set) != len(indices):
+        raise Exception(
+            "When drawing line plots, all data-points must have a unique group"
+        )
+    ax = setup_plot(data, 8, 0.4, groups_set)
+
+    if y_lim is None:
+        ax.margins(None, 0.15)
+    matches = [(i, re.match("[0-9]+", data.groups[i])) for i in indices]
+
+    if not all(match for _, match in matches):
+        plt.plot([data.groups[i] for i in indices], [data.times[i] for i in indices])
+        # plt.xticks(range(len(indices)), [data.groups[i] for i in indices])
+    else:
+        numbers = [
+            float(data.groups[i][match.span()[0] : match.span()[1]])
+            for i, match in matches
+        ]
+        plt.plot(numbers, [data.times[i] for i in indices])
+
+    plt.ylim((0, y_lim))
 
 
 def draw_sub_plots(data, path, id, y_lim):
