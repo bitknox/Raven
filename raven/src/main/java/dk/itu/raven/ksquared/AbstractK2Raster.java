@@ -18,6 +18,7 @@ import dk.itu.raven.util.Pair;
 import dk.itu.raven.util.PrimitiveArrayWrapper;
 
 public abstract class AbstractK2Raster implements Serializable {
+
     public final int k;
     protected long minVal;// the maximum value stored in the matrix
     protected long maxVal;// the minimum value stored in the matrix
@@ -58,55 +59,58 @@ public abstract class AbstractK2Raster implements Serializable {
     }
 
     /**
-     * 
+     *
      * @param index the LMax index of a node of the k2 raster tree
      * @return {@code true} if the node corresponding to the given index is an
-     *         internal node, {@code false} otherwise.
+     * internal node, {@code false} otherwise.
      */
     public boolean hasChildren(int index) {
-        if (index == 0)
+        if (index == 0) {
             return minVal != maxVal;
+        }
         return tree.isSet2(index);
     }
 
     /**
      * Gets the minimum and maximum values in the K2Raster tree
-     * 
-     * @return an array of length 2, where the first element is the minimum value
-     *         and the second element is the maximum value
+     *
+     * @return an array of length 2, where the first element is the minimum
+     * value and the second element is the maximum value
      */
     public Pair<Long, Long> getValueRange() {
         return new Pair<Long, Long>(minVal, maxVal);
     }
 
     /**
-     * 
-     * @param parentMax The maximum value stored in the sub-matrix corresponding to
-     *                  the parent of the node with the given index.
-     * @param index     the LMax index of a node of the k2 raster tree
-     * @return the maximum value stored in the sub-matrix corresponding to the node
-     *         with the given index
+     *
+     * @param parentMax The maximum value stored in the sub-matrix corresponding
+     * to the parent of the node with the given index.
+     * @param index the LMax index of a node of the k2 raster tree
+     * @return the maximum value stored in the sub-matrix corresponding to the
+     * node with the given index
      */
     public long computeVMax(long parentMax, int index) {
         // the -1 is caused by lMax being 0-indexed and not including the root
-        if (index == 0)
+        if (index == 0) {
             return maxVal;
+        }
         return parentMax - lMax.get(index - 1);
     }
 
     /**
-     * 
-     * @param parentMax The maximum value stored in the sub-matrix corresponding to
-     *                  the parent of the node with the given index.
-     * @param parentMin The minimum value stored in the sub-matrix corresponding to
-     *                  the parent of the node with the given index.
-     * @param index     the LMax index of a node of the k2 raster tree
-     * @return the minimum value stored in the sub-matrix corresponding to the node
-     *         with the given index
+     *
+     * @param parentMax The maximum value stored in the sub-matrix corresponding
+     * to the parent of the node with the given index.
+     * @param parentMin The minimum value stored in the sub-matrix corresponding
+     * to the parent of the node with the given index.
+     * @param index the LMax index of a node of the k2 raster tree
+     * @return the minimum value stored in the sub-matrix corresponding to the
+     * node with the given index
      */
     public long computeVMin(long parentMax, long parentMin, int index) {
-        if (index == 0)
+        if (index == 0) {
             return minVal;
+        }
         if (!hasChildren(index)) {
             return computeVMax(parentMax, index);
         }
@@ -116,8 +120,9 @@ public abstract class AbstractK2Raster implements Serializable {
     }
 
     public long computeVMin(long parentMax, long parentMin, int index, long vMax) {
-        if (index == 0)
+        if (index == 0) {
             return minVal;
+        }
         if (!hasChildren(index)) {
             return vMax;
         }
@@ -128,7 +133,7 @@ public abstract class AbstractK2Raster implements Serializable {
 
     /**
      * gets the children of the node at index {@code index}
-     * 
+     *
      * @param index the index of the parent node
      * @return array of indxes
      */
@@ -146,7 +151,7 @@ public abstract class AbstractK2Raster implements Serializable {
     }
 
     /**
-     * 
+     *
      * @return the size of the K2Raster tree
      */
     public int getSize() {
@@ -155,13 +160,12 @@ public abstract class AbstractK2Raster implements Serializable {
 
     /**
      * Use of this method is discouraged for performance reasons. Use
-     * {@code getWindow}
-     * instead.
-     * 
-     * @param n      size of the matrix
-     * @param r      the row to access
-     * @param c      the column to access
-     * @param z      only God knows what this does
+     * {@code getWindow} instead.
+     *
+     * @param n size of the matrix
+     * @param r the row to access
+     * @param c the column to access
+     * @param z only God knows what this does
      * @param maxVal the max value in the matrix
      * @return the value from the matrix at index {@code (r,c)}
      */
@@ -172,7 +176,9 @@ public abstract class AbstractK2Raster implements Serializable {
         long val = lMax.get(z); // LMax is 0-indexed
         maxVal = maxVal - val;
         if (!hasChildren(z + 1)) // +1 because the bitmap is 1-indexed
+        {
             return maxVal;
+        }
         return getCell(nKths, r % nKths, c % nKths, z, maxVal);
     }
 
@@ -200,26 +206,30 @@ public abstract class AbstractK2Raster implements Serializable {
         long maxValp;
 
         for (int i = initialI; i <= lastI; i++) {
-            if (i == initialI)
+            if (i == initialI) {
                 r1p = r1 % nKths;
-            else
+            } else {
                 r1p = 0;
+            }
 
-            if (i == lastI)
+            if (i == lastI) {
                 r2p = r2 % nKths;
-            else
+            } else {
                 r2p = nKths - 1;
+            }
 
             for (int j = initialJ; j <= lastJ; j++) {
-                if (j == initialJ)
+                if (j == initialJ) {
                     c1p = c1 % nKths;
-                else
+                } else {
                     c1p = 0;
+                }
 
-                if (j == lastJ)
+                if (j == lastJ) {
                     c2p = c2 % nKths;
-                else
+                } else {
                     c2p = nKths - 1;
+                }
 
                 zp = z + i * k + j;
                 maxValp = computeVMax(maxVal, zp + 1);
@@ -239,9 +249,10 @@ public abstract class AbstractK2Raster implements Serializable {
 
     protected int getSize(int r1, int r2, int c1, int c2) {
         if (r1 < 0 || r1 >= n || r2 < 0 || r2 >= n || c1 < 0 || c1 >= n || c2 < 0
-                || c2 >= n)
+                || c2 >= n) {
             throw new IndexOutOfBoundsException("looked up window (" + c1 + ", " + r1 + ", " + c2 + ", " + r2
                     + ") in matrix with size (" + n + ", " + n + ")");
+        }
         return (r2 - r1 + 1) * (c2 - c1 + 1);
     }
 
@@ -259,7 +270,7 @@ public abstract class AbstractK2Raster implements Serializable {
     /**
      * Reads data from a window of the matrix given by the two points
      * {@code (r1,c1)} and {@code (r2,c2)} (inclusive on all sides)
-     * 
+     *
      * @param r1 row number for the top left corner of window
      * @param r2 row number for the bottom right corner of window
      * @param c1 column number for the top left corner of window
@@ -269,7 +280,7 @@ public abstract class AbstractK2Raster implements Serializable {
     public abstract PrimitiveArrayWrapper getWindow(int r1, int r2, int c1, int c2);
 
     protected void searchValuesInWindow(int n, int r1, int r2, int c1, int c2, IRasterFilterFunction function,
-            long maxVal, long minVal, int z, List<PixelRange> out, int baseX, int baseY) {
+            long maxVal, long minVal, int z, List<IResult> out, int baseX, int baseY, Offset<Integer> offset) {
         int nKths = (n / k); // childsize
         int rank = treeRank(z);
         z = rank * k * k;
@@ -282,25 +293,29 @@ public abstract class AbstractK2Raster implements Serializable {
         long maxValp, minValp;
 
         for (int i = initialI; i <= lastI; i++) {
-            if (i == initialI)
+            if (i == initialI) {
                 r1p = r1 % nKths;
-            else
+            } else {
                 r1p = 0;
+            }
 
-            if (i == lastI)
+            if (i == lastI) {
                 r2p = r2 % nKths;
-            else
+            } else {
                 r2p = nKths - 1;
+            }
             for (int j = initialJ; j <= lastJ; j++) {
-                if (j == initialJ)
+                if (j == initialJ) {
                     c1p = c1 % nKths;
-                else
+                } else {
                     c1p = 0;
+                }
 
-                if (j == lastJ)
+                if (j == lastJ) {
                     c2p = c2 % nKths;
-                else
+                } else {
                     c2p = nKths - 1;
+                }
                 zp = z + i * k + j;
                 maxValp = computeVMax(maxVal, zp + 1);
 
@@ -323,14 +338,14 @@ public abstract class AbstractK2Raster implements Serializable {
                             continue;
                         } else {
                             searchValuesInWindow(nKths, r1p, r2p, c1p, c2p, function, maxValp, minValp, zp,
-                                    out, baseXp, baseYp);
+                                    out, baseXp, baseYp, offset);
                         }
                     }
                 }
 
                 if (addCells) {
                     for (int r = r1p + baseYp; r <= r2p + baseYp; r++) {
-                        out.add(new PixelRange(r, c1p + baseXp, c2p + baseXp));
+                        out.add(new PixelRange(r + offset.getY(), c1p + baseXp + offset.getX(), c2p + baseXp + offset.getX()));
                     }
                 }
             }
@@ -338,26 +353,26 @@ public abstract class AbstractK2Raster implements Serializable {
     }
 
     public void searchValuesInWindow(int r1, int r2, int c1, int c2, IRasterFilterFunction function,
-            List<PixelRange> out) {
+            List<IResult> out, Offset<Integer> offset) {
         searchValuesInWindow(this.n, r1, r2, c1, c2, function,
                 this.maxVal, this.minVal, -1, out,
-                0, 0);
+                0, 0, offset);
     }
 
     /**
      * Reads data from a window of the matrix given by the two points
      * {@code (r1,c1)} and {@code (r2,c2)}
-     * 
+     *
      * @param r1 row number for the top left corner of window
      * @param r2 row number for the bottom right corner of window
      * @param c1 column number for the top left corner of window
      * @param c2 column number for the bottom right corner of window
-     * @return a window of the matrix with only the values {@code v} that satisfy
-     *         {@code vb <= v <= ve}
+     * @return a window of the matrix with only the values {@code v} that
+     * satisfy {@code vb <= v <= ve}
      */
-    public List<PixelRange> searchValuesInWindow(int r1, int r2, int c1, int c2, IRasterFilterFunction function) {
-        List<PixelRange> out = new ArrayList<>();
-        searchValuesInWindow(r1, r2, c1, c2, function, out);
+    public List<IResult> searchValuesInWindow(int r1, int r2, int c1, int c2, IRasterFilterFunction function, Offset<Integer> offset) {
+        List<IResult> out = new ArrayList<>();
+        searchValuesInWindow(r1, r2, c1, c2, function, out, offset);
         return out;
     }
 
@@ -392,25 +407,29 @@ public abstract class AbstractK2Raster implements Serializable {
         long maxValp, minValp;
 
         for (int i = initialI; i <= lastI; i++) {
-            if (i == initialI)
+            if (i == initialI) {
                 r1p = r1 % nKths;
-            else
+            } else {
                 r1p = 0;
+            }
 
-            if (i == lastI)
+            if (i == lastI) {
                 r2p = r2 % nKths;
-            else
+            } else {
                 r2p = nKths - 1;
+            }
             for (int j = initialJ; j <= lastJ; j++) {
-                if (j == initialJ)
+                if (j == initialJ) {
                     c1p = c1 % nKths;
-                else
+                } else {
                     c1p = 0;
+                }
 
-                if (j == lastJ)
+                if (j == lastJ) {
                     c2p = c2 % nKths;
-                else
+                } else {
                     c2p = nKths - 1;
+                }
                 zp = z + i * k + j;
                 maxValp = computeVMax(maxVal, zp + 1);
 
@@ -493,25 +512,29 @@ public abstract class AbstractK2Raster implements Serializable {
         long maxValp;
 
         for (int i = initialI; i <= lastI; i++) {
-            if (i == initialI)
+            if (i == initialI) {
                 r1p = r1 % nKths;
-            else
+            } else {
                 r1p = 0;
+            }
 
-            if (i == lastI)
+            if (i == lastI) {
                 r2p = r2 % nKths;
-            else
+            } else {
                 r2p = nKths - 1;
+            }
             for (int j = initialJ; j <= lastJ; j++) {
-                if (j == initialJ)
+                if (j == initialJ) {
                     c1p = c1 % nKths;
-                else
+                } else {
                     c1p = 0;
+                }
 
-                if (j == lastJ)
+                if (j == lastJ) {
                     c2p = c2 % nKths;
-                else
+                } else {
                     c2p = nKths - 1;
+                }
                 zp = z + i * k + j;
 
                 boolean addCells = false;
