@@ -29,8 +29,8 @@ def addlabels(data: data, indices, ticks, y_lim):
     for x, i in enumerate(indices):
         font = white_font
         va = "top"
-        yi = min(y_lim, data.times[i]) / 2
-        if data.times[i] < 0.1 * max_val:
+        yi = min(y_lim, data.times[i]) * 0.35
+        if data.times[i] < 0.15 * max_val:
             yi = (
                 data.times[i] + data.errors_hi_95p[i] + 0.01 * max_val
             )  # place the text slightly above the 95 percentile mark
