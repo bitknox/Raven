@@ -22,14 +22,14 @@ import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.join.results.IJoinResult;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
-import dk.itu.raven.visualizer.RandomColor;
+import dk.itu.raven.visualizer.LengthColor;
 import dk.itu.raven.visualizer.Visualizer;
 import dk.itu.raven.visualizer.VisualizerOptions;
 import dk.itu.raven.visualizer.VisualizerOptionsBuilder;
 
 /**
  * Main class for the raven application
- * 
+ *
  */
 public class Raven {
 
@@ -96,7 +96,7 @@ public class Raven {
             // allowing us to consume the stream and time the join
         } else {
             result.count(); // count will still force the stream to be executed, so the timing of
-                            // the function will work
+            // the function will work
         }
 
         long endJoinNano = System.nanoTime();
@@ -114,10 +114,10 @@ public class Raven {
             builder.setOutputFormat(jct.outputExtension);
             builder.setUseOutput(true);
             builder.setCropToVector(jct.cropToVector);
-            builder.setPrimaryColor(new RandomColor());
+            builder.setPrimaryColor(new LengthColor());
             builder.setDrawFeatures(true);
             builder.setSecondaryColor(Color.BLACK);
-            builder.setUseOriginalColours(true);
+            // builder.setUseOriginalColours(true);
 
             VisualizerOptions options = builder.build();
 
