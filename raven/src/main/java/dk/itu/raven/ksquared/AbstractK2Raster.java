@@ -33,6 +33,8 @@ public abstract class AbstractK2Raster implements Serializable {
 
     protected transient IResultCreator resultCreator;
 
+    private static final long serialVersionUID = 3877697969495519227L;
+
     public void setResultCreator(IResultCreator resultCreator) {
         this.resultCreator = resultCreator;
     }
@@ -330,22 +332,17 @@ public abstract class AbstractK2Raster implements Serializable {
                     }
                 } else {
                     minValp = computeVMin(maxVal, minVal, zp + 1, maxValp);
-                    if (!function.containsOutside(minValp, maxValp)) {
-                        addCells = true;
-                        /* all cells meet the condition in this branch */
+                    if (!function.containsWithin(minValp, maxValp)) {
+                        continue;
                     } else {
-                        if (!function.containsWithin(minValp, maxValp)) {
-                            continue;
-                        } else {
-                            searchValuesInWindow(nKths, r1p, r2p, c1p, c2p, function, maxValp, minValp, zp,
-                                    out, baseXp, baseYp, offset);
-                        }
+                        searchValuesInWindow(nKths, r1p, r2p, c1p, c2p, function, maxValp, minValp, zp,
+                                out, baseXp, baseYp, offset);
                     }
                 }
 
                 if (addCells) {
                     for (int r = r1p + baseYp; r <= r2p + baseYp; r++) {
-                        out.add(new PixelRange(r + offset.getY(), c1p + baseXp + offset.getX(), c2p + baseXp + offset.getX()));
+                        resultCreator.createResults(new PixelRange(r + offset.getY(), c1p + baseXp + offset.getX(), c2p + baseXp + offset.getX()), maxValp, out);
                     }
                 }
             }
