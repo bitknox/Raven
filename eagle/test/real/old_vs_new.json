@@ -14,7 +14,7 @@
                 "args": [
                     "-jar",
                     "-Xmx14g",
-                    "/home/runners/raven-runner-1.0.jar",
+                    "/home/runners/raven-runner-1.0-OLD-JOIN.jar",
                     "-iv",
                     "/home/real/vector/protected_areas/ProtectedArea.shp",
                     "-cl",
