@@ -35,7 +35,7 @@
     <dependency>
       <groupId>com.github.bitknox</groupId>
       <artifactId>Raven</artifactId>
-      <version>1.6.2</version>
+      <version>1.6.2-BUILD-TIME</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

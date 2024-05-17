@@ -7,20 +7,21 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 public class Serializer {
-	public static void serialize(String path, Object obj) throws IOException {
-		FileOutputStream fileOutputStream = new FileOutputStream(path);
-		ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-		objectOutputStream.writeObject(obj);
-		objectOutputStream.flush();
-		objectOutputStream.close();
 
-	}
+    public static void serialize(String path, Object obj) throws IOException {
+        FileOutputStream fileOutputStream = new FileOutputStream(path);
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+        objectOutputStream.writeObject(obj);
+        objectOutputStream.flush();
+        objectOutputStream.close();
 
-	public static Object deserialize(String path) throws IOException, ClassNotFoundException {
-		FileInputStream fileInputStream = new FileInputStream(path);
-		ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-		Object obj = objectInputStream.readObject();
-		objectInputStream.close();
-		return obj;
-	}
+    }
+
+    public static Object deserialize(String path) throws IOException, ClassNotFoundException {
+        FileInputStream fileInputStream = new FileInputStream(path);
+        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+        Object obj = objectInputStream.readObject();
+        objectInputStream.close();
+        return obj;
+    }
 }

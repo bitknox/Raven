@@ -14,4 +14,6 @@ public abstract class AbstractRavenJoin {
     public IJoinResult join() {
         return join(JoinFilterFunctions.acceptAll());
     }
+
+    public abstract long count();
 }

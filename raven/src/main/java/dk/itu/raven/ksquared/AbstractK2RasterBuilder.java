@@ -10,6 +10,7 @@ import dk.itu.raven.util.PrimitiveArrayWrapper;
 import dk.itu.raven.util.matrix.Matrix;
 
 public abstract class AbstractK2RasterBuilder {
+
     protected List<BitMap> t;
     protected int[] pMax;
     protected int[] pMin;
@@ -20,9 +21,9 @@ public abstract class AbstractK2RasterBuilder {
     private int[] nKths;
 
     /**
-     * bulds a K^2 Raster data-structure for an n*m matrix (meaning a 2-dimensional
-     * array with {@code n} rows and {@code m} columns)
-     * 
+     * bulds a K^2 Raster data-structure for an n*m matrix (meaning a
+     * 2-dimensional array with {@code n} rows and {@code m} columns)
+     *
      * @param m the raw matrix data
      */
     public AbstractK2Raster build(Matrix m, int k) {

@@ -1,0 +1,45 @@
+{
+	"name": "Build Times",
+	"benchmarks": [
+		{
+			"name": "Raven",
+			"iterations": 3,
+			"group": [
+				"GLC",
+				"SWF",
+				"Treecover"
+			],
+			"command": {
+				"path": "java",
+				"args": [
+					"-jar",
+					"-Xmx14g",
+					"/home/raven-runner-1.0-BUILD-TIME.jar",
+					"-iv",
+					"/home/square/geom.shp",
+					"-cl",
+					"/home/build-raster-cache/",
+					"-ir",
+					[
+						"/home/glc2000",
+						"/home/woody",
+						"/home/treecover"
+					],
+					"-t",
+					"parallel",
+					"-ts",
+					"2048"
+				]
+			},
+			"environment_options": {
+				"environment_type": "docker",
+				"docker_file_path": "./runners/raven-runner/",
+				"docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+			}
+		}
+	],
+	"colours": {
+		"Raven": "darkred",
+		"Raptor": "darkblue"
+	}
+}

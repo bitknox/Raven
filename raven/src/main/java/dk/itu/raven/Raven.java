@@ -20,6 +20,7 @@ import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.IRasterFilterFunction;
 import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.join.results.IJoinResult;
+import dk.itu.raven.join.results.JoinResult;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.visualizer.RandomColor;
@@ -29,7 +30,7 @@ import dk.itu.raven.visualizer.VisualizerOptionsBuilder;
 
 /**
  * Main class for the raven application
- * 
+ *
  */
 public class Raven {
 
@@ -89,14 +90,16 @@ public class Raven {
             join = api.getJoin(jct.inputRaster, jct.inputVector, cacheOptions,
                     jct.kSize, jct.rTreeMinChildren, jct.rTreeMaxChildren, jct.resultType);
         }
-        IJoinResult result = join.join(function);
+        // IJoinResult result = join.join(function);
+        join.count();
+        IJoinResult result = new JoinResult();
 
         if (jct.outputPath != null) {
             result = result.asMemoryAllocatedResult(); // this allows the visualizer to draw the result while still
             // allowing us to consume the stream and time the join
         } else {
             result.count(); // count will still force the stream to be executed, so the timing of
-                            // the function will work
+            // the function will work
         }
 
         long endJoinNano = System.nanoTime();

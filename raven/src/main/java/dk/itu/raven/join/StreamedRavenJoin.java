@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 import dk.itu.raven.join.results.StreamedJoinResult;
 
 public class StreamedRavenJoin extends AbstractRavenJoin {
+
     private Stream<RavenJoin> ravenJoins;
 
     public StreamedRavenJoin(Stream<RavenJoin> ravenJoins) {
@@ -19,5 +20,10 @@ public class StreamedRavenJoin extends AbstractRavenJoin {
 
     public Stream<RavenJoin> getRavenJoins() {
         return this.ravenJoins;
+    }
+
+    @Override
+    public long count() {
+        return this.ravenJoins.count();
     }
 }

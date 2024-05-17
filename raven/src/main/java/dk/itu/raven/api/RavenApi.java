@@ -13,71 +13,71 @@ import dk.itu.raven.join.StreamedRavenJoin;
 import dk.itu.raven.ksquared.dac.AbstractDAC;
 
 /**
- * Public API for interacting with the raven library safely.
- * Only the methods in this class are intended to be used by the user.
- * However, the user is free to use the other classes in the library if they
- * wish.
+ * Public API for interacting with the raven library safely. Only the methods in
+ * this class are intended to be used by the user. However, the user is free to
+ * use the other classes in the library if they wish.
  */
 public class RavenApi {
-	/**
-	 * constructs a RavenJoin object
-	 * 
-	 * @param rasterPath
-	 * @param vectorPath
-	 * @return
-	 * @throws IOException
-	 */
-	public AbstractRavenJoin getJoin(String rasterPath, String vectorPath, CacheOptions cacheOptions, int kSize,
-			int rTreeMinChildren, int rTreeMaxChildren, ResultType resultType) throws IOException {
-		IRasterReader rasterReader = createRasterReader(rasterPath);
-		ShapefileReader vectorReader = createShapefileReader(vectorPath);
 
-		return InternalApi.getJoin(rasterReader, vectorReader, cacheOptions, kSize, rTreeMinChildren, rTreeMaxChildren,
-				InternalApi.getResultCreator(resultType));
-	}
+    /**
+     * constructs a RavenJoin object
+     *
+     * @param rasterPath
+     * @param vectorPath
+     * @return
+     * @throws IOException
+     */
+    public AbstractRavenJoin getJoin(String rasterPath, String vectorPath, CacheOptions cacheOptions, int kSize,
+            int rTreeMinChildren, int rTreeMaxChildren, ResultType resultType) throws IOException {
+        IRasterReader rasterReader = createRasterReader(rasterPath);
+        ShapefileReader vectorReader = createShapefileReader(vectorPath);
 
-	/**
-	 * Joins the vector and raster data using the k2-raster and rtree as a stream
-	 * 
-	 * @param k2Raster
-	 * @param rtree
-	 * @param features
-	 * @return a stream of results of the join
-	 */
-	public StreamedRavenJoin getStreamedJoin(String rasterPath, String vectorPath,
-			int widthStep, int heightStep, boolean parallel, CacheOptions cacheOptions, int kSize, int rTreeMinChildren,
-			int rTreeMaxChildren, ResultType resultType) throws IOException {
-		IRasterReader rasterReader = createRasterReader(rasterPath);
-		ShapefileReader vectorReader = createShapefileReader(vectorPath);
+        return InternalApi.getJoin(rasterReader, vectorReader, cacheOptions, kSize, rTreeMinChildren, rTreeMaxChildren,
+                InternalApi.getResultCreator(resultType));
+    }
 
-		return InternalApi.getStreamedJoin(rasterReader, vectorReader, widthStep, heightStep, parallel, cacheOptions,
-				kSize, rTreeMinChildren, rTreeMaxChildren, InternalApi.getResultCreator(resultType));
-	}
+    /**
+     * Joins the vector and raster data using the k2-raster and rtree as a
+     * stream
+     *
+     * @param k2Raster
+     * @param rtree
+     * @param features
+     * @return a stream of results of the join
+     */
+    public StreamedRavenJoin getStreamedJoin(String rasterPath, String vectorPath,
+            int widthStep, int heightStep, boolean parallel, CacheOptions cacheOptions, int kSize, int rTreeMinChildren,
+            int rTreeMaxChildren, ResultType resultType) throws IOException {
+        IRasterReader rasterReader = createRasterReader(rasterPath);
+        ShapefileReader vectorReader = createShapefileReader(vectorPath);
 
-	/**
-	 * Reads the raster data and returns a FileRasterReader
-	 * 
-	 * @param rasterPath
-	 * @return the raster reader
-	 * @throws IOException
-	 */
-	public IRasterReader createRasterReader(String rasterPath) throws IOException {
-		return new MultiFileRasterReader(new File(rasterPath));
-	}
+        return InternalApi.getStreamedJoin(rasterReader, vectorReader, widthStep, heightStep, parallel, cacheOptions,
+                kSize, rTreeMinChildren, rTreeMaxChildren, InternalApi.getResultCreator(resultType));
+    }
 
-	/**
-	 * Reads the shapefile data and returns a ShapefileReader
-	 * 
-	 * @param vectorPath the path to the shapefile
-	 * @param transform  the transform to use for the shapefile
-	 * @return the shapefile reader
-	 */
-	public ShapefileReader createShapefileReader(String vectorPath) {
-		return new ShapefileReader(vectorPath);
-	}
+    /**
+     * Reads the raster data and returns a FileRasterReader
+     *
+     * @param rasterPath
+     * @return the raster reader
+     * @throws IOException
+     */
+    public IRasterReader createRasterReader(String rasterPath) throws IOException {
+        return new MultiFileRasterReader(new File(rasterPath));
+    }
 
-	public void setDACFraction(int size) {
-		AbstractDAC.FACT_RANK = size;
-	}
+    /**
+     * Reads the shapefile data and returns a ShapefileReader
+     *
+     * @param vectorPath the path to the shapefile
+     * @param transform the transform to use for the shapefile
+     * @return the shapefile reader
+     */
+    public ShapefileReader createShapefileReader(String vectorPath) {
+        return new ShapefileReader(vectorPath);
+    }
 
+    public void setDACFraction(int size) {
+        AbstractDAC.FACT_RANK = size;
+    }
 }
