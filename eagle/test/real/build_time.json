@@ -14,16 +14,16 @@
 				"args": [
 					"-jar",
 					"-Xmx14g",
-					"/home/raven-runner-1.0-BUILD-TIME.jar",
+					"/home/runners/raven-runner-1.0-BUILD-TIME.jar",
 					"-iv",
-					"/home/square/geom.shp",
+					"/home/real/vector/boundaries/ne_10m_admin_0_countries.shp",
 					"-cl",
 					"/home/build-raster-cache/",
 					"-ir",
 					[
-						"/home/glc2000",
-						"/home/woody",
-						"/home/treecover"
+						"/home/real/raster/glc2000",
+						"/home/real/raster/woody",
+						"/home/real/raster/treecover"
 					],
 					"-t",
 					"parallel",
@@ -34,7 +34,7 @@
 			"environment_options": {
 				"environment_type": "docker",
 				"docker_file_path": "./runners/raven-runner/",
-				"docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+				"docker_mount_path": "/home/joinpro/data"
 			}
 		}
 	],
