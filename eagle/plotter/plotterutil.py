@@ -20,7 +20,7 @@ def addlabels(data: data, indices, ticks, y_lim):
     max_val = 0
 
     for i in indices:
-        max_val = max(max_val, data.times[i])
+        max_val = max(max_val, data.times[i] + data.errors_hi[i])
 
     if y_lim is None:
         y_lim = max_val
@@ -30,7 +30,7 @@ def addlabels(data: data, indices, ticks, y_lim):
         font = white_font
         va = "top"
         yi = min(y_lim, data.times[i]) * 0.35
-        if data.times[i] < 0.15 * max_val:
+        if data.times[i] < 0.13 * max_val:
             yi = (
                 data.times[i] + data.errors_hi_95p[i] + 0.01 * max_val
             )  # place the text slightly above the 95 percentile mark
@@ -73,7 +73,7 @@ def addlabels(data: data, indices, ticks, y_lim):
 
         if data.times[i] > 60:
             text = "{:0.0f} min\n {:0.0f} s".format(
-                data.times[i] / 60, data.times[i] % 60
+                data.times[i] // 60, data.times[i] % 60
             )
 
         plt.annotate(
@@ -131,7 +131,7 @@ def get_unique_groups(indices, data):
 
 def setup_plot(data, width, padding, groups_set):
     num_groups = len(groups_set)
-    _, ax = plt.subplots(figsize=(width, 5))
+    _, ax = plt.subplots(figsize=(width, 5.5))
 
     ax.margins(padding / width, 0.1)
 
