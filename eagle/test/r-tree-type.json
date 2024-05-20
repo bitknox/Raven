@@ -1,5 +1,5 @@
 {
-	"name": "Bit Depth",
+	"name": "rtree - r*tree - strtree",
 	"benchmarks": [
 		{
 			"name": "Raven",
