@@ -1,10 +1,10 @@
 {
-	"name": "rtree - r*tree - strtree",
+	"name": "rtree - rstartree - strtree",
 	"benchmarks": [
 		{
 			"name": "rtree",
 			"iterations": 5,
-			"group": ["rtree", "r*tree", "strtree"],
+			"group": ["rtree", "rstartree", "strtree"],
 			"command": {
 				"path": "java",
 				"args": [
@@ -33,14 +33,14 @@
 			}
 		},
 		{
-			"name": "r*tree",
+			"name": "rstartree",
 			"iterations": 5,
-			"group": ["rtree", "r*tree", "strtree"],
+			"group": ["rtree", "rstartree", "strtree"],
 			"command": {
 				"path": "java",
 				"args": [
 					"-jar",
-					"/home/runners/raven-runner-1.0-r*tree.jar",
+					"/home/runners/raven-runner-1.0-rstartree.jar",
 					"-iv",
 					[
 						"/home/real/vector/boundaries/ne_10m_admin_0_countries.shp",
@@ -66,7 +66,7 @@
 		{
 			"name": "strtree",
 			"iterations": 5,
-			"group": ["rtree", "r*tree", "strtree"],
+			"group": ["rtree", "rstartree", "strtree"],
 			"command": {
 				"path": "java",
 				"args": [
@@ -97,7 +97,7 @@
 	],
 	"colours": {
 		"rtree": "darkred",
-		"r*tree": "darkgreen",
+		"rstartree": "darkgreen",
 		"strtree": "darkblue"
 	}
 }
