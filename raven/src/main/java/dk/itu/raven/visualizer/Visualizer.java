@@ -398,7 +398,7 @@ public class Visualizer {
                     setColor(graphics,
                             new Color(indexColourModel.get().getRGB(value.getValue().get().intValue())));
                 } else {
-                    setColor(graphics, options.primaryColor, ((PixelRangeValue) value).x2 - ((PixelRangeValue) value).x1);
+                    setColor(graphics, options.primaryColor, ((PixelRangeValue) value).x2 - ((PixelRangeValue) value).x1 + 1);
                 }
                 value.draw(graphics);
             }
