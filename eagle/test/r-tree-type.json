@@ -2,7 +2,7 @@
 	"name": "rtree - r*tree - strtree",
 	"benchmarks": [
 		{
-			"name": "Raven",
+			"name": "rtree",
 			"iterations": 5,
 			"group": ["rtree", "r*tree", "strtree"],
 			"command": {
@@ -33,7 +33,7 @@
 			}
 		},
 		{
-			"name": "Raven",
+			"name": "r*tree",
 			"iterations": 5,
 			"group": ["rtree", "r*tree", "strtree"],
 			"command": {
@@ -64,7 +64,7 @@
 			}
 		},
 		{
-			"name": "Raven",
+			"name": "strtree",
 			"iterations": 5,
 			"group": ["rtree", "r*tree", "strtree"],
 			"command": {
