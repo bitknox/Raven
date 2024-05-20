@@ -28,107 +28,107 @@ import dk.itu.raven.util.Logger.LogLevel;
 
 public class MultiFileRasterReader implements IRasterReader {
 
-	private Stream<ImageIORasterReader> readers;
-	private ImageMetadata metadata;
-	private File directory;
+    private Stream<ImageIORasterReader> readers;
+    private ImageMetadata metadata;
+    private File directory;
 
-	public MultiFileRasterReader(File directory) throws IOException {
-		this.directory = directory;
-		List<File> files = Arrays.asList(directory.listFiles());
-		ImageIORasterReader reader = new ImageIORasterReader(files.get(0));
-		this.metadata = reader.getImageMetadata();
-		Stream<ImageIORasterReader> singleStream = Stream.of(reader);
-		Stream<ImageIORasterReader> stream = files.subList(1, files.size()).stream().map(f -> {
-			if (f.isDirectory()) {
-				try {
-					return new ImageIORasterReader(f);
-				} catch (IOException e) {
-					Logger.log("Could not create reader for" + f.getAbsolutePath() + ". Skipping Image",
-							LogLevel.ERROR);
-					e.printStackTrace();
-				}
-			}
-			return null;
-		});
+    public MultiFileRasterReader(File directory) throws IOException {
+        this.directory = directory;
+        List<File> files = Arrays.asList(directory.listFiles());
+        ImageIORasterReader reader = new ImageIORasterReader(files.get(0));
+        this.metadata = reader.getImageMetadata();
+        Stream<ImageIORasterReader> singleStream = Stream.of(reader);
+        Stream<ImageIORasterReader> stream = files.subList(1, files.size()).stream().map(f -> {
+            if (f.isDirectory()) {
+                try {
+                    return new ImageIORasterReader(f);
+                } catch (IOException e) {
+                    Logger.log("Could not create reader for" + f.getAbsolutePath() + ". Skipping Image",
+                            LogLevel.ERROR);
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        });
 
-		this.readers = Stream.concat(singleStream, stream);
-	}
+        this.readers = Stream.concat(singleStream, stream);
+    }
 
-	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
-			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree, VectorData vectorData)
-			throws IOException {
-		return readers.filter(r -> r != null)
-				.map(reader -> {
-					try {
-						CoordinateReferenceSystem targetCRS = reader.getCRS();
-						TFWFormat g2m = reader.getG2M();
-						MathTransform transform = Reprojector.calculateFullTransform(vectorData.getCRS(), targetCRS,
-								g2m);
-						MathTransform inverseTransform = transform.inverse();
+    public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
+            Optional<RasterCache<CachedRasterStructure>> cache, RTree<Object, Geometry> rtree, VectorData vectorData)
+            throws IOException {
+        return readers.filter(r -> r != null)
+                .map(reader -> {
+                    try {
+                        CoordinateReferenceSystem targetCRS = reader.getCRS();
+                        TFWFormat g2m = reader.getG2M();
+                        MathTransform transform = Reprojector.calculateFullTransform(vectorData.getCRS(), targetCRS,
+                                g2m);
+                        MathTransform inverseTransform = transform.inverse();
 
-						double[] topLeftPixel = new double[] { 0, 0 };
-						double[] bottomRightPixel = new double[] { reader.getImageMetadata().getWidth(),
-								reader.getImageMetadata().getHeight() };
-						double[] topLeftLatLong = new double[2];
-						double[] bottomRightLatLong = new double[2];
+                        double[] topLeftPixel = new double[]{0, 0};
+                        double[] bottomRightPixel = new double[]{reader.getImageMetadata().getWidth(),
+                            reader.getImageMetadata().getHeight()};
+                        double[] topLeftLatLong = new double[2];
+                        double[] bottomRightLatLong = new double[2];
 
-						inverseTransform.transform(topLeftPixel, 0, topLeftLatLong, 0, 1);
-						inverseTransform.transform(bottomRightPixel, 0, bottomRightLatLong, 0, 1);
+                        inverseTransform.transform(topLeftPixel, 0, topLeftLatLong, 0, 1);
+                        inverseTransform.transform(bottomRightPixel, 0, bottomRightLatLong, 0, 1);
 
-						Logger.log("Top left: " + topLeftLatLong[0] + ", " + topLeftLatLong[1], LogLevel.DEBUG);
-						Logger.log("Bottom right: " + bottomRightLatLong[0] + ", " + bottomRightLatLong[1],
-								LogLevel.DEBUG);
+                        Logger.log("Top left: " + topLeftLatLong[0] + ", " + topLeftLatLong[1], LogLevel.DEBUG);
+                        Logger.log("Bottom right: " + bottomRightLatLong[0] + ", " + bottomRightLatLong[1],
+                                LogLevel.DEBUG);
 
-						Rectangle bounds = Geometries.rectangle(topLeftLatLong[0], bottomRightLatLong[1],
-								bottomRightLatLong[0], topLeftLatLong[1]);
+                        Rectangle bounds = Geometries.rectangle(topLeftLatLong[0], bottomRightLatLong[1],
+                                bottomRightLatLong[0], topLeftLatLong[1]);
 
-						Logger.log("Bounds: " + bounds.x1() + ", " + bounds.y1() + ", " + bounds.x2() + ", "
-								+ bounds.y2(), Logger.LogLevel.INFO);
+                        Logger.log("Bounds: " + bounds.x1() + ", " + bounds.y1() + ", " + bounds.x2() + ", "
+                                + bounds.y2(), Logger.LogLevel.INFO);
 
-						Iterable<Entry<String, Geometry>> overlapping = rtree.search(bounds);
-						if (!overlapping.iterator().hasNext()) {
-							Logger.log("No overlapping data found, skipping image", LogLevel.DEBUG);
-							return null;
-						}
-						RTree<String, Geometry> rtree2 = RTree.star().maxChildren(6).create();
+                        Iterable<Entry<Object, Geometry>> overlapping = rtree.search(bounds);
+                        if (!overlapping.iterator().hasNext()) {
+                            Logger.log("No overlapping data found, skipping image", LogLevel.DEBUG);
+                            return null;
+                        }
+                        RTree<Object, Geometry> rtree2 = RTree.star().maxChildren(6).create();
 
-						for (Entry<String, Geometry> entry : overlapping) {
-							rtree2 = rtree2.add(null, ((Polygon) entry.geometry()).transform(transform));
-						}
+                        for (Entry<Object, Geometry> entry : overlapping) {
+                            rtree2 = rtree2.add(null, ((Polygon) entry.geometry()).transform(transform));
+                        }
 
-						Logger.log(rtree2.root().get().geometry().mbr(), LogLevel.DEBUG);
+                        Logger.log(rtree2.root().get().geometry().mbr(), LogLevel.DEBUG);
 
-						return reader.rasterPartitionStream(widthStep, heightStep,
-								cache, rtree2, null).parallel();
-					} catch (IOException e) {
-						Logger.log("Unable to read raster data, skipping image",
-								LogLevel.ERROR);
-					} catch (TransformException e) {
-						Logger.log("Unable to transform vector data to pixel CRS, skipping image",
-								LogLevel.ERROR);
-					} catch (NoninvertibleTransformException e) {
-						Logger.log("Unable to transform from image CRS to pixel coordinates, skipping image",
-								LogLevel.ERROR);
-					} catch (FactoryException e) {
-						Logger.log("Unable to transform from vector CRS to raster CRS, skipping image",
-								LogLevel.ERROR);
-					}
-					return null;
-				}).filter(c -> c != null).reduce(Stream::concat).orElse(Stream.empty());
-	}
+                        return reader.rasterPartitionStream(widthStep, heightStep,
+                                cache, rtree2, null).parallel();
+                    } catch (IOException e) {
+                        Logger.log("Unable to read raster data, skipping image",
+                                LogLevel.ERROR);
+                    } catch (TransformException e) {
+                        Logger.log("Unable to transform vector data to pixel CRS, skipping image",
+                                LogLevel.ERROR);
+                    } catch (NoninvertibleTransformException e) {
+                        Logger.log("Unable to transform from image CRS to pixel coordinates, skipping image",
+                                LogLevel.ERROR);
+                    } catch (FactoryException e) {
+                        Logger.log("Unable to transform from vector CRS to raster CRS, skipping image",
+                                LogLevel.ERROR);
+                    }
+                    return null;
+                }).filter(c -> c != null).reduce(Stream::concat).orElse(Stream.empty());
+    }
 
-	@Override
-	public ImageMetadata getImageMetadata() throws IOException {
-		return this.metadata;
-	}
+    @Override
+    public ImageMetadata getImageMetadata() throws IOException {
+        return this.metadata;
+    }
 
-	@Override
-	public Optional<String> getDirectoryName() {
-		return Optional.of(directory.getName());
-	}
+    @Override
+    public Optional<String> getDirectoryName() {
+        return Optional.of(directory.getName());
+    }
 
-	@Override
-	public Optional<File> getDirectory() {
-		return Optional.of(directory);
-	}
+    @Override
+    public Optional<File> getDirectory() {
+        return Optional.of(directory);
+    }
 }

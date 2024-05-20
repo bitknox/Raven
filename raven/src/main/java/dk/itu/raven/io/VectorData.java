@@ -10,17 +10,18 @@ import com.github.davidmoten.rtree2.geometry.Geometry;
 import dk.itu.raven.io.ShapefileReader.ShapeFileBounds;
 
 public class VectorData {
-    private List<Entry<String, Geometry>> features;
+
+    private List<Entry<Object, Geometry>> features;
     private ShapeFileBounds bounds;
     private CoordinateReferenceSystem crs;
 
-    public VectorData(List<Entry<String, Geometry>> features, ShapeFileBounds bounds, CoordinateReferenceSystem crs) {
+    public VectorData(List<Entry<Object, Geometry>> features, ShapeFileBounds bounds, CoordinateReferenceSystem crs) {
         this.features = features;
         this.bounds = bounds;
         this.crs = crs;
     }
 
-    public List<Entry<String, Geometry>> getFeatures() {
+    public List<Entry<Object, Geometry>> getFeatures() {
         return features;
     }
 
