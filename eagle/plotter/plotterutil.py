@@ -254,7 +254,7 @@ def draw_line(indices, data: data, y_lim):
 
     if y_lim is None:
         ax.margins(None, 0.15)
-    matches = [(i, re.match("[0-9]+", data.groups[i])) for i in indices]
+    matches = [(i, re.match("[0-9.]+", data.groups[i])) for i in indices]
 
     if not all(match for _, match in matches):
         plt.plot([data.groups[i] for i in indices], [data.times[i] for i in indices])
@@ -264,7 +264,7 @@ def draw_line(indices, data: data, y_lim):
             float(data.groups[i][match.span()[0] : match.span()[1]])
             for i, match in matches
         ]
-        plt.plot(numbers, [data.times[i] for i in indices])
+        plt.plot(numbers, [data.times[i] for i in indices], color="darkred")
 
     plt.ylim((0, y_lim))
 
