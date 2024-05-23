@@ -13,6 +13,7 @@
 				"path": "java",
 				"args": [
 					"-jar",
+					"-Xmx14g",
 					"/home/runners/raven-runner-1.0-rtree.jar",
 					"-iv",
 					[
@@ -52,6 +53,7 @@
 				"path": "java",
 				"args": [
 					"-jar",
+					"-Xmx14g",
 					"/home/runners/raven-runner-1.0-rstartree.jar",
 					"-iv",
 					[
@@ -91,6 +93,7 @@
 				"path": "java",
 				"args": [
 					"-jar",
+					"-Xmx14g",
 					"/home/runners/raven-runner-1.0-strtree.jar",
 					"-iv",
 					[
