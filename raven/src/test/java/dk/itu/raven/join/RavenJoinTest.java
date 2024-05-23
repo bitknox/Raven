@@ -12,6 +12,7 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.locationtech.jts.geom.Coordinate;
 
 import com.github.davidmoten.rtree2.RTree;
@@ -35,6 +36,7 @@ import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RandomMatrix;
 
 public class RavenJoinTest {
+
     @Test
     public void testExtractCellsPolygon() {
         List<Point> points = new ArrayList<>();
@@ -114,28 +116,30 @@ public class RavenJoinTest {
     }
 
     @ParameterizedTest
-    @EnumSource(ResultType.class)
+    @MethodSource("dk.itu.raven.Util#getResultTypes")
     public void testRavenJoin(ResultType type) {
         int[][] matrix = new int[16][16];
         int fillValue = 42; // You can change this to any integer value
-        for (int i = 0; i < 16; i++)
-            for (int j = 0; j < 16; j++)
+        for (int i = 0; i < 16; i++) {
+            for (int j = 0; j < 16; j++) {
                 matrix[i][j] = fillValue;
+            }
+        }
         matrix[6][6] = 0;
         for (int k = 2; k <= 10; k++) {
             AbstractK2Raster k2 = new K2RasterBuilder().build(new ArrayMatrix(matrix, 16, 16), k);
             k2.setResultCreator(InternalApi.getResultCreator(type));
 
             RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
-            Polygon p = new Polygon(new Coordinate[] { new Coordinate(1, 1), new Coordinate(3, 1), new Coordinate(3, 3),
-                    new Coordinate(1, 3) });
+            Polygon p = new Polygon(new Coordinate[]{new Coordinate(1, 1), new Coordinate(3, 1), new Coordinate(3, 3),
+                new Coordinate(1, 3)});
             Polygon p2 = new Polygon(
-                    new Coordinate[] { new Coordinate(5, 5), new Coordinate(10, 5), new Coordinate(10, 10),
-                            new Coordinate(5, 10) });
-            PixelRange[] expectedRanges = new PixelRange[] { new PixelRange(1, 1, 2), new PixelRange(2, 1, 2) };
-            PixelRange[] expectedRanges2 = new PixelRange[] { new PixelRange(5, 5, 9), new PixelRange(6, 5, 5),
-                    new PixelRange(6, 7, 9), new PixelRange(7, 5, 9), new PixelRange(8, 5, 9),
-                    new PixelRange(9, 5, 9) };
+                    new Coordinate[]{new Coordinate(5, 5), new Coordinate(10, 5), new Coordinate(10, 10),
+                        new Coordinate(5, 10)});
+            PixelRange[] expectedRanges = new PixelRange[]{new PixelRange(1, 1, 2), new PixelRange(2, 1, 2)};
+            PixelRange[] expectedRanges2 = new PixelRange[]{new PixelRange(5, 5, 9), new PixelRange(6, 5, 5),
+                new PixelRange(6, 7, 9), new PixelRange(7, 5, 9), new PixelRange(8, 5, 9),
+                new PixelRange(9, 5, 9)};
             rtree = rtree.add(null, p);
             rtree = rtree.add(null, p2);
 
@@ -191,10 +195,12 @@ public class RavenJoinTest {
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
         for (PixelRange range : ranges) {
-            if (range.row < start)
+            if (range.row < start) {
                 continue;
-            if (range.row > end)
+            }
+            if (range.row > end) {
                 break;
+            }
             min = Math.min(min, range.x1 - offsetX);
             max = Math.max(max, range.x2 - offsetX);
         }
@@ -204,10 +210,12 @@ public class RavenJoinTest {
     private int countRanges(List<PixelRange> ranges, int start, int end) {
         int count = 0;
         for (PixelRange range : ranges) {
-            if (range.row < start)
+            if (range.row < start) {
                 continue;
-            if (range.row > end)
+            }
+            if (range.row > end) {
                 break;
+            }
             count++;
         }
         return count;
@@ -225,8 +233,9 @@ public class RavenJoinTest {
         Random r = new Random(42);
         int offsetX = r.nextInt(n);
         for (int i = 0; i < n; i++) {
-            if (r.nextDouble() > 0.5)
+            if (r.nextDouble() > 0.5) {
                 continue;
+            }
             int x1 = r.nextInt(n);
             int x2 = r.nextInt(n);
             if (x1 > x2) {
@@ -267,8 +276,9 @@ public class RavenJoinTest {
         int max = 0;
         Random r = new Random(42);
         for (int i = 0; i < n; i++) {
-            if (r.nextDouble() > 0.5)
+            if (r.nextDouble() > 0.5) {
                 continue;
+            }
             int x1 = r.nextInt(n);
             int x2 = r.nextInt(n);
             if (x1 > x2) {

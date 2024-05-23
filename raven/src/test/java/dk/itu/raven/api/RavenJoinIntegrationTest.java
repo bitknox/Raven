@@ -1,13 +1,12 @@
 package dk.itu.raven.api;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.github.davidmoten.rtree2.geometry.Geometries;
 
@@ -21,17 +20,18 @@ import dk.itu.raven.io.commandline.ResultType;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.join.results.IResult;
+import dk.itu.raven.join.results.IResult.Pixel;
 import dk.itu.raven.join.results.IResultCreator;
 import dk.itu.raven.join.results.JoinResult;
 import dk.itu.raven.join.results.JoinResultItem;
-import dk.itu.raven.join.results.IResult.Pixel;
 import dk.itu.raven.util.matrix.ArrayMatrix;
 import dk.itu.raven.util.matrix.Matrix;
 import dk.itu.raven.util.matrix.RandomMatrix;
 
 public class RavenJoinIntegrationTest {
+
     @ParameterizedTest
-    @EnumSource(ResultType.class)
+    @MethodSource("dk.itu.raven.Util#getResultTypes")
     public void testRavenJoinWithFilter(ResultType type) throws IOException {
         int width = 2000;
         int height = 2000;
@@ -77,7 +77,7 @@ public class RavenJoinIntegrationTest {
     }
 
     @ParameterizedTest
-    @EnumSource(ResultType.class)
+    @MethodSource("dk.itu.raven.Util#getResultTypes")
     public void testRavenJoinWithFilter2(ResultType type) throws IOException {
         int width = 2000;
         int height = 2000;
@@ -125,7 +125,7 @@ public class RavenJoinIntegrationTest {
     }
 
     @ParameterizedTest
-    @EnumSource(ResultType.class)
+    @MethodSource("dk.itu.raven.Util#getResultTypes")
     public void testRavenJoinWithSampleFilter(ResultType type) throws IOException {
         int width = 2000;
         int height = 2000;
@@ -154,9 +154,9 @@ public class RavenJoinIntegrationTest {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 m[x][y] = (mat1.get(y, x) << 16) + (mat2.get(y, x) << 8) + (mat3.get(y, x));
-                expected[x][y] = mat1.get(y, x) >= filterLow1 && mat1.get(y, x) <= filterHigh1 &&
-                        mat2.get(y, x) >= filterLow2 && mat2.get(y, x) <= filterHigh2 &&
-                        mat3.get(y, x) >= filterLow3 && mat3.get(y, x) <= filterHigh3;
+                expected[x][y] = mat1.get(y, x) >= filterLow1 && mat1.get(y, x) <= filterHigh1
+                        && mat2.get(y, x) >= filterLow2 && mat2.get(y, x) <= filterHigh2
+                        && mat3.get(y, x) >= filterLow3 && mat3.get(y, x) <= filterHigh3;
             }
         }
 
@@ -173,7 +173,7 @@ public class RavenJoinIntegrationTest {
         JoinResult result = join
                 .join(JoinFilterFunctions.multiSampleRangeFilter(
                         Arrays.asList(filterLow1, filterHigh1, filterLow2, filterHigh2, filterLow3, filterHigh3),
-                        new int[] { 8, 8, 8 }, 24))
+                        new int[]{8, 8, 8}, 24))
                 .asMemoryAllocatedResult();
 
         for (JoinResultItem item : result) {
