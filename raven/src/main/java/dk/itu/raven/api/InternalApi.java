@@ -40,7 +40,7 @@ public class InternalApi {
 
     /**
      * Creates a stream of join chunks containing the raster and rtree data.
-     * 
+     *
      * @param geometries
      * @param rasterStream
      * @return a stream of the join chunks
@@ -51,13 +51,14 @@ public class InternalApi {
             int heightStep, CacheOptions cacheOptions, int kSize, int rTreeMinChildren, int rTreeMaxChildren,
             IResultCreator resultCreator)
             throws IOException {
-        if (cacheOptions.isCaching)
+        if (cacheOptions.isCaching) {
             cacheOptions.isCaching = rasterReader.getDirectoryName().isPresent();
+        }
 
         // load geometries from shapefile
         VectorData geometries = featureReader.readShapefile();
 
-        RTree<String, Geometry> rtree = generateRTree(geometries.getFeatures(), rTreeMinChildren, rTreeMaxChildren);
+        RTree<Object, Geometry> rtree = generateRTree(geometries.getFeatures(), rTreeMinChildren, rTreeMaxChildren);
 
         if (cacheOptions.isCaching) {
             // create a cache for the raster structures
@@ -111,7 +112,7 @@ public class InternalApi {
 
     /**
      * Generates a k2-raster structure from the raster data
-     * 
+     *
      * @param rasterData
      * @return the k2-raster
      */
@@ -127,15 +128,17 @@ public class InternalApi {
 
     /**
      * Generates a R* tree from the vector data
-     * 
+     *
      * @param geometries the geometires that should be included in the R-tree
-     * @param minChildren minimum children, this parameter is passed on to the R-tree
-     * @param maxChildren maximum children, this parameter is passed on to the R-tree
+     * @param minChildren minimum children, this parameter is passed on to the
+     * R-tree
+     * @param maxChildren maximum children, this parameter is passed on to the
+     * R-tree
      * @return the R* tree
      */
-    public static RTree<String, Geometry> generateRTree(List<Entry<String, Geometry>> geometries, int minChildren,
+    public static RTree<Object, Geometry> generateRTree(List<Entry<Object, Geometry>> geometries, int minChildren,
             int maxChildren) {
-        RTree<String, Geometry> rtree = RTree.star().minChildren(minChildren).maxChildren(maxChildren)
+        RTree<Object, Geometry> rtree = RTree.star().minChildren(minChildren).maxChildren(maxChildren)
                 .create(geometries);
         return rtree;
     }

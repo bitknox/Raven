@@ -14,13 +14,13 @@ import dk.itu.raven.join.SpatialDataChunk;
 
 public interface IRasterReader {
 
-	public ImageMetadata getImageMetadata() throws IOException;
+    public ImageMetadata getImageMetadata() throws IOException;
 
-	public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
-			Optional<RasterCache<CachedRasterStructure>> cache, RTree<String, Geometry> rtree, VectorData vectorData)
-			throws IOException;
+    public Stream<SpatialDataChunk> rasterPartitionStream(int widthStep, int heightStep,
+            Optional<RasterCache<CachedRasterStructure>> cache, RTree<Object, Geometry> rtree, VectorData vectorData)
+            throws IOException;
 
-	public Optional<String> getDirectoryName();
+    public Optional<String> getDirectoryName();
 
-	public Optional<File> getDirectory();
+    public Optional<File> getDirectory();
 }

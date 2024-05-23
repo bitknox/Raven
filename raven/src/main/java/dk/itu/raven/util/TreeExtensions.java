@@ -12,37 +12,39 @@ import com.github.davidmoten.rtree2.geometry.Rectangle;
 
 /**
  * A class that provides extensions for the RTree library.
- * 
+ *
  */
 public class TreeExtensions {
-    public static Iterable<Node<String, Geometry>> getChildren(Node<String, Geometry> node) {
+
+    public static <T, S extends Geometry> Iterable<Node<T, S>> getChildren(Node<T, S> node) {
         if (node instanceof NonLeaf) {
-            return ((NonLeaf<String, Geometry>) node).children();
+            return ((NonLeaf<T, S>) node).children();
         } else {
-            List<Node<String, Geometry>> res = new ArrayList<>();
+            List<Node<T, S>> res = new ArrayList<>();
             res.add(node);
             return res;
         }
     }
 
-    public static boolean isLeaf(Node<String, Geometry> node) {
+    public static <T, S extends Geometry> boolean isLeaf(Node<T, S> node) {
         return node instanceof Leaf;
     }
 
-    public static boolean isNonLeaf(Node<String, Geometry> node) {
+    public static <T, S extends Geometry> boolean isNonLeaf(Node<T, S> node) {
         return node instanceof NonLeaf;
     }
 
-    public static boolean intersectsOne(Node<String, Geometry> node, Rectangle rect) {
+    public static <T, S extends Geometry> boolean intersectsOne(Node<T, S> node, Rectangle rect) {
         if (node.geometry().intersects(rect)) {
             if (isLeaf(node)) {
-                for (Entry<String, Geometry> entry : ((Leaf<String, Geometry>) node).entries()) {
-                    if (entry.geometry().intersects(rect))
+                for (Entry<T, S> entry : ((Leaf<T, S>) node).entries()) {
+                    if (entry.geometry().intersects(rect)) {
                         return true;
+                    }
                 }
                 return false;
             } else {
-                for (Node<String, Geometry> child : ((NonLeaf<String, Geometry>) node).children()) {
+                for (Node<T, S> child : ((NonLeaf<T, S>) node).children()) {
                     if (intersectsOne(child, rect)) {
                         return true;
                     }

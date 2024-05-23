@@ -1,10 +1,10 @@
 package dk.itu.raven.join;
 
 import java.io.File;
+import java.util.Optional;
 
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
-import java.util.Optional;
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometry;
 
@@ -13,8 +13,9 @@ import dk.itu.raven.io.TFWFormat;
 import dk.itu.raven.util.matrix.Matrix;
 
 public class SpatialDataChunk {
+
     private Matrix matrix;
-    private RTree<String, Geometry> tree;
+    private RTree<Object, Geometry> tree;
 
     private String name;
     private Offset<Integer> offset;
@@ -29,7 +30,7 @@ public class SpatialDataChunk {
         this.matrix = matrix;
     }
 
-    public void setTree(RTree<String, Geometry> tree) {
+    public void setTree(RTree<Object, Geometry> tree) {
         this.tree = tree;
     }
 
@@ -57,7 +58,7 @@ public class SpatialDataChunk {
         return matrix;
     }
 
-    public RTree<String, Geometry> getTree() {
+    public RTree<Object, Geometry> getTree() {
         return tree;
     }
 

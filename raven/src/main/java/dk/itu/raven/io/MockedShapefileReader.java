@@ -11,6 +11,7 @@ import com.github.davidmoten.rtree2.geometry.Geometry;
 import dk.itu.raven.geometry.Polygon;
 
 public class MockedShapefileReader extends ShapefileReader {
+
     private List<Polygon> polygons;
 
     public MockedShapefileReader(List<Polygon> polygons) {
@@ -22,7 +23,7 @@ public class MockedShapefileReader extends ShapefileReader {
     @Override
     public VectorData readShapefile()
             throws IOException {
-        List<Entry<String, Geometry>> entries = new ArrayList<>();
+        List<Entry<Object, Geometry>> entries = new ArrayList<>();
         for (Polygon poly : polygons) {
             entries.add(Entries.entry(null, poly));
         }
