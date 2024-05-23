@@ -1,0 +1,43 @@
+{
+    "name": "Result Creation time - Treecover/Boundaries",
+    "benchmarks": [
+        {
+            "name": "Raven",
+            "iterations": 3,
+            "group": [
+                "No Results",
+                "Range-Values"
+            ],
+            "command": {
+                "path": "java",
+                "args": [
+                    "-jar",
+                    "/home/raven-runner-1.0.jar",
+                    "-iv",
+                    "/home/boundaries/ne_10m_admin_0_countries.shp",
+                    "-ir",
+                    "/home/treecover",
+                    "-t",
+                    "parallel",
+                    "-ts",
+                    "2048",
+                    "-cl",
+                    "/home/caches",
+                    "-rt",
+                    [
+                        "NONE",
+                        "RANGEVALUE"
+                    ]
+                ]
+            },
+            "environment_options": {
+                "environment_type": "docker",
+                "docker_file_path": "./runners/raven-runner/",
+                "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+            }
+        }
+    ],
+    "colours": {
+        "Raven": "darkred"
+    }
+}
