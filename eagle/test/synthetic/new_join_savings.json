@@ -1,0 +1,113 @@
+{
+    "name": "Join Time - Old vs New",
+    "benchmarks": [
+        {
+            "name": "Old Raven",
+            "iterations": 30,
+            "group": [
+                "400 pixels",
+                "800 pixels",
+                "1200 pixels",
+                "1600 pixels",
+                "2000 pixels",
+                "2400 pixels",
+                "2800 pixels",
+                "3200 pixels",
+                "3600 pixels",
+                "4000 pixels"
+            ],
+            "command": {
+                "path": "java",
+                "args": [
+                    "-jar",
+                    "-Xmx8g",
+                    "/home/raven-runner-1.0-OLD-JOIN.jar",
+                    "-iv",
+                    [
+                        "/home/rects3/400/geom.shp",
+                        "/home/rects3/800/geom.shp",
+                        "/home/rects3/1200/geom.shp",
+                        "/home/rects3/1600/geom.shp",
+                        "/home/rects3/2000/geom.shp",
+                        "/home/rects3/2400/geom.shp",
+                        "/home/rects3/2800/geom.shp",
+                        "/home/rects3/3200/geom.shp",
+                        "/home/rects3/3600/geom.shp",
+                        "/home/rects3/4000/geom.shp"
+                    ],
+                    "-cl",
+                    "/home/raster-cache/",
+                    "-ir",
+                    [
+                        "/home/columns"
+                    ],
+                    "-t",
+                    "parallel",
+                    "-ts",
+                    "4096"
+                ]
+            },
+            "environment_options": {
+                "environment_type": "docker",
+                "docker_file_path": "./runners/raven-runner/",
+                "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+            }
+        },
+        {
+            "name": "New Raven",
+            "iterations": 30,
+            "group": [
+                "400 pixels",
+                "800 pixels",
+                "1200 pixels",
+                "1600 pixels",
+                "2000 pixels",
+                "2400 pixels",
+                "2800 pixels",
+                "3200 pixels",
+                "3600 pixels",
+                "4000 pixels"
+            ],
+            "command": {
+                "path": "java",
+                "args": [
+                    "-jar",
+                    "-Xmx8g",
+                    "/home/raven-runner-1.0.jar",
+                    "-iv",
+                    [
+                        "/home/rects3/400/geom.shp",
+                        "/home/rects3/800/geom.shp",
+                        "/home/rects3/1200/geom.shp",
+                        "/home/rects3/1600/geom.shp",
+                        "/home/rects3/2000/geom.shp",
+                        "/home/rects3/2400/geom.shp",
+                        "/home/rects3/2800/geom.shp",
+                        "/home/rects3/3200/geom.shp",
+                        "/home/rects3/3600/geom.shp",
+                        "/home/rects3/4000/geom.shp"
+                    ],
+                    "-cl",
+                    "/home/raster-cache/",
+                    "-ir",
+                    [
+                        "/home/columns"
+                    ],
+                    "-t",
+                    "parallel",
+                    "-ts",
+                    "4096"
+                ]
+            },
+            "environment_options": {
+                "environment_type": "docker",
+                "docker_file_path": "./runners/raven-runner/",
+                "docker_mount_path": "\\\\wsl.localhost\\Ubuntu\\home\\johan\\mount"
+            }
+        }
+    ],
+    "colours": {
+        "Old Raven": "red",
+        "New Raven": "darkred"
+    }
+}

@@ -1,6 +1,5 @@
 import json
 import matplotlib.pyplot as plt
-from plotterutil import *
 from data import data
 
 

@@ -60,6 +60,9 @@ file = open(args.input, "r")
 
 data = read_json(file)
 
+# for i in range(10):
+#     print(data.times[i] - data.times[i + 10])
+
 if args.y_limit == None:
     y_lim = None
 else:
