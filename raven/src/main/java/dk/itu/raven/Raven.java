@@ -16,6 +16,7 @@ import dk.itu.raven.io.MultiFileRasterReader;
 import dk.itu.raven.io.ShapefileReader;
 import dk.itu.raven.io.cache.CacheOptions;
 import dk.itu.raven.io.commandline.CommandLineArgs;
+import dk.itu.raven.io.commandline.ResultType;
 import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.IRasterFilterFunction;
 import dk.itu.raven.join.JoinFilterFunctions;
@@ -29,7 +30,7 @@ import dk.itu.raven.visualizer.VisualizerOptionsBuilder;
 
 /**
  * Main class for the raven application
- * 
+ *
  */
 public class Raven {
 
@@ -56,6 +57,10 @@ public class Raven {
         api.setDACFraction(jct.dacFractionSize);
 
         IRasterFilterFunction function = JoinFilterFunctions.acceptAll();
+
+        if (jct.resultType.equals(ResultType.NONE)) {
+            Logger.log("WARNING: The \"None\" result type is only meant to be used for testing.", LogLevel.WARNING);
+        }
 
         if (jct.ranges.size() == 2) {
             if (metadata.getSamplesPerPixel() > 1) {
@@ -96,7 +101,7 @@ public class Raven {
             // allowing us to consume the stream and time the join
         } else {
             result.count(); // count will still force the stream to be executed, so the timing of
-                            // the function will work
+            // the function will work
         }
 
         long endJoinNano = System.nanoTime();
