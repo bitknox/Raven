@@ -1,5 +1,5 @@
 {
-	"name": "rtree - rstartree - strtree",
+	"name": "rtree - rstartree - strtree (GLC2000)",
 	"benchmarks": [
 		{
 			"name": "rtree",
