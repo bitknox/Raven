@@ -59,7 +59,7 @@ public class InternalApi {
         // load geometries from shapefile
         VectorData geometries = featureReader.readShapefile();
 
-        RTree<String, Geometry> rtree = generateRTree(geometries.getFeatures(), rTreeMinChildren, rTreeMaxChildren);
+        RTree<Object, Geometry> rtree = generateRTree(geometries.getFeatures(), rTreeMinChildren, rTreeMaxChildren);
 
         if (cacheOptions.isCaching) {
             // create a cache for the raster structures
@@ -137,9 +137,9 @@ public class InternalApi {
      * R-tree
      * @return the R* tree
      */
-    public static RTree<String, Geometry> generateRTree(List<Entry<String, Geometry>> geometries, int minChildren,
+    public static RTree<Object, Geometry> generateRTree(List<Entry<Object, Geometry>> geometries, int minChildren,
             int maxChildren) {
-        RTree<String, Geometry> rtree = RTree.star().minChildren(minChildren).maxChildren(maxChildren)
+        RTree<Object, Geometry> rtree = RTree.star().minChildren(minChildren).maxChildren(maxChildren)
                 .create(geometries);
         return rtree;
     }

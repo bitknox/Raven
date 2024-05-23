@@ -1,17 +1,15 @@
 package dk.itu.raven.join;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.locationtech.jts.geom.Coordinate;
 
@@ -130,7 +128,7 @@ public class RavenJoinTest {
             AbstractK2Raster k2 = new K2RasterBuilder().build(new ArrayMatrix(matrix, 16, 16), k);
             k2.setResultCreator(InternalApi.getResultCreator(type));
 
-            RTree<String, Geometry> rtree = RTree.star().maxChildren(6).create();
+            RTree<Object, Geometry> rtree = RTree.star().maxChildren(6).create();
             Polygon p = new Polygon(new Coordinate[]{new Coordinate(1, 1), new Coordinate(3, 1), new Coordinate(3, 3),
                 new Coordinate(1, 3)});
             Polygon p2 = new Polygon(
@@ -204,7 +202,7 @@ public class RavenJoinTest {
             min = Math.min(min, range.x1 - offsetX);
             max = Math.max(max, range.x2 - offsetX);
         }
-        return new Pair<Integer, Integer>(min, max);
+        return new Pair<>(min, max);
     }
 
     private int countRanges(List<PixelRange> ranges, int start, int end) {
