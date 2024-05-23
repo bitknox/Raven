@@ -1,15 +1,14 @@
 package dk.itu.raven.join;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import dk.itu.raven.api.RavenApi;
 import dk.itu.raven.io.cache.CacheOptions;
@@ -19,7 +18,9 @@ import dk.itu.raven.join.results.IResult;
 import dk.itu.raven.join.results.JoinResultItem;
 
 public class StreamedRavenJoinTest {
+
     public class Point {
+
         int x, y;
 
         public Point(int x, int y) {
@@ -29,8 +30,9 @@ public class StreamedRavenJoinTest {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof Point))
+            if (!(obj instanceof Point)) {
                 return false;
+            }
             Point other = (Point) obj;
             return x == other.x && y == other.y;
         }
@@ -42,7 +44,7 @@ public class StreamedRavenJoinTest {
     }
 
     @ParameterizedTest
-    @EnumSource(ResultType.class)
+    @MethodSource("dk.itu.raven.Util#getResultTypes")
     public void testAllApproaches(ResultType type) throws IOException {
         RavenApi ravenApi = new RavenApi();
         String rasterPath = "src/test/java/dk/itu/raven/data/wildfires";

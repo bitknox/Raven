@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.locationtech.jts.geom.Coordinate;
 
 import com.github.davidmoten.rtree2.RTree;
@@ -114,7 +114,7 @@ public class RavenJoinTest {
     }
 
     @ParameterizedTest
-    @EnumSource(ResultType.class)
+    @MethodSource("dk.itu.raven.Util#getResultTypes")
     public void testRavenJoin(ResultType type) {
         int[][] matrix = new int[16][16];
         int fillValue = 42; // You can change this to any integer value

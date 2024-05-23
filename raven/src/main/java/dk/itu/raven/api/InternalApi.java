@@ -26,6 +26,7 @@ import dk.itu.raven.join.RavenJoin;
 import dk.itu.raven.join.SpatialDataChunk;
 import dk.itu.raven.join.StreamedRavenJoin;
 import dk.itu.raven.join.results.IResultCreator;
+import dk.itu.raven.join.results.NoResultCreator;
 import dk.itu.raven.join.results.PixelRangeCreator;
 import dk.itu.raven.join.results.PixelRangeValueCreator;
 import dk.itu.raven.join.results.PixelValueCreator;
@@ -189,6 +190,9 @@ public class InternalApi {
             }
             case VALUE -> {
                 return new PixelValueCreator();
+            }
+            case NONE -> {
+                return new NoResultCreator();
             }
         }
         return null;
