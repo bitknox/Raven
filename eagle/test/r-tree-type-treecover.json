@@ -4,7 +4,11 @@
 		{
 			"name": "rtree",
 			"iterations": 5,
-			"group": ["boundaries", "protected", "woody"],
+			"group": [
+				"boundaries",
+				"protected",
+				"woody"
+			],
 			"command": {
 				"path": "java",
 				"args": [
@@ -19,7 +23,11 @@
 					"-cl",
 					"/home/raster-cache/",
 					"-ir",
-					"/home/real/raster/glc2000",
+					"/home/real/raster/treecover",
+					"-fl",
+					"81",
+					"-fh",
+					"84",
 					"-t",
 					"parallel",
 					"-ts",
@@ -35,7 +43,11 @@
 		{
 			"name": "rstartree",
 			"iterations": 5,
-			"group": ["boundaries", "protected", "woody"],
+			"group": [
+				"boundaries",
+				"protected",
+				"woody"
+			],
 			"command": {
 				"path": "java",
 				"args": [
@@ -50,7 +62,11 @@
 					"-cl",
 					"/home/raster-cache/",
 					"-ir",
-					"/home/real/raster/glc2000",
+					"/home/real/raster/treecover",
+					"-fl",
+					"81",
+					"-fh",
+					"84",
 					"-t",
 					"parallel",
 					"-ts",
@@ -66,7 +82,11 @@
 		{
 			"name": "strtree",
 			"iterations": 5,
-			"group": ["boundaries", "protected", "woody"],
+			"group": [
+				"boundaries",
+				"protected",
+				"woody"
+			],
 			"command": {
 				"path": "java",
 				"args": [
@@ -81,7 +101,11 @@
 					"-cl",
 					"/home/raster-cache/",
 					"-ir",
-					"/home/real/raster/glc2000",
+					"/home/real/raster/treecover",
+					"-fl",
+					"81",
+					"-fh",
+					"84",
 					"-t",
 					"parallel",
 					"-ts",
