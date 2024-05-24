@@ -1,0 +1,45 @@
+{
+	"name": "Join Time - Woody (No Filter)",
+	"benchmarks": [
+		{
+			"name": "Raven",
+			"iterations": 5,
+			"group": [
+				"GLC",
+				"SWF",
+				"Treecover"
+			],
+			"command": {
+				"path": "java",
+				"args": [
+					"-jar",
+					"-Xmx14g",
+					"/home/runners/raven-runner-1.0.jar",
+					"-iv",
+					"/home/real/vector/woody/woody.shp",
+					"-cl",
+					"/home/raster-cache/",
+					"-ir",
+					[
+						"/home/real/raster/glc2000",
+						"/home/real/raster/woody",
+						"/home/real/raster/treecover"
+					],
+					"-t",
+					"parallel",
+					"-ts",
+					"2048"
+				]
+			},
+			"environment_options": {
+				"environment_type": "docker",
+				"docker_file_path": "./runners/raven-runner/",
+				"docker_mount_path": "/home/joinpro/data"
+			}
+		}
+	],
+	"colours": {
+		"Raven": "darkred",
+		"Raptor": "darkblue"
+	}
+}
