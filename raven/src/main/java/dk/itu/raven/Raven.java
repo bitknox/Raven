@@ -20,6 +20,7 @@ import dk.itu.raven.join.AbstractRavenJoin;
 import dk.itu.raven.join.IRasterFilterFunction;
 import dk.itu.raven.join.JoinFilterFunctions;
 import dk.itu.raven.join.results.IJoinResult;
+import dk.itu.raven.ksquared.AbstractK2Raster;
 import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
 import dk.itu.raven.visualizer.RandomColor;
@@ -29,7 +30,7 @@ import dk.itu.raven.visualizer.VisualizerOptionsBuilder;
 
 /**
  * Main class for the raven application
- * 
+ *
  */
 public class Raven {
 
@@ -96,7 +97,7 @@ public class Raven {
             // allowing us to consume the stream and time the join
         } else {
             result.count(); // count will still force the stream to be executed, so the timing of
-                            // the function will work
+            // the function will work
         }
 
         long endJoinNano = System.nanoTime();
@@ -124,6 +125,8 @@ public class Raven {
             visual.drawResult(result, shapefileReader, options);
             Logger.log("Done visualizing", LogLevel.INFO);
         }
+
+        System.out.println(AbstractK2Raster.callCounter.get());
     }
 
 }

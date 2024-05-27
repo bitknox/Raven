@@ -3,6 +3,7 @@ package dk.itu.raven.ksquared;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import dk.itu.raven.geometry.Offset;
 import dk.itu.raven.join.IRasterFilterFunction;
@@ -281,8 +282,11 @@ public abstract class AbstractK2Raster implements Serializable {
      */
     public abstract PrimitiveArrayWrapper getWindow(int r1, int r2, int c1, int c2);
 
+    public static AtomicLong callCounter = new AtomicLong();
+
     protected void searchValuesInWindow(int n, int r1, int r2, int c1, int c2, IRasterFilterFunction function,
             long maxVal, long minVal, int z, List<IResult> out, int baseX, int baseY, Offset<Integer> offset) {
+        callCounter.incrementAndGet();
         int nKths = (n / k); // childsize
         int rank = treeRank(z);
         z = rank * k * k;
