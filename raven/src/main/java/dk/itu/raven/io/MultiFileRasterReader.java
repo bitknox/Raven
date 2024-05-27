@@ -3,6 +3,7 @@ package dk.itu.raven.io;
 import java.awt.geom.NoninvertibleTransformException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +14,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.api.referencing.operation.TransformException;
 
+import com.github.davidmoten.rtree2.Entries;
 import com.github.davidmoten.rtree2.Entry;
 import com.github.davidmoten.rtree2.RTree;
 import com.github.davidmoten.rtree2.geometry.Geometries;
@@ -90,11 +92,14 @@ public class MultiFileRasterReader implements IRasterReader {
                             Logger.log("No overlapping data found, skipping image", LogLevel.DEBUG);
                             return null;
                         }
-                        RTree<Object, Geometry> rtree2 = RTree.star().maxChildren(6).create();
+
+                        List<Entry<Object, Geometry>> transformed = new ArrayList<>();
 
                         for (Entry<Object, Geometry> entry : overlapping) {
-                            rtree2 = rtree2.add(null, ((Polygon) entry.geometry()).transform(transform));
+                            transformed.add(Entries.entry(null, ((Polygon) entry.geometry()).transform(transform)));
+
                         }
+                        RTree<Object, Geometry> rtree2 = RTree.maxChildren(6).create(transformed);
 
                         Logger.log(rtree2.root().get().geometry().mbr(), LogLevel.DEBUG);
 
