@@ -501,6 +501,7 @@ public abstract class AbstractK2Raster implements Serializable {
     private void getWithinRanges(List<PixelRange> ranges, List<IResult> out, Offset<Integer> offset, int r1,
             int r2, int c1, int c2, RangeExtremes[] rangeLimits, int[] rangePrefixsum, int z, int treeIndex,
             int baseX, int baseY, long maxVal, int n, Offset<Integer> treeOffset) {
+        callCounter.incrementAndGet();
         final int nKths = (n / k); // childsize
         final int rank = treeRank(z);
         final int initialI = r1 / nKths;
