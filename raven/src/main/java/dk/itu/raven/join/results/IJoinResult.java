@@ -7,14 +7,12 @@ import java.util.function.Predicate;
 public interface IJoinResult extends Iterable<JoinResultItem> {
 
     /**
-     * Returns an iterator over the join result.
-     * **WARNING**
-     * This method converts a parallel join result to a sequential one.
-     * **WARNING**
+     * Returns an iterator over the join result. **WARNING** This method
+     * converts a parallel join result to a sequential one. **WARNING**
      */
     public abstract Iterator<JoinResultItem> iterator();
 
-    public abstract int count();
+    public abstract long count();
 
     public abstract JoinResult asMemoryAllocatedResult();
 

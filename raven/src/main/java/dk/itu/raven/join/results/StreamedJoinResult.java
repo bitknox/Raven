@@ -1,4 +1,3 @@
-
 package dk.itu.raven.join.results;
 
 import java.util.ArrayList;
@@ -14,6 +13,7 @@ import dk.itu.raven.util.Logger;
 import dk.itu.raven.util.Logger.LogLevel;
 
 public class StreamedJoinResult implements IJoinResult {
+
     private Stream<JoinResult> stream;
 
     public StreamedJoinResult(Stream<JoinResult> stream) {
@@ -32,10 +32,12 @@ public class StreamedJoinResult implements IJoinResult {
 
             @Override
             public boolean hasNext() {
-                if (current.hasNext())
+                if (current.hasNext()) {
                     return true;
-                if (!iter.hasNext())
+                }
+                if (!iter.hasNext()) {
                     return false;
+                }
                 current = iter.next().iterator();
                 return hasNext();
             }
@@ -59,8 +61,8 @@ public class StreamedJoinResult implements IJoinResult {
     }
 
     @Override
-    public int count() {
-        return stream.collect(Collectors.summingInt(JoinResult::count));
+    public long count() {
+        return stream.collect(Collectors.summingLong(JoinResult::count));
     }
 
     @Override

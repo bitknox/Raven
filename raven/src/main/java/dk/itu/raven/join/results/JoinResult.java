@@ -54,8 +54,14 @@ public class JoinResult implements IJoinResult {
     }
 
     @Override
-    public int count() {
-        return size();
+    public long count() {
+        long val = 0;
+        for (var res : list) {
+            for (var range : res.pixelRanges) {
+                val += ((PixelRangeValue) range).x2 - ((PixelRangeValue) range).x1 + 1;
+            }
+        }
+        return val;
     }
 
     @Override
@@ -73,8 +79,9 @@ public class JoinResult implements IJoinResult {
         int index = list.size() - 1;
         while (index >= 0 && !predicate.test(list.get(index)))
             ;
-        if (index < 0)
+        if (index < 0) {
             return Optional.empty();
+        }
         return Optional.of(list.get(index));
     }
 
