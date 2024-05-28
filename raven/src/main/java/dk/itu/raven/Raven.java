@@ -104,25 +104,25 @@ public class Raven {
             result = result.asMemoryAllocatedResult(); // this allows the visualizer to draw the result while still
             // allowing us to consume the stream and time the join
         } else {
-            System.out.println(result.count()); // count will still force the stream to be executed, so the timing of
+            // System.out.println(result.count()); // count will still force the stream to be executed, so the timing of
             // the function will work
 
-            ConcurrentMap<Integer, Integer> hist = new ConcurrentHashMap<>();
+            ConcurrentMap<Integer, Long> hist = new ConcurrentHashMap<>();
 
             result.forEach(item -> {
                 for (IResult res : item.pixelRanges) {
                     PixelRangeValue rangeValue = (PixelRangeValue) res;
                     int length = rangeValue.x2 - rangeValue.x1 + 1;
                     if (!hist.containsKey(length)) {
-                        hist.put(length, 1);
+                        hist.put(length, 1L);
                     } else {
-                        hist.put(length, hist.get(length));
+                        hist.put(length, hist.get(length) + 1);
                     }
                 }
             });
 
             hist.forEach((k, v) -> {
-                System.out.println(k + ": " + v);
+                System.out.println(k + "	" + v);
             });
         }
 
