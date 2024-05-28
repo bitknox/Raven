@@ -28,6 +28,7 @@ public class ShapefileReader {
 
     private File file;
     protected ShapeFileBounds bounds;
+    static int count = 0;
 
     public ShapefileReader(String path) {
         this.file = new File(path);
@@ -89,6 +90,7 @@ public class ShapefileReader {
         } finally {
             myData.dispose();
         }
+        sout("Number of polygons: " + count);
         return new VectorData(features, bounds, crs);
     }
 
@@ -126,6 +128,7 @@ public class ShapefileReader {
                 if (i + 1 < coordinates.length) {
                     start = coordinates[i + 1];
                 }
+                count++;
             } else {
                 minX = Math.min(minX, coord.x);
                 maxX = Math.max(maxX, coord.x);
