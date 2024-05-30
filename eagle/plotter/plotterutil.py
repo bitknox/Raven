@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib
 from collections import OrderedDict, defaultdict
 from data import data
 
@@ -6,13 +7,13 @@ from data import data
 def addlabels(data: data, indices, ticks, y_lim):
     white_font = {
         "family": "DejaVu Sans",
-        "size": 12,
+        "size": 16,
         "color": "white",
         "weight": None,
     }
     black_font = {
         "family": "DejaVu Sans",
-        "size": 12,
+        "size": 16,
         "color": "black",
         "weight": None,
     }
@@ -28,8 +29,8 @@ def addlabels(data: data, indices, ticks, y_lim):
 
     for x, i in enumerate(indices):
         font = white_font
-        va = "top"
-        yi = min(y_lim, data.times[i]) * 0.35
+        va = "center"
+        yi = min(y_lim, data.times[i]) * 0.5
         if data.times[i] < 0.13 * max_val:
             yi = (
                 data.times[i] + data.errors_hi_95p[i] + 0.01 * max_val
@@ -40,51 +41,25 @@ def addlabels(data: data, indices, ticks, y_lim):
         difference = data.times[i] / data.times[data.group_members[data.groups[i]][0]]
         if i == data.group_members[data.groups[i]][0]:
             if len(data.group_members[data.groups[i]]) > 1:
-                text = "(Reference)"
+                text = "Ref"
             else:
                 text = ""
         elif difference < 1:
-            text = "(-" + str(round((1 - difference) * 100)) + "%)"
+            text = "-" + str(round((1 - difference) * 100)) + "%"
         elif difference > 1:
-            text = "(+" + str(round((difference - 1) * 100)) + "%)"
+            text = "+" + str(round((difference - 1) * 100)) + "%"
         else:
-            text = "(±0%)"
+            text = "±0%"
 
-        annotation_font = {i: font[i] for i in font}
-        annotation_font["size"] -= 2
-        annotation_font["weight"] = "regular"
-
-        text_box = plt.text(
+        plt.text(
             ticks[x],
             yi,
             text,
-            fontdict=annotation_font,
+            rotation=30,
+            fontdict=font,
             multialignment="center",
             ha="center",
             va=va,
-        )
-
-        if data.times[i] < 10:
-            text = "{:0.2f} s".format(data.times[i])
-        elif data.times[i] < 100:
-            text = "{:0.1f} s".format(data.times[i])
-        else:
-            text = "{:.0f} s".format(data.times[i])
-
-        if data.times[i] > 60:
-            text = "{:0.0f} min\n {:0.0f} s".format(
-                data.times[i] // 60, data.times[i] % 60
-            )
-
-        plt.annotate(
-            text,
-            xycoords=text_box,
-            xy=(0.5, 1.3),
-            ha="center",
-            color=font["color"],
-            weight=font["weight"],
-            size=font["size"],
-            linespacing=0.9,
         )
 
 
@@ -99,7 +74,7 @@ def write_labels(labels):
         -0.05,
         text[0:-1],
         transform=plt.gcf().transFigure,
-        fontsize=14,
+        fontsize=18,
         verticalalignment="top",
         horizontalalignment="center",
         bbox=props,
@@ -107,13 +82,17 @@ def write_labels(labels):
 
 
 def draw_plot(indices, data, path, id, y_lim, line_plot, x_label):
+    matplotlib.rcParams.update({"font.size": 20})
     if not line_plot:
         draw_bars(indices, data, y_lim)
     else:
         draw_line(indices, data, y_lim)
 
     if x_label:
-        plt.xlabel(x_label)
+        plt.xlabel(x_label, fontsize=25)
+
+    plt.locator_params(axis="y", nbins=6)
+    plt.locator_params(axis="x", nbins=10)
 
     plt.savefig(
         path + "/" + data.title + " " + id + ".png",
@@ -135,9 +114,9 @@ def setup_plot(data, width, padding, groups_set):
 
     ax.margins(padding / width, 0.1)
 
-    plt.suptitle(data.title, fontsize=20, y=1)
+    plt.suptitle(data.title, fontsize=30, y=1)
     if num_groups == 1:
-        plt.title(next(iter(groups_set)), fontsize=15, weight="bold")
+        plt.title(next(iter(groups_set)), fontsize=25, weight="bold")
 
     plt.grid(axis="y", which="major", linewidth=1, alpha=0.3, linestyle="dashed")
     plt.grid(
@@ -151,13 +130,13 @@ def setup_plot(data, width, padding, groups_set):
     plt.tick_params(axis="x", rotation=30)
     ax.minorticks_on()
     ax.set_axisbelow(True)
-    plt.ylabel("Join time (s)")
+    plt.ylabel("Join time (s)", fontsize=25)
 
     return ax
 
 
 def draw_bars(indices, data, y_lim):
-    relative_bar_width = 0.9
+    relative_bar_width = 0.95
     group_gap = 1
     non_group_gap = 1.25
     absolute_bar_width = 1.25  # determines the width of the graph and therefore also the width of the bars in the image
@@ -237,7 +216,7 @@ def draw_bars(indices, data, y_lim):
         zip(labels, handles)
     )  # this is done to avoid duplicate entries in legend
     ax.legend(
-        by_label.values(), by_label.keys(), loc="upper left", ncols=1, fontsize=10
+        by_label.values(), by_label.keys(), loc="upper left", ncols=1, fontsize=15
     )
 
 
@@ -273,10 +252,11 @@ def draw_sub_plots(data, path, id, y_lim):
     for test in data:
         _, ax = plt.subplots()
         plt.plot(test["times"], linestyle="dotted")
-        plt.ylabel("Join time (s)")
-        plt.xlabel("Iteration")
+        plt.ylabel("Join time (s)", fontsize=25)
+        plt.xlabel("Iteration", fontsize=25)
         plt.locator_params(axis="x", nbins=10, tight=True)
         plt.tick_params(axis="x", rotation=30)
+
         ax.margins(x=0)
         plt.title("Join Times for " + test["name"])
         plt.ylim((0, y_lim))
