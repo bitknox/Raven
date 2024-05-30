@@ -63,6 +63,7 @@ public class ShapefileReader {
 
     public VectorData readShapefile()
             throws IOException {
+        long start = System.nanoTime();
         FileDataStore myData = FileDataStoreFinder.getDataStore(file);
         SimpleFeatureSource source = myData.getFeatureSource();
         bounds.reset();
@@ -89,6 +90,8 @@ public class ShapefileReader {
         } finally {
             myData.dispose();
         }
+        long end = System.nanoTime();
+        System.out.println("Read Time: " + (end - start) / 1000000.0 + "ms");
         return new VectorData(features, bounds, crs);
     }
 

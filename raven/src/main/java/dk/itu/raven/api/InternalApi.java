@@ -139,8 +139,11 @@ public class InternalApi {
      */
     public static RTree<Object, Geometry> generateRTree(List<Entry<Object, Geometry>> geometries, int minChildren,
             int maxChildren) {
+        long start = System.nanoTime();
         RTree<Object, Geometry> rtree = RTree.star().minChildren(minChildren).maxChildren(maxChildren)
                 .create(geometries);
+        long end = System.nanoTime();
+        System.out.println("Build Time: " + (end - start) / 1000000.0 + "ms");
         return rtree;
     }
 
