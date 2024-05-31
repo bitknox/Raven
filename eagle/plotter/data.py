@@ -8,6 +8,7 @@ class data:
         groups,
         times,
         colours,
+        labels,
         errors_lo,
         errors_hi,
         errors_lo_95p,
@@ -26,11 +27,30 @@ class data:
             self.group_members[c].append(i)
         self.times = times
         self.colours = colours
+        self.labels = labels
         self.errors_lo = errors_lo
         self.errors_hi = errors_hi
         self.errors_lo_95p = errors_lo_95p
         self.errors_hi_95p = errors_hi_95p
         self.title = title
+        self.detailed = False
+        self.unit = ("ms", 1)
 
     def __len__(self):
         return len(self.names)
+
+    def set_detailed(self):
+        self.detailed = True
+
+    def set_unit(self, unit):
+        self.times = [y * self.unit[1] for y in self.times]
+        self.errors_lo = [y * self.unit[1] for y in self.errors_lo]
+        self.errors_hi = [y * self.unit[1] for y in self.errors_hi]
+        self.errors_lo_95p = [y * self.unit[1] for y in self.errors_lo_95p]
+        self.errors_hi_95p = [y * self.unit[1] for y in self.errors_hi_95p]
+        self.unit = unit
+        self.times = [y / self.unit[1] for y in self.times]
+        self.errors_lo = [y / self.unit[1] for y in self.errors_lo]
+        self.errors_hi = [y / self.unit[1] for y in self.errors_hi]
+        self.errors_lo_95p = [y / self.unit[1] for y in self.errors_lo_95p]
+        self.errors_hi_95p = [y / self.unit[1] for y in self.errors_hi_95p]

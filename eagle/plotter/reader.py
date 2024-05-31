@@ -16,7 +16,6 @@ def read_json(file):
     thrown_away = 1
 
     for test in tests:
-        test["times"] = [y / 1000 for y in test["times"]]
         test["times"] = test["times"][thrown_away:]
         test["iterations"] -= thrown_away
         test["sorted times"] = [time for time in test["times"]]
@@ -31,6 +30,7 @@ def read_json(file):
     times = [sum(test["times"]) / (test["iterations"]) for test in tests]
     errors_lo = [times[i] - tests[i]["sorted times"][0] for i in range(len(tests))]
     errors_hi = [tests[i]["sorted times"][-1] - times[i] for i in range(len(tests))]
+    labels = [test["labels"] for test in tests]
 
     percentile = 5
     for i in range(len(tests)):
@@ -48,6 +48,7 @@ def read_json(file):
         groups,
         times,
         colours,
+        labels,
         errors_lo,
         errors_hi,
         errors_lo_95p,

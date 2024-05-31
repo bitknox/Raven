@@ -47,6 +47,14 @@ parser.add_argument(
     "--x-label",
     help="label for the x-axis. If no label is given the x-axis will not be labelled",
 )
+parser.add_argument(
+    "--detailed",
+    action="store_true",
+    help="If given, the plotter will label all bars with their time taken",
+)
+parser.add_argument(
+    "-u", "--unit", help="unit to be used for the y-axis", default=("s", 1000)
+)
 args = parser.parse_args()
 
 if args.line_plot and args.split_groups:
@@ -59,6 +67,14 @@ if args.output is None:
 file = open(args.input, "r")
 
 data = read_json(file)
+
+if args.detailed:
+    data.set_detailed()
+
+units = {"ms": 1, "s": 1000, "min": 60000, "h": 3600000}
+
+if args.unit is not None and args.unit in units:
+    data.set_unit((args.unit, units[args.unit]))
 
 if args.y_limit == None:
     y_lim = None

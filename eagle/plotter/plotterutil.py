@@ -51,16 +51,59 @@ def addlabels(data: data, indices, ticks, y_lim):
         else:
             text = "±0%"
 
-        plt.text(
-            ticks[x],
-            yi,
-            text,
-            rotation=30,
-            fontdict=font,
-            multialignment="center",
-            ha="center",
-            va=va,
-        )
+        if data.detailed:
+            writeDifferenceAndValue(
+                ticks[x],
+                yi,
+                text,
+                font,
+                va,
+                data.times[i] * data.unit[1] / 1000,  # convert time to seconds
+            )
+        else:
+            writeDifference(ticks[x], yi, text, font, va)
+
+
+def writeDifference(tick, yi, text, font, va):
+    return plt.text(
+        tick,
+        yi,
+        text,
+        rotation=30,
+        fontdict=font,
+        multialignment="center",
+        ha="center",
+        va=va,
+    )
+
+
+def writeDifferenceAndValue(tick, yi, text, font, va, time):
+    annotation_font = {i: font[i] for i in font}
+    annotation_font["size"] -= 2
+    annotation_font["weight"] = "regular"
+
+    text_box = writeDifference(tick, yi, text, annotation_font, va)
+
+    if time < 10:
+        text = "{:0.2f} s".format(time)
+    elif time < 100:
+        text = "{:0.1f} s".format(time)
+    else:
+        text = "{:.0f} s".format(time)
+
+    if time > 60:
+        text = "{:0.0f} min\n {:0.0f} s".format(time // 60, time % 60)
+
+    plt.annotate(
+        text,
+        xycoords=text_box,
+        xy=(0.5, 1.3),
+        ha="center",
+        color=font["color"],
+        weight=font["weight"],
+        size=font["size"],
+        linespacing=0.9,
+    )
 
 
 def write_labels(labels):
@@ -130,7 +173,7 @@ def setup_plot(data, width, padding, groups_set):
     plt.tick_params(axis="x", rotation=30)
     ax.minorticks_on()
     ax.set_axisbelow(True)
-    plt.ylabel("Join time (s)", fontsize=25)
+    plt.ylabel("Join time ({0})".format(data.unit[0]), fontsize=25)
 
     return ax
 
@@ -249,21 +292,21 @@ def draw_line(indices, data: data, y_lim):
 
 
 def draw_sub_plots(data, path, id, y_lim):
-    for test in data:
+    for i in range(len(data)):
         _, ax = plt.subplots()
-        plt.plot(test["times"], linestyle="dotted")
-        plt.ylabel("Join time (s)", fontsize=25)
+        plt.plot(data.times[i], linestyle="dotted")
+        plt.ylabel("Join time ({0})".format(data.unit[0]), fontsize=25)
         plt.xlabel("Iteration", fontsize=25)
         plt.locator_params(axis="x", nbins=10, tight=True)
         plt.tick_params(axis="x", rotation=30)
 
         ax.margins(x=0)
-        plt.title("Join Times for " + test["name"])
+        plt.title("Join Times for " + data.names[i])
         plt.ylim((0, y_lim))
-        write_labels(test["labels"])
+        write_labels(data.labels[i])
 
         plt.savefig(
-            path + "/" + test["name"] + " " + id + ".png",
+            path + "/" + data.names[i] + " " + id + ".png",
             bbox_inches="tight",
         )
         plt.clf()
