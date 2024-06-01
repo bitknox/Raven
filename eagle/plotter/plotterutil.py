@@ -23,7 +23,6 @@ def addlabels(data: data, indices, ticks, y_lim):
     min_val = math.inf
 
     for i in indices:
-        print(data.times[i] + data.errors_hi[i])
         max_val = max(max_val, data.times[i] + data.errors_hi[i])
         min_val = min(min_val, data.times[i] + data.errors_hi[i])
 
@@ -33,9 +32,7 @@ def addlabels(data: data, indices, ticks, y_lim):
 
     if y_lim[0] is None:
         y_lim[0] = min_val
-    max_val = max(min_val, y_lim[0])
-
-    print(max_val)
+    min_val = max(min_val, y_lim[0])
 
     for x, i in enumerate(indices):
         va, font, yi = data.scale.place_label(
@@ -148,8 +145,11 @@ def draw_plot(indices, data, path, id, y_lim, line_plot, x_label):
     # plt.locator_params(axis="y", nbins=6)
     plt.locator_params(axis="x", nbins=10)
 
+    illeagal = ["\n", "\\", "/", ":", "*", "?", '"', "<", ">", "|"]
+    for char in illeagal:
+        data.title = data.title.replace(char, "")
     plt.savefig(
-        path + "/" + data.title.replace("\n", " ") + " " + id + ".png",
+        path + "/" + data.title + " " + id + ".png",
         bbox_inches="tight",
     )
     plt.clf()
@@ -312,6 +312,10 @@ def draw_sub_plots(data, path, id, y_lim):
         plt.title("Join Times for " + data.names[i])
         plt.ylim(y_lim)
         write_labels(data.labels[i])
+
+        illeagal = ["\n", "\\", "/", ":", "*", "?", '"', "<", ">", "|"]
+        for char in illeagal:
+            data.names[i] = data.names[i].replace(char, "")
 
         plt.savefig(
             path + "/" + data.names[i] + " " + id + ".png",

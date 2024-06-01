@@ -86,7 +86,6 @@ def linear_place(min_val, max_val, y, yerr, y_lim, white_font, black_font):
     font = white_font
     va = "top"
     yi = min(y_lim[1], y) * 0.35
-    print(y, max_val)
     if y < 0.13 * max_val:
         yi = (
             y + yerr + 0.01 * max_val
