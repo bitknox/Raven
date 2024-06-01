@@ -35,6 +35,7 @@ class data:
         self.title = title
         self.detailed = False
         self.unit = ("ms", 1)
+        self.scale = ("linear", "({0})")
 
     def __len__(self):
         return len(self.names)
@@ -54,3 +55,6 @@ class data:
         self.errors_hi = [y / self.unit[1] for y in self.errors_hi]
         self.errors_lo_95p = [y / self.unit[1] for y in self.errors_lo_95p]
         self.errors_hi_95p = [y / self.unit[1] for y in self.errors_hi_95p]
+
+    def set_scale(self, scale):
+        self.scale = scale

@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 from collections import OrderedDict, defaultdict
 from data import data
+import math
 
 
 def addlabels(data: data, indices, ticks, y_lim):
@@ -19,24 +20,33 @@ def addlabels(data: data, indices, ticks, y_lim):
     }
 
     max_val = 0
+    min_val = math.inf
 
     for i in indices:
+        print(data.times[i] + data.errors_hi[i])
         max_val = max(max_val, data.times[i] + data.errors_hi[i])
+        min_val = min(min_val, data.times[i] + data.errors_hi[i])
 
-    if y_lim is None:
-        y_lim = max_val
-    max_val = min(max_val, y_lim)
+    if y_lim[1] is None:
+        y_lim[1] = max_val
+    max_val = min(max_val, y_lim[1])
+
+    if y_lim[0] is None:
+        y_lim[0] = min_val
+    max_val = max(min_val, y_lim[0])
+
+    print(max_val)
 
     for x, i in enumerate(indices):
-        font = white_font
-        va = "center"
-        yi = min(y_lim, data.times[i]) * 0.5
-        if data.times[i] < 0.13 * max_val:
-            yi = (
-                data.times[i] + data.errors_hi_95p[i] + 0.01 * max_val
-            )  # place the text slightly above the 95 percentile mark
-            font = black_font
-            va = "bottom"
+        va, font, yi = data.scale.place_label(
+            min_val,
+            max_val,
+            data.times[i],
+            data.errors_hi[i],
+            y_lim,
+            white_font,
+            black_font,
+        )
 
         difference = data.times[i] / data.times[data.group_members[data.groups[i]][0]]
         if i == data.group_members[data.groups[i]][0]:
@@ -57,19 +67,20 @@ def addlabels(data: data, indices, ticks, y_lim):
                 yi,
                 text,
                 font,
+                0,
                 va,
                 data.times[i] * data.unit[1] / 1000,  # convert time to seconds
             )
         else:
-            writeDifference(ticks[x], yi, text, font, va)
+            writeDifference(ticks[x], yi, text, font, 30, va)
 
 
-def writeDifference(tick, yi, text, font, va):
+def writeDifference(tick, yi, text, font, rotation, va):
     return plt.text(
         tick,
         yi,
         text,
-        rotation=30,
+        rotation=rotation,
         fontdict=font,
         multialignment="center",
         ha="center",
@@ -77,12 +88,11 @@ def writeDifference(tick, yi, text, font, va):
     )
 
 
-def writeDifferenceAndValue(tick, yi, text, font, va, time):
+def writeDifferenceAndValue(tick, yi, text, font, rotation, va, time):
     annotation_font = {i: font[i] for i in font}
     annotation_font["size"] -= 2
-    annotation_font["weight"] = "regular"
 
-    text_box = writeDifference(tick, yi, text, annotation_font, va)
+    text_box = writeDifference(tick, yi, text, annotation_font, rotation, va)
 
     if time < 10:
         text = "{:0.2f} s".format(time)
@@ -99,6 +109,7 @@ def writeDifferenceAndValue(tick, yi, text, font, va, time):
         xycoords=text_box,
         xy=(0.5, 1.3),
         ha="center",
+        rotation=rotation,
         color=font["color"],
         weight=font["weight"],
         size=font["size"],
@@ -134,11 +145,11 @@ def draw_plot(indices, data, path, id, y_lim, line_plot, x_label):
     if x_label:
         plt.xlabel(x_label, fontsize=25)
 
-    plt.locator_params(axis="y", nbins=6)
+    # plt.locator_params(axis="y", nbins=6)
     plt.locator_params(axis="x", nbins=10)
 
     plt.savefig(
-        path + "/" + data.title + " " + id + ".png",
+        path + "/" + data.title.replace("\n", " ") + " " + id + ".png",
         bbox_inches="tight",
     )
     plt.clf()
@@ -157,23 +168,20 @@ def setup_plot(data, width, padding, groups_set):
 
     ax.margins(padding / width, 0.1)
 
-    plt.suptitle(data.title, fontsize=30, y=1)
+    plt.suptitle(data.title, fontsize=30, y=1.08)
     if num_groups == 1:
         plt.title(next(iter(groups_set)), fontsize=25, weight="bold")
 
-    plt.grid(axis="y", which="major", linewidth=1, alpha=0.3, linestyle="dashed")
-    plt.grid(
-        color="gray",
-        linestyle="dashed",
-        linewidth=1,
-        alpha=0.3,
-        axis="y",
-        which="minor",
-    )
+    plt.grid(axis="y", which="major", linewidth=1.5, alpha=1, linestyle="solid")
     plt.tick_params(axis="x", rotation=30)
     ax.minorticks_on()
     ax.set_axisbelow(True)
-    plt.ylabel("Join time ({0})".format(data.unit[0]), fontsize=25)
+    ax.tick_params("y", length=10, width=2, which="major")
+    ax.tick_params("y", length=5, width=1.5, which="minor")
+    ax.tick_params("x", length=0, width=0, which="minor")
+    ax.tick_params("x", length=5, width=2, which="major")
+    plt.ylabel("Join time " + data.scale.y_label.format(data.unit[0]), fontsize=25)
+    plt.yscale(data.scale.name)
 
     return ax
 
@@ -252,7 +260,7 @@ def draw_bars(indices, data, y_lim):
         )
     else:
         plt.xticks([], [])
-    plt.ylim((0, y_lim))
+    plt.ylim(y_lim)
 
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(
@@ -274,7 +282,7 @@ def draw_line(indices, data: data, y_lim):
         )
     ax = setup_plot(data, 8, 0.4, groups_set)
 
-    if y_lim is None:
+    if y_lim[1] is None:
         ax.margins(None, 0.15)
     matches = [(i, re.match("[0-9.]+", data.groups[i])) for i in indices]
 
@@ -288,7 +296,7 @@ def draw_line(indices, data: data, y_lim):
         ]
         plt.plot(numbers, [data.times[i] for i in indices], color="darkred")
 
-    plt.ylim((0, y_lim))
+    plt.ylim(y_lim)
 
 
 def draw_sub_plots(data, path, id, y_lim):
@@ -302,7 +310,7 @@ def draw_sub_plots(data, path, id, y_lim):
 
         ax.margins(x=0)
         plt.title("Join Times for " + data.names[i])
-        plt.ylim((0, y_lim))
+        plt.ylim(y_lim)
         write_labels(data.labels[i])
 
         plt.savefig(
