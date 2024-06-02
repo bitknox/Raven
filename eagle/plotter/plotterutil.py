@@ -132,10 +132,10 @@ def write_labels(labels):
     )
 
 
-def draw_plot(indices, data, path, id, y_lim, line_plot, x_label):
+def draw_plot(indices, data, path, id, y_lim, line_plot, x_label, legend_placement):
     matplotlib.rcParams.update({"font.size": 20})
     if not line_plot:
-        draw_bars(indices, data, y_lim)
+        draw_bars(indices, data, y_lim, legend_placement)
     else:
         draw_line(indices, data, y_lim)
 
@@ -186,7 +186,7 @@ def setup_plot(data, width, padding, groups_set):
     return ax
 
 
-def draw_bars(indices, data, y_lim):
+def draw_bars(indices, data, y_lim, legend_placement):
     relative_bar_width = 0.95
     group_gap = 1
     non_group_gap = 1.25
@@ -267,7 +267,7 @@ def draw_bars(indices, data, y_lim):
         zip(labels, handles)
     )  # this is done to avoid duplicate entries in legend
     ax.legend(
-        by_label.values(), by_label.keys(), loc="upper left", ncols=1, fontsize=15
+        by_label.values(), by_label.keys(), loc=legend_placement, ncols=1, fontsize=15
     )
 
 

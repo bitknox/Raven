@@ -57,6 +57,9 @@ parser.add_argument(
     help="If given, the plotter will label all bars with their time taken",
 )
 parser.add_argument("-u", "--unit", help="unit to be used for the y-axis", default="s")
+parser.add_argument(
+    "-leg", "--legend-placement", help="placement of the legend", default="upper left"
+)
 
 parser.add_argument(
     "--scale",
@@ -153,6 +156,7 @@ else:
         [y_bot, y_top],
         args.line_plot,
         args.x_label,
+        args.legend_placement,
     )
 if args.sub_plots:
     draw_sub_plots(data, args.output, args.identifier, [y_bot, y_top])
