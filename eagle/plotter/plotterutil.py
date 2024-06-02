@@ -132,12 +132,14 @@ def write_labels(labels):
     )
 
 
-def draw_plot(indices, data, path, id, y_lim, line_plot, x_label, legend_placement):
+def draw_plot(
+    indices, data, path, id, y_lim, line_plot, x_label, y_label, legend_placement
+):
     matplotlib.rcParams.update({"font.size": 20})
     if not line_plot:
-        draw_bars(indices, data, y_lim, legend_placement)
+        draw_bars(indices, data, y_lim, legend_placement, y_label)
     else:
-        draw_line(indices, data, y_lim)
+        draw_line(indices, data, y_lim, y_label)
 
     if x_label:
         plt.xlabel(x_label, fontsize=25)
@@ -162,7 +164,7 @@ def get_unique_groups(indices, data):
     return groups_set
 
 
-def setup_plot(data, width, padding, groups_set):
+def setup_plot(data, width, padding, groups_set, y_label):
     num_groups = len(groups_set)
     _, ax = plt.subplots(figsize=(width, 5.5))
 
@@ -180,13 +182,14 @@ def setup_plot(data, width, padding, groups_set):
     ax.tick_params("y", length=5, width=1.5, which="minor")
     ax.tick_params("x", length=0, width=0, which="minor")
     ax.tick_params("x", length=5, width=2, which="major")
-    plt.ylabel("Join time " + data.scale.y_label.format(data.unit[0]), fontsize=25)
+    if y_label:
+        plt.ylabel(y_label + " " + data.scale.y_label.format(data.unit[0]), fontsize=25)
     plt.yscale(data.scale.name)
 
     return ax
 
 
-def draw_bars(indices, data, y_lim, legend_placement):
+def draw_bars(indices, data, y_lim, legend_placement, y_label):
     relative_bar_width = 0.95
     group_gap = 1
     non_group_gap = 1.25
@@ -214,7 +217,7 @@ def draw_bars(indices, data, y_lim, legend_placement):
     width = absolute_bar_width * (ticks[-1] + relative_bar_width) + 2 * padding
     groups_set = get_unique_groups(indices, data)
     num_groups = len(groups_set)
-    ax = setup_plot(data, width, padding, groups_set)
+    ax = setup_plot(data, width, padding, groups_set, y_label)
 
     plt.bar(
         ticks,
@@ -271,7 +274,7 @@ def draw_bars(indices, data, y_lim, legend_placement):
     )
 
 
-def draw_line(indices, data: data, y_lim):
+def draw_line(indices, data: data, y_lim, y_label):
     import re
 
     groups_set = get_unique_groups(indices, data)
@@ -280,7 +283,7 @@ def draw_line(indices, data: data, y_lim):
         raise Exception(
             "When drawing line plots, all data-points must have a unique group"
         )
-    ax = setup_plot(data, 8, 0.4, groups_set)
+    ax = setup_plot(data, 8, 0.4, groups_set, y_label)
 
     if y_lim[1] is None:
         ax.margins(None, 0.15)

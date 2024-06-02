@@ -66,6 +66,11 @@ parser.add_argument(
     help="scale to be used for the plot (either log or linear)",
     default="linear",
 )
+parser.add_argument(
+    "-yl",
+    "--y-label",
+    help="label for the y-axis. If no label is given the y-axis will not be labelled",
+)
 args = parser.parse_args()
 
 if args.line_plot and args.split_groups:
@@ -145,6 +150,8 @@ if args.split_groups:
             [y_bot, y_top],
             args.line_plot,
             args.x_label,
+            args.y_label,
+            args.legend_placement,
         )
 else:
     indices = [member for g in data.unique_groups for member in data.group_members[g]]
@@ -156,6 +163,7 @@ else:
         [y_bot, y_top],
         args.line_plot,
         args.x_label,
+        args.y_label,
         args.legend_placement,
     )
 if args.sub_plots:
